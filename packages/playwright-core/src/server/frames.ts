@@ -25,6 +25,7 @@ import { LongStandingScope } from '@isomorphic/manualPromise';
 import { asLocator } from '@isomorphic/locatorGenerators';
 import { assert } from '@isomorphic/assert';
 import { constructURLBasedOnBaseURL } from '@isomorphic/urlMatch';
+import { monotonicTime } from '@isomorphic/time';
 import { createGuid } from '@utils/crypto';
 import { BrowserContext } from './browserContext';
 import * as dom from './dom';
@@ -40,6 +41,7 @@ import { Page, ariaSnapshotJSONForFrame } from './page';
 import { isAbortError, nullProgress, ProgressController, raceUncancellableOperationWithCleanup } from './progress';
 import * as types from './types';
 import { isSessionClosedError } from './protocolError';
+import { isAwaitingFirstNavigation } from './pagePreload';
 import { WebMCP } from './webmcp';
 
 import type { ConsoleMessage } from './console';
@@ -145,6 +147,12 @@ export class FrameManager {
 
   _allocateFrameSeq() {
     return this._nextFrameSeq++;
+  }
+
+  // Flashwright: the frames of a page put back to a blank tab are numbered like a new tab's.
+  resetFrameSeq() {
+    this._mainFrame.seq = 0;
+    this._nextFrameSeq = 1;
   }
 
   createDummyMainFrameIfNeeded() {
@@ -352,6 +360,7 @@ export class FrameManager {
     this._inflightRequestStarted(request);
     if (frame && request._documentId)
       frame._setPendingDocument({ documentId: request._documentId, request });
+    request._preload = frame?._page.preload;
     if (request._isFavicon) {
       // Abort favicon requests to avoid network access in case of interception.
       route?.abort('aborted').catch(() => {});
@@ -728,12 +737,38 @@ export class Frame extends SdkObject<FrameEventMap> {
 
   async goto(progress: Progress, url: string, options: types.GotoOptions = {}): Promise<network.Response | null> {
     const constructedNavigationURL = constructURLBasedOnBaseURL(this._page.browserContext._options.baseURL, url);
-    return this.raceNavigationAction(progress, async () => this.gotoImpl(progress, constructedNavigationURL, options));
+    // Flashwright: preloadPages (see pagePreload.ts). The first goto of a test with a recycled
+    // context is remembered for preloading it next time, and may find its document preloaded.
+    const context = this._page.browserContext;
+    const firstNavigation = isAwaitingFirstNavigation(context);
+    if (firstNavigation)
+      await progress.race(context.recordFirstNavigation(constructedNavigationURL, this));
+    const preload = this === this._page.mainFrame() ? this._page.preload : undefined;
+    let logged = false;
+    if (preload) {
+      const waitUntil = verifyLifecycle('waitUntil', options.waitUntil === undefined ? 'load' : options.waitUntil);
+      progress.log(`navigating to "${constructedNavigationURL}", waiting until "${waitUntil}"`);
+      logged = true;
+      const response = await preload.claim(progress, constructedNavigationURL, options).finally(() => context.firstNavigationDone());
+      if (response !== undefined) {
+        if (!this._firedLifecycleEvents.has(waitUntil))
+          await helper.waitForEvent(progress, this, Frame.Events.AddLifecycle, (e: types.LifecycleEvent) => e === waitUntil).promise;
+        return response;
+      }
+    }
+    if (firstNavigation)
+      context.firstNavigationDone();
+    const startTime = monotonicTime();
+    const response = await this.raceNavigationAction(progress, async () => this.gotoImpl(progress, constructedNavigationURL, options, logged));
+    if (firstNavigation)
+      context._browser.recordLoadDuration(constructedNavigationURL, monotonicTime() - startTime);
+    return response;
   }
 
-  async gotoImpl(progress: Progress, url: string, options: types.GotoOptions): Promise<network.Response | null> {
+  async gotoImpl(progress: Progress, url: string, options: types.GotoOptions, logged = false): Promise<network.Response | null> {
     const waitUntil = verifyLifecycle('waitUntil', options.waitUntil === undefined ? 'load' : options.waitUntil);
-    progress.log(`navigating to "${url}", waiting until "${waitUntil}"`);
+    if (!logged)
+      progress.log(`navigating to "${url}", waiting until "${waitUntil}"`);
     const headers = this._page.extraHTTPHeaders() || [];
     const refererHeader = headers.find(h => h.name.toLowerCase() === 'referer');
     let referer = refererHeader ? refererHeader.value : undefined;

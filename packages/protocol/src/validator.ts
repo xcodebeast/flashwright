@@ -713,7 +713,17 @@ scheme.BrowserNewContextForRecycleResult = tObject({
 scheme.BrowserCloseRecycledContextParams = tObject({
   reason: tString,
 });
-scheme.BrowserCloseRecycledContextResult = tOptional(tObject({}));
+scheme.BrowserCloseRecycledContextResult = tObject({
+  firstNavigation: tOptional(tObject({
+    url: tString,
+    first: tBoolean,
+  })),
+});
+scheme.BrowserPreloadNextPageParams = tObject({
+  path: tOptional(tString),
+  expectedDuration: tOptional(tFloat),
+});
+scheme.BrowserPreloadNextPageResult = tOptional(tObject({}));
 scheme.BrowserNewBrowserCDPSessionParams = tOptional(tObject({}));
 scheme.BrowserNewBrowserCDPSessionResult = tObject({
   session: tChannel(['CDPSession']),

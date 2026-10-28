@@ -99,6 +99,8 @@ export class TestInfoImpl implements TestInfo {
   private _interruptedPromise = new ManualPromise<void>();
   private readonly _requireFile: string;
   readonly _projectInternal: commonConfig.FullProjectInternal;
+  // Flashwright: the test this worker will probably run next (see the preloadPages option).
+  _nextTestId: string | undefined;
   readonly _configInternal: FullConfigInternal;
   private readonly _steps: TestStepInternal[] = [];
   // Flashwright: hook and fixture steps that have not finished. When there are none, as in the test

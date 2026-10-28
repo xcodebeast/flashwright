@@ -26,6 +26,7 @@ import { AbortError, TargetClosedError, rewriteErrorForClosedTarget, serializeEr
 import { createRootSdkObject, SdkObject } from '../instrumentation';
 import { compressCallLog } from '../callLog';
 import { Progress, ProgressController } from '../progress';
+import { beforeClientCall } from '../pagePreload';
 
 import type { CallMetadata } from '../instrumentation';
 import type { PlaywrightDispatcher } from './playwrightDispatcher';
@@ -373,6 +374,12 @@ export class DispatcherConnection {
       abortControllerEntry.controller = controller;
       return controller;
     };
+
+    // Flashwright: a page preloaded for a test goes back to a blank tab when the test calls
+    // anything but its goto first (see pagePreload.ts).
+    const preloadCheck = beforeClientCall(sdkObject, dispatcher._type, method);
+    if (preloadCheck)
+      await preloadCheck.catch(() => {});
 
     const beforeController = swapProgressController();
     // Be generous with the tracing timeout in case it wants to capture a screenshot, fail silently.

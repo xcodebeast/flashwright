@@ -18,6 +18,7 @@ import fs from 'fs';
 
 import { makeSocketPath } from '@utils/fileUtils';
 import { createGuid } from '@utils/crypto';
+import { monotonicTime } from '@isomorphic/time';
 import { BrowserContext, validateBrowserContextOptions } from './browserContext';
 import { Download } from './download';
 import { SdkObject } from './instrumentation';
@@ -28,8 +29,10 @@ import { PlaywrightWebSocketServer } from '../remote/playwrightWebSocketServer';
 import { BrowserInfo, serverRegistry } from '../serverRegistry';
 import { nullProgress } from './progress';
 import { TargetClosedError } from './errors';
+import { watchFirstNavigation } from './pagePreload';
 
 import type * as types from './types';
+import type { PreloadHint } from './browserContext';
 import type { ProxySettings } from './types';
 import type { RecentLogsCollector } from '@utils/debugLogger';
 import type * as channels from './channels';
@@ -93,6 +96,18 @@ export abstract class Browser extends SdkObject {
   _defaultContext: BrowserContext | null = null;
   private _startedClosing = false;
   private _contextForReuse: { context: BrowserContext, hash: string, prepared?: boolean } | undefined;
+  // Flashwright: preloadPages (see pagePreload.ts). The second recycled context, whose tab loads
+  // the next test's page while the current test uses the other one.
+  private _standby: { context: BrowserContext, hash: string } | undefined;
+  private _creatingStandby = false;
+  // The latest hint, while the second context is being created.
+  private _standbyHint: PreloadHint | undefined;
+  private _preloading = false;
+  private _lastRecycleParams: channels.BrowserNewContextForReuseParams | undefined;
+  private _takenAt = 0;
+  private _firstNavigationUrl: string | undefined;
+  private _lastFirstNavigationUrl: string | undefined;
+  private _loadDurations = new Map<string, number>();
   _closeReason: string | undefined;
   _isBrowserCollocatedWithServer: boolean = true;
   private _server: BrowserServer;
@@ -151,6 +166,110 @@ export abstract class Browser extends SdkObject {
   }
 
   async newContextForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams, recycle = false): Promise<BrowserContext> {
+    if (recycle)
+      this._lastRecycleParams = params;
+    if (recycle && this._standby)
+      this._swapStandby(BrowserContext.reusableContextHash(params) + ':recycle');
+    const context = await this._newContextForReuse(progress, params, recycle);
+    if (recycle && this._preloading)
+      this._contextTaken(context);
+    return context;
+  }
+
+  // Flashwright: a browser that preloads alternates between its two recycled contexts. The one the
+  // previous test used is being reset; the other one has the tab this test gets, maybe preloaded.
+  private _swapStandby(hash: string) {
+    const standby = this._standby!;
+    const current = this._contextForReuse;
+    if (standby.hash !== hash || !standby.context.canResetForReuse()) {
+      // A test with other options: what the second context prepared is of no use.
+      this._standby = undefined;
+      standby.context.close(nullProgress, { reason: 'Context reused' }).catch(() => {});
+      return;
+    }
+    if (!current || current.hash !== hash || current.prepared)
+      return;
+    this._standby = { context: current.context, hash: current.hash };
+    this._contextForReuse = standby;
+  }
+
+  private _contextTaken(context: BrowserContext) {
+    this._takenAt = monotonicTime();
+    this._firstNavigationUrl = undefined;
+    watchFirstNavigation(context);
+  }
+
+  // Flashwright: preloadPages. Called by the test runner when a test takes its recycled context:
+  // the tab the next test gets loads `path` (or, without one, the URL this test navigates to first)
+  // in the second recycled context, created on the first call.
+  async preloadNextPage(params: channels.BrowserPreloadNextPageParams) {
+    const current = this._contextForReuse;
+    const reuseParams = this._lastRecycleParams;
+    if (!current || !current.hash.endsWith(':recycle') || !current.context.isRecycleMode() || !reuseParams)
+      return;
+    if (!this._preloading) {
+      this._preloading = true;
+      this._contextTaken(current.context);
+    }
+    const hint = { path: params.path, expectedEnd: params.expectedDuration === undefined ? undefined : this._takenAt + params.expectedDuration };
+    if (this._standby) {
+      this._standby.context.setPreloadHint(hint);
+      return;
+    }
+    this._standbyHint = hint;
+    if (this._creatingStandby)
+      return;
+    this._creatingStandby = true;
+    try {
+      const context = await this.newContext(nullProgress, reuseParams, true /* recycle */, false /* announce */);
+      context.reuseParams = reuseParams;
+      context.markRecycled();
+      this._standby = { context, hash: current.hash };
+      context.setPreloadHint(this._standbyHint!);
+    } catch {
+    } finally {
+      this._creatingStandby = false;
+      this._standbyHint = undefined;
+    }
+  }
+
+  // Called by the first navigation of the test that uses a recycled context.
+  onFirstNavigation(context: BrowserContext, url: string) {
+    if (context !== this._contextForReuse?.context)
+      return;
+    this._firstNavigationUrl = url;
+    if (/^https?:/.test(url))
+      this._lastFirstNavigationUrl = url;
+    this._standby?.context.schedulePreload();
+  }
+
+  // The URL a preload hint stands for (see BrowserContext.setPreloadHint).
+  preloadUrl(path: string | undefined): string | undefined {
+    if (path === undefined)
+      return this._firstNavigationUrl;
+    if (!this._lastFirstNavigationUrl)
+      return undefined;
+    try {
+      return new URL(path, this._lastFirstNavigationUrl).href;
+    } catch {
+      return undefined;
+    }
+  }
+
+  expectedLoadDuration(url: string): number | undefined {
+    return this._loadDurations.get(normalizeURL(url));
+  }
+
+  recordLoadDuration(url: string, duration: number) {
+    url = normalizeURL(url);
+    const previous = this._loadDurations.get(url);
+    this._loadDurations.delete(url);
+    this._loadDurations.set(url, previous === undefined ? duration : (previous + duration) / 2);
+    if (this._loadDurations.size > 200)
+      this._loadDurations.delete(this._loadDurations.keys().next().value!);
+  }
+
+  private async _newContextForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams, recycle = false): Promise<BrowserContext> {
     // Flashwright: recycled contexts (see BrowserContext.setRecycleMode) never stand in for reused ones.
     const hash = BrowserContext.reusableContextHash(params) + (recycle ? ':recycle' : '');
     const reuse = this._contextForReuse;
@@ -233,6 +352,11 @@ export abstract class Browser extends SdkObject {
   // the caller closes the browser as usual. Afterwards this object is disconnected from it.
   // A headed browser is not handed over: its window would stay open between runs.
   async handoffForSession(): Promise<BrowserHandoff | undefined> {
+    // The second recycled context of a browser that preloads stays behind.
+    const standby = this._standby;
+    this._standby = undefined;
+    this._preloading = false;
+    await standby?.context.close(nullProgress, { reason: 'Browser handed over' }).catch(() => {});
     const reuse = this._contextForReuse;
     const release = this.options.browserProcess.release;
     if (!release || !this.options.launchKey || this.options.persistent || this.options.headful || this._startedClosing || !this.isConnected())
@@ -404,4 +528,12 @@ function asClientLaunchOptions(serverOptions: types.LaunchOptions): playwright.L
     ...serverOptions,
     env: serverOptions.env ? Object.fromEntries(serverOptions.env.map(({ name, value }) => [name, value])) : undefined,
   };
+}
+
+function normalizeURL(url: string): string {
+  try {
+    return new URL(url).href;
+  } catch {
+    return url;
+  }
 }

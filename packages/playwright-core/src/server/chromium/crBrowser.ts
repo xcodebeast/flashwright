@@ -244,6 +244,8 @@ export class CRBrowser extends Browser {
     if (targetInfo.type === 'service_worker') {
       const serviceWorker = new CRServiceWorker(context, session, targetInfo.url);
       this._serviceWorkers.set(targetInfo.targetId, serviceWorker);
+      // Flashwright: a goto cannot report a service worker started by a preloaded document.
+      context.markPreloadsUnusable();
       context.emit(CRBrowserContext.CREvents.ServiceWorker, serviceWorker);
       return;
     }
@@ -655,6 +657,17 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
     await Promise.all(crPages.map(replaceDocument));
   }
 
+  protected override async doResetPreloadedPage(page: Page): Promise<void> {
+    const crPage = page.delegate as CRPage;
+    await disableScripts(crPage);
+    await restoreFirstDocument(crPage);
+    const session = crPage._mainFrameSession._client;
+    await Promise.all([
+      this._options.javaScriptEnabled === false ? undefined : session.send('Emulation.setScriptExecutionDisabled', { value: false }),
+      session.send('Page.resetNavigationHistory'),
+    ]);
+  }
+
   protected override hasServiceWorkers(): boolean {
     return this.serviceWorkers().length > 0;
   }
@@ -730,11 +743,30 @@ async function disableScripts(crPage: CRPage) {
   ]).catch(() => {})));
 }
 
+// Flashwright: a preloaded page goes back to the blank document of its first history entry, which
+// is what a new tab shows. A blank document navigated to is not quite the same: Chromium treats
+// it as public, and blocks the frames and requests it makes to local addresses.
+async function restoreFirstDocument(crPage: CRPage) {
+  const session = crPage._mainFrameSession._client;
+  const { entries } = await session.send('Page.getNavigationHistory');
+  if (entries[0]?.url !== 'about:blank') {
+    await replaceDocument(crPage);
+    return;
+  }
+  await waitForBlankDocument(crPage, () => session.send('Page.navigateToHistoryEntry', { entryId: entries[0].id }).then(() => true));
+}
+
 async function replaceDocument(crPage: CRPage) {
   // Closing the page detaches DevTools, which enables scripts again until the renderer has torn the
   // page down, and a pending timer could then still write. Replacing the document drops its timers
   // and callbacks for good; its unload handlers do not run while scripts are disabled. Closing the
   // page before that navigation has stopped loading can leave the page open.
+  const session = crPage._mainFrameSession._client;
+  await waitForBlankDocument(crPage, async () => !(await session.send('Page.navigate', { url: 'about:blank' })).errorText);
+}
+
+// Runs a navigation to about:blank, then waits until the blank document has stopped loading.
+async function waitForBlankDocument(crPage: CRPage, navigate: () => Promise<boolean>) {
   const session = crPage._mainFrameSession._client;
   let committed = false;
   const onNavigated = (event: Protocol.Page.frameNavigatedPayload) => {
@@ -751,8 +783,7 @@ async function replaceDocument(crPage: CRPage) {
   session.on('Page.frameNavigated', onNavigated);
   session.on('Page.frameStoppedLoading', onStoppedLoading);
   try {
-    const { errorText } = await session.send('Page.navigate', { url: 'about:blank' });
-    if (!errorText)
+    if (await navigate())
       await raceWithTimeout(stoppedLoading, kStopPageTimeout, undefined);
   } catch {
   } finally {

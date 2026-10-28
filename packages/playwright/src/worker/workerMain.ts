@@ -266,7 +266,7 @@ export class WorkerMain extends ProcessRunner {
         const entry = entries.get(tests[i].id)!;
         entries.delete(tests[i].id);
         debugTest(`test started "${tests[i].title}"`);
-        await this._runTest(tests[i], entry.retry, tests[i + 1]);
+        await this._runTest(tests[i], entry.retry, tests[i + 1], runPayload.nextTestId);
         debugTest(`test finished "${tests[i].title}"`);
       }
       // Flashwright: this process ran what the next workers will, worth keeping compiled (see codeCache.ts).
@@ -311,7 +311,7 @@ export class WorkerMain extends ProcessRunner {
     this._resumePromise?.resolve(payload);
   }
 
-  private async _runTest(test: testNs.TestCase, retry: number, nextTest: testNs.TestCase | undefined) {
+  private async _runTest(test: testNs.TestCase, retry: number, nextTest: testNs.TestCase | undefined, nextGroupTestId: string | undefined) {
     const testInfo = new TestInfoImpl(this._config, this._project, this._params, test, retry, {
       onStepBegin: payload => this.dispatchEvent('stepBegin', payload),
       onStepEnd: payload => this.dispatchEvent('stepEnd', payload),
@@ -357,6 +357,7 @@ export class WorkerMain extends ProcessRunner {
         processAnnotation(annotation);
     }
 
+    testInfo._nextTestId = nextTest?.id ?? nextGroupTestId;
     this._currentTest = testInfo;
     globals.setCurrentTestInfo(testInfo);
     setExpectConfig({

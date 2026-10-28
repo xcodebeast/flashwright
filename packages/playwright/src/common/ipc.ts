@@ -155,6 +155,8 @@ export type TestEntry = {
 export type RunPayload = {
   file: string;
   entries: TestEntry[];
+  // Flashwright: the test the worker will probably run after this group (see preloadPages).
+  nextTestId?: string;
 };
 
 export type DonePayload = {

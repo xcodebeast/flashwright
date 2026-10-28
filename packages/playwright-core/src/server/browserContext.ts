@@ -18,6 +18,7 @@
 import fs from 'fs';
 
 import { rewriteErrorMessage } from '@utils/stackTrace';
+import { monotonicTime } from '@isomorphic/time';
 import { debugMode, isUnderTest } from '@utils/debug';
 import { Clock } from './clock';
 import { Credentials } from './credentials';
@@ -35,6 +36,7 @@ import { Selectors } from './selectors';
 import { Tracing } from './trace/recorder/tracing';
 import * as rawStorageSource from '../generated/storageScriptSource';
 import { nullProgress } from './progress';
+import { PagePreload, unwatchFirstNavigation } from './pagePreload';
 
 import type { Browser, BrowserOptions } from './browser';
 import type { ConsoleMessage } from './console';
@@ -133,6 +135,14 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   private _preparedStorageStatePage: Promise<Page> | undefined;
   private _recycleMode = false;
   private _pendingRecycle: Promise<boolean> | undefined;
+  private _recycling = false;
+  // Flashwright: preloadPages (see pagePreload.ts). What the next test is expected to open first,
+  // while this context waits for it as the browser's second recycled context.
+  private _preloadHint: PreloadHint | undefined;
+  private _preloadTimer: NodeJS.Timeout | undefined;
+  // How the test using this context first navigated, and whether that was its first call.
+  private _firstNavigation: { url: string, first: boolean } | undefined;
+  private _calledBeforeFirstNavigation = false;
   // Flashwright: the options a recycled or reused context was created with (see Browser.newContextForReuse).
   reuseParams: channels.BrowserNewContextForReuseParams | undefined;
 
@@ -249,9 +259,148 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   // then the returned promise settles once the reset is done.
   startRecycle(): Promise<unknown> | undefined {
     const hadServiceWorkers = this.hasServiceWorkers();
+    this._clearPreloadTimer();
+    unwatchFirstNavigation(this);
+    this._recycling = true;
     this._pendingRecycle = this._recycle(nullProgress);
-    this._pendingRecycle.catch(() => {});
+    this._pendingRecycle.then(recycled => {
+      this._recycling = false;
+      if (recycled)
+        this.schedulePreload();
+    }, () => {});
     return hadServiceWorkers ? this._pendingRecycle.catch(() => {}) : undefined;
+  }
+
+  // Flashwright: a context created to wait for a later test (see Browser.preloadNextPage) is as
+  // good as one that was just recycled.
+  markRecycled() {
+    this._pendingRecycle = Promise.resolve(true);
+  }
+
+  // Flashwright: preloadPages. Called on the browser's second recycled context while the other one
+  // runs a test: what the test after it will probably open first.
+  setPreloadHint(hint: PreloadHint) {
+    this._preloadHint = hint;
+    this.schedulePreload();
+  }
+
+  // Starts loading the next test's page once this context is reset and the URL is known, timed to
+  // finish shortly before the running test is expected to end.
+  schedulePreload() {
+    const hint = this._preloadHint;
+    const page = this._heldPage;
+    // Only the context waiting for the next test preloads, not one a test has taken.
+    if (!hint || this._recycling || !page || page.preload || this._closedStatus !== 'open' || this._browser.contextForReuse() === this)
+      return;
+    const url = this._browser.preloadUrl(hint.path);
+    if (!url)
+      return;
+    this._preloadHint = undefined;
+    const delay = hint.expectedEnd === undefined ? 0 : Math.max(0, hint.expectedEnd - kPreloadHeadStart - (this._browser.expectedLoadDuration(url) ?? 0) - monotonicTime());
+    this._clearPreloadTimer();
+    this._preloadTimer = setTimeout(() => {
+      this._preloadTimer = undefined;
+      if (page === this._heldPage && !page.isClosedOrClosingOrCrashed() && !this._recycling && this._browser.contextForReuse() !== this)
+        this._startPreload(page, url);
+    }, delay);
+  }
+
+  private _clearPreloadTimer() {
+    this._preloadHint = undefined;
+    if (this._preloadTimer)
+      clearTimeout(this._preloadTimer);
+    this._preloadTimer = undefined;
+  }
+
+  private _startPreload(page: Page, url: string) {
+    const preload = new PagePreload(page, url);
+    page.preload = preload;
+    preload.loaded().then(() => {
+      if (page.preload !== preload)
+        return;
+      const duration = preload.loadDuration();
+      if (duration !== undefined)
+        this._browser.recordLoadDuration(url, duration);
+      // What a goto could not report afterwards rules the document out.
+      const others = this.possiblyUninitializedPages().filter(p => p !== page && !p.isStorageStatePage);
+      if (others.length || this._downloads.size || this.hasServiceWorkers())
+        preload.markUnusable();
+      if (this._browser.contextForReuse() !== this)
+        preload.discardIfUnusable();
+    }, () => {});
+  }
+
+  // A preloaded document did something its goto could not report. A context that no test has
+  // taken yet is reset right away; otherwise the goto or the next call does it.
+  preloadBecameUnusable(preload: PagePreload) {
+    if (this._browser.contextForReuse() !== this)
+      preload.discard().catch(() => {});
+  }
+
+  // Called when one of this context's documents starts a service worker.
+  markPreloadsUnusable() {
+    for (const page of this.possiblyUninitializedPages())
+      page.preload?.markUnusable();
+  }
+
+  // Flashwright: called when a client call is made before the test's first navigation, other than
+  // the calls pagePreload.ts allows. A preloaded document has not seen it: put the page back.
+  async callBeforeFirstNavigation() {
+    this._calledBeforeFirstNavigation = true;
+    // Made along with the first goto: not a test to preload either.
+    if (this._firstNavigation)
+      this._firstNavigation.first = false;
+    await Promise.all(this.possiblyUninitializedPages().map(page => page.preload?.discard()));
+  }
+
+  // Called by the first goto of a page in a context waiting for it (see pagePreload.ts). Only that
+  // frame's page may still show a preloaded document, if the frame is its main frame: the others
+  // are put back before the navigation starts. Calls keep being checked until the goto is done
+  // with the preload (see firstNavigationDone).
+  async recordFirstNavigation(url: string, frame: frames.Frame) {
+    this._firstNavigation = { url, first: !this._calledBeforeFirstNavigation };
+    this._browser.onFirstNavigation(this, url);
+    await Promise.all(this.possiblyUninitializedPages().map(page => page.preload && frame !== page.mainFrame() ? page.preload.discard() : undefined));
+  }
+
+  hasFirstNavigation(): boolean {
+    return !!this._firstNavigation;
+  }
+
+  firstNavigationDone() {
+    unwatchFirstNavigation(this);
+  }
+
+  // How the test that used this context navigated first; asked when it closes.
+  takeFirstNavigation(): { url: string, first: boolean } | undefined {
+    const firstNavigation = this._firstNavigation;
+    this._firstNavigation = undefined;
+    this._calledBeforeFirstNavigation = false;
+    return firstNavigation;
+  }
+
+  // Flashwright: undoes a preload (see PagePreload.discard): the page becomes a blank tab with no
+  // history, and what its document stored in this context is cleared like on recycling.
+  async resetPreloadedPage(page: Page) {
+    // A popup knows its opener once it is initialized.
+    const others = this.possiblyUninitializedPages().filter(p => p !== page);
+    await Promise.all(others.map(p => p.waitForInitializedOrError()));
+    const popups = others.filter(p => openedBy(p, page));
+    await Promise.all(popups.map(popup => popup.close(nullProgress, { reason: 'Preloaded page reset' }).catch(() => {})));
+    await this.doResetPreloadedPage(page);
+    page.clearPreloadedDocument();
+    const downloads = [...this._downloads];
+    this._downloads.clear();
+    const origins = [...this._origins];
+    this._origins = new Set();
+    await Promise.all([
+      ...downloads.map(download => download.artifact.deleteOnContextClose()),
+      this.doClearCookies(),
+      this.doClearSiteData(page, origins),
+      this.doClearCacheThrough(page),
+    ]);
+    if (this._options.storageState)
+      await this.setStorageState(nullProgress, this._options.storageState, 'initial');
   }
 
   // Flashwright: the context of a browser handed over by another process (see browserHandoff.ts)
@@ -314,8 +463,15 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     const recycling = this._recycleMode && this.supportsRecycling();
     const pendingRecycle = recycling ? this._pendingRecycle : undefined;
     this._pendingRecycle = undefined;
+    this._clearPreloadTimer();
+    this._firstNavigation = undefined;
+    this._calledBeforeFirstNavigation = false;
     if (pendingRecycle && !await progress.race(pendingRecycle))
       return false;
+    // A preload being undone may still have a popup or service worker to remove.
+    const discarding = this._heldPage?.preload?.pendingDiscard();
+    if (discarding)
+      await progress.race(discarding);
 
     await this.tracing.resetForReuse(progress);
     await this.fetchRequest.tracing().resetForReuse(progress);
@@ -470,6 +626,11 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     return false;
   }
 
+  // Turns a page back into a blank tab without history, scripts enabled as configured.
+  protected async doResetPreloadedPage(page: Page): Promise<void> {
+    throw new Error('Not supported');
+  }
+
   protected hasServiceWorkers(): boolean {
     return false;
   }
@@ -500,6 +661,8 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
       return;
     }
     this._closedStatus = 'closed';
+    this._clearPreloadTimer();
+    unwatchFirstNavigation(this);
     this._clientCertificatesProxy?.close().catch(() => {});
     this.tracing.abort();
     this.fetchRequest.tracing().abort();
@@ -1134,6 +1297,23 @@ export function normalizeProxySettings(proxy: types.ProxySettings): types.ProxyS
 // tens of milliseconds.
 const kRecycledPageTimeout = 500;
 const kRecycleTimeout = 1500;
+
+function openedBy(page: Page, opener: Page): boolean {
+  for (let p = page.opener(); p; p = p.opener()) {
+    if (p === opener)
+      return true;
+  }
+  return false;
+}
+
+// Flashwright: see BrowserContext.setPreloadHint. The path (with query and hash) is taken relative to
+// the test's last first navigation, which also has the current server's origin and port; without
+// a path, the URL the running test navigates to first.
+export type PreloadHint = { path?: string, expectedEnd?: number };
+
+// A preload is timed to finish this long before the running test is expected to end, leaving time
+// for what the document fetches after it loads.
+const kPreloadHeadStart = 100;
 
 // Resolves with `timeoutValue` if `promise` takes longer than `timeout`. The timer is cleared as
 // soon as the promise settles, so it does not keep the recycled context's old pages reachable.

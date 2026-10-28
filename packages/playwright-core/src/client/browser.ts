@@ -80,6 +80,11 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
     return await this._innerNewContext(options, true);
   }
 
+  // Flashwright: the test runner's preloadPages option (see the server's pagePreload.ts).
+  async _preloadNextPage(params: channels.BrowserPreloadNextPageParams) {
+    await this._channel.preloadNextPage(params, kNoTimeout);
+  }
+
   async _disconnectFromReusedContext(reason: string) {
     const context = [...this._contexts].find(context => context._forReuse);
     if (!context)

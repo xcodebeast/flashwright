@@ -845,6 +845,7 @@ export interface BrowserChannel extends BrowserEventTarget, Channel {
   disconnectFromReusedContext(params: BrowserDisconnectFromReusedContextParams, options: TimeoutOptions): Promise<BrowserDisconnectFromReusedContextResult>;
   newContextForRecycle(params: BrowserNewContextForRecycleParams, options: TimeoutOptions): Promise<BrowserNewContextForRecycleResult>;
   closeRecycledContext(params: BrowserCloseRecycledContextParams, options: TimeoutOptions): Promise<BrowserCloseRecycledContextResult>;
+  preloadNextPage(params: BrowserPreloadNextPageParams, options: TimeoutOptions): Promise<BrowserPreloadNextPageResult>;
   newBrowserCDPSession(params: BrowserNewBrowserCDPSessionParams, options: TimeoutOptions): Promise<BrowserNewBrowserCDPSessionResult>;
   startTracing(params: BrowserStartTracingParams, options: TimeoutOptions): Promise<BrowserStartTracingResult>;
   stopTracing(params: BrowserStopTracingParams, options: TimeoutOptions): Promise<BrowserStopTracingResult>;
@@ -1392,7 +1393,21 @@ export type BrowserCloseRecycledContextParams = {
 export type BrowserCloseRecycledContextOptions = {
 
 };
-export type BrowserCloseRecycledContextResult = void;
+export type BrowserCloseRecycledContextResult = {
+  firstNavigation?: {
+    url: string,
+    first: boolean,
+  },
+};
+export type BrowserPreloadNextPageParams = {
+  path?: string,
+  expectedDuration?: number,
+};
+export type BrowserPreloadNextPageOptions = {
+  path?: string,
+  expectedDuration?: number,
+};
+export type BrowserPreloadNextPageResult = void;
 export type BrowserNewBrowserCDPSessionParams = {};
 export type BrowserNewBrowserCDPSessionOptions = {};
 export type BrowserNewBrowserCDPSessionResult = {

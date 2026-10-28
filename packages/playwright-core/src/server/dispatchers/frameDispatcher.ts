@@ -27,11 +27,14 @@ import type { BrowserContextDispatcher } from './browserContextDispatcher';
 import type { PageDispatcher } from './pageDispatcher';
 import type { NavigationEvent } from '../frames';
 import type * as channels from '../channels';
+import type * as types from '../types';
 
 export class FrameDispatcher extends Dispatcher<Frame, channels.FrameChannel, BrowserContextDispatcher | PageDispatcher> implements channels.FrameChannel {
   _type_Frame = true;
   private _frame: Frame;
   private _browserContextDispatcher: BrowserContextDispatcher;
+  // What the client was told the main frame's load states were while its document was hidden.
+  private _blankLoadStates: types.LifecycleEvent[] | undefined;
 
   static from(scope: BrowserContextDispatcher, frame: Frame): FrameDispatcher {
     const result = scope.connection.existingDispatcher<FrameDispatcher>(frame);
@@ -50,28 +53,55 @@ export class FrameDispatcher extends Dispatcher<Frame, channels.FrameChannel, Br
     // Note: we cannot check parentFrame() here because it may be null after the frame has been detached.
     const gcBucket = frame._page.mainFrame() === frame ? 'MainFrame' : 'Frame';
     const pageDispatcher = scope.connection.existingDispatcher<PageDispatcher>(frame._page);
+    // Flashwright: while a preloaded document is hidden, clients see the blank tab it replaced (see
+    // pagePreload.ts).
+    const preload = gcBucket === 'MainFrame' ? frame._page.preload : undefined;
     super(pageDispatcher || scope, frame, 'Frame', {
-      url: frame.url(),
+      url: preload ? preload.blankUrl : frame.url(),
       name: frame.name(),
       parentFrame: FrameDispatcher.fromNullable(scope, frame.parentFrame()),
-      loadStates: Array.from(frame._firedLifecycleEvents),
+      loadStates: preload ? preload.blankLoadStates : Array.from(frame._firedLifecycleEvents),
     }, gcBucket);
     this._browserContextDispatcher = scope;
     this._frame = frame;
+    this._blankLoadStates = preload?.blankLoadStates;
     this.addObjectListener(Frame.Events.AddLifecycle, lifecycleEvent => {
-      this._dispatchEvent('loadstate', { add: lifecycleEvent });
+      if (!frame._page.preload)
+        this._dispatchEvent('loadstate', { add: lifecycleEvent });
     });
     this.addObjectListener(Frame.Events.RemoveLifecycle, lifecycleEvent => {
-      this._dispatchEvent('loadstate', { remove: lifecycleEvent });
+      if (!frame._page.preload)
+        this._dispatchEvent('loadstate', { remove: lifecycleEvent });
     });
     this.addObjectListener(Frame.Events.InternalNavigation, (event: NavigationEvent) => {
-      if (!event.isPublic)
+      if (!event.isPublic || frame._page.preload)
         return;
       const params = { url: event.url, name: event.name, error: event.error ? event.error.message : undefined };
       if (event.newDocument)
         (params as any).newDocument = { request: RequestDispatcher.fromNullable(this._browserContextDispatcher, event.newDocument.request || null) };
       this._dispatchEvent('navigated', params);
     });
+  }
+
+  // Flashwright: reports a preloaded main frame document as the navigation the client's goto made
+  // (see pagePreload.ts): the blank tab's load states go, the new document comes.
+  _showNavigatedDocument() {
+    for (const state of this._blankLoadStates ?? [])
+      this._dispatchEvent('loadstate', { remove: state });
+    this._blankLoadStates = undefined;
+    const request = this._frame._currentDocument.request;
+    this._dispatchEvent('navigated', {
+      url: this._frame.url(),
+      name: this._frame.name(),
+      newDocument: { request: RequestDispatcher.fromNullable(this._browserContextDispatcher, request || null) },
+    });
+  }
+
+  _showLoadStates() {
+    for (const state of ['commit', 'domcontentloaded', 'load', 'networkidle'] as const) {
+      if (this._frame._firedLifecycleEvents.has(state))
+        this._dispatchEvent('loadstate', { add: state });
+    }
   }
 
   async goto(params: channels.FrameGotoParams, progress: Progress): Promise<channels.FrameGotoResult> {

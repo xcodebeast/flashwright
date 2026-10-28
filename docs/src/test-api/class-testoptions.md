@@ -551,6 +551,31 @@ export default defineConfig({
 });
 ```
 
+## property: TestOptions.preloadPages
+* since: v1.64
+- type: <[boolean]>
+
+Whether the page a test opens first is loaded while the previous test runs. Flashwright then keeps a second browser context per worker: while a test runs in one, the tab the next test gets in the other loads the URL that test went to first in the previous run, or, without a previous run, the URL the current test went to. If the next test's first call is a [`method: Page.goto`] to that URL, the goto returns right away with the page already loaded, and reports the navigation as usual: until then the test sees a blank tab, like without the option.
+
+If the test calls anything else first, goes to another URL, or the preloaded page opened a popup, started a download or registered a service worker, the page is put back to a blank tab and the context's cookies and storage are reset before the call runs, as if nothing had been loaded. Tests whose first run is traced are not preloaded.
+
+What the option cannot undo is what the preload did on the server. The page loads before the test starts, so a test that changes the server from Node before its goto (seeding a database, setting up a route on a mock server) sees the page as it was before that change. And the next test's page loads while the previous test runs, so a test that watches the requests its server receives (counting them, waiting for one) may also see the next test's. Use it for suites whose tests do neither.
+
+Preloading runs beside the previous test, so it only helps while CPU cores are idle: it takes effect with one worker, or with workers fewer than half the CPU cores, and is ignored otherwise. Chromium only, with Flashwright's recycled contexts. Defaults to `false`.
+
+**Usage**
+
+```js title="playwright.config.ts"
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  workers: 1,
+  use: {
+    preloadPages: true,
+  },
+});
+```
+
 ## property: TestOptions.proxy = %%-browser-option-proxy-%%
 * since: v1.10
 

@@ -270,6 +270,7 @@ export interface PlaywrightWorkerOptions {
   channel: BrowserChannel | undefined;
   launchOptions: Omit<LaunchOptions, 'tracesDir'>;
   webSecurity: boolean;
+  preloadPages: boolean;
   connectOptions: ConnectOptions | undefined;
   reuseContext: boolean;
   screenshot: ScreenshotMode | { mode: ScreenshotMode } & Pick<PageScreenshotOptions, 'fullPage' | 'omitBackground'>;

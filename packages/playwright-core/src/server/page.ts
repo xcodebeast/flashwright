@@ -44,6 +44,7 @@ import { Screencast } from './screencast';
 import { saveGlobalsSnapshotSource } from './javascript';
 
 import type { Artifact } from './artifact';
+import type { PagePreload } from './pagePreload';
 import type { BrowserContextEventMap } from './browserContext';
 import type { Download } from './download';
 import type * as dom from './dom';
@@ -138,6 +139,7 @@ const PageEvent = {
   FrameDetached: 'framedetached',
   InternalFrameNavigatedToNewDocument: 'internalframenavigatedtonewdocument',
   LocatorHandlerTriggered: 'locatorhandlertriggered',
+  PreloadShown: 'preloadshown',
   WebSocket: 'websocket',
   Worker: 'worker',
 } as const;
@@ -152,6 +154,7 @@ export type PageEventMap = {
   [PageEvent.FrameDetached]: [frame: frames.Frame];
   [PageEvent.InternalFrameNavigatedToNewDocument]: [frame: frames.Frame];
   [PageEvent.LocatorHandlerTriggered]: [uid: number];
+  [PageEvent.PreloadShown]: [preload: PagePreload];
   [PageEvent.WebSocket]: [webSocket: network.WebSocket];
   [PageEvent.Worker]: [worker: Worker];
 };
@@ -274,6 +277,28 @@ export class Page extends SdkObject<PageEventMap> {
       this.emit(Page.Events.Close);
     else if (!this.isStorageStatePage)
       this.instrumentation.onPageOpen(this);
+  }
+
+  // Flashwright: the document the next test's first goto is expected to load, while it is hidden
+  // (see pagePreload.ts).
+  preload: PagePreload | undefined;
+  private _shownPreloadPageErrors: PageError[] = [];
+
+  // Called by the goto the preloaded document was loaded for: clients learn about it now.
+  showPreloadedDocument(preload: PagePreload) {
+    this.preload = undefined;
+    this._shownPreloadPageErrors = preload.pageErrors;
+    try {
+      this.emit(Page.Events.PreloadShown, preload);
+    } finally {
+      this._shownPreloadPageErrors = [];
+    }
+  }
+
+  takePreloadPageErrors(): PageError[] {
+    const pageErrors = this._shownPreloadPageErrors;
+    this._shownPreloadPageErrors = [];
+    return pageErrors;
   }
 
   isHeldForRecycle(): boolean {
@@ -433,6 +458,14 @@ export class Page extends SdkObject<PageEventMap> {
     return this._networkRequests;
   }
 
+  // Flashwright: a preloaded page put back to a blank tab forgets its document (see pagePreload.ts).
+  clearPreloadedDocument() {
+    this._consoleMessages.length = 0;
+    this._pageErrors.length = 0;
+    this._networkRequests.length = 0;
+    this.frameManager.resetFrameSeq();
+  }
+
   async onBindingCalled(payload: string, context: dom.FrameExecutionContext) {
     if (this.isClosedOrClosingOrCrashed())
       return;
@@ -472,6 +505,7 @@ export class Page extends SdkObject<PageEventMap> {
     const pageError: PageError = { error, location };
     this._pageErrors.push(pageError);
     ensureArrayLimit(this._pageErrors, 200); // Avoid unbounded memory growth.
+    this.preload?.pageErrors.push(pageError);
 
     // Page errors may come before the page is ready. In this case,
     // we'll dispatch them to the client later, either on the live Page,
@@ -900,6 +934,10 @@ export class Page extends SdkObject<PageEventMap> {
 
   isClosedOrClosingOrCrashed() {
     return this._lifecycle !== 'open';
+  }
+
+  workers(): Worker[] {
+    return [...this._workers.values()];
   }
 
   addWorker(workerId: string, worker: Worker) {

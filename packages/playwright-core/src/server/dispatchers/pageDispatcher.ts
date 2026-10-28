@@ -126,11 +126,33 @@ export class PageDispatcher extends Dispatcher<Page, channels.PageChannel, Brows
     this.addObjectListener(Page.Events.FrameDetached, frame => this._onFrameDetached(frame));
     this.addObjectListener(Page.Events.LocatorHandlerTriggered, (uid: number) => this._dispatchEvent('locatorHandlerTriggered', { uid }));
     this.addObjectListener(Page.Events.WebSocket, webSocket => this._dispatchEvent('webSocket', { webSocket: new WebSocketDispatcher(this, webSocket) }));
-    this.addObjectListener(Page.Events.Worker, worker => this._dispatchEvent('worker', { worker: new WorkerDispatcher(this, worker) }));
+    this.addObjectListener(Page.Events.Worker, worker => {
+      if (!this._page.preload)
+        this._dispatchEvent('worker', { worker: new WorkerDispatcher(this, worker) });
+    });
+    // Flashwright: the frames and workers of a preloaded document are reported when its goto shows
+    // it (see pagePreload.ts).
+    this.addObjectListener(Page.Events.PreloadShown, () => this._showPreloadedDocument());
     // Ensure client knows about all frames.
-    const frames = page.frameManager.frames();
+    if (!page.preload) {
+      const frames = page.frameManager.frames();
+      for (let i = 1; i < frames.length; i++)
+        this._onFrameAttached(frames[i]);
+    }
+  }
+
+  // Reports what the preloaded document's navigation would have, in that order: the main frame's
+  // new document, its child frames, its load states, its workers and page errors.
+  private _showPreloadedDocument() {
+    const mainFrame = this.connection.existingDispatcher<FrameDispatcher>(this._page.mainFrame());
+    mainFrame?._showNavigatedDocument();
+    const frames = this._page.frameManager.frames();
     for (let i = 1; i < frames.length; i++)
       this._onFrameAttached(frames[i]);
+    mainFrame?._showLoadStates();
+    for (const worker of this._page.workers())
+      this._dispatchEvent('worker', { worker: new WorkerDispatcher(this, worker) });
+    this.parentScope()._showPageErrors(this._page);
   }
 
   page(): Page {
@@ -479,10 +501,14 @@ export class PageDispatcher extends Dispatcher<Page, channels.PageChannel, Brows
   }
 
   _onFrameAttached(frame: Frame) {
+    if (this._page.preload)
+      return;
     this._dispatchEvent('frameAttached', { frame: FrameDispatcher.from(this.parentScope(), frame) });
   }
 
   _onFrameDetached(frame: Frame) {
+    if (this._page.preload)
+      return;
     this._dispatchEvent('frameDetached', { frame: FrameDispatcher.from(this.parentScope(), frame) });
   }
 

@@ -29,6 +29,7 @@ import { config, testType } from './common';
 import * as globals from './globals';
 import { createCustomMessageHandler, runDaemonForContext } from './mcp/test/browserBackend';
 import { handBrowsersToSession, rememberRecycledContext, returnSpeculativeBrowser, takeSpeculativeBrowser } from './speculativeBrowser';
+import { canPreloadPages, preloadNextPage, recordFirstNavigation } from './preloadHistory';
 
 import type { Fixtures, PlaywrightTestArgs, PlaywrightTestOptions, PlaywrightWorkerArgs, PlaywrightWorkerOptions, ScreenshotMode, TestInfo, TestType, VideoMode } from '../types/test';
 import type { TestInfoImpl, TestStepInternal } from './worker/testInfo';
@@ -215,6 +216,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   channel: [({ launchOptions }, use) => use(launchOptions.channel), { scope: 'worker', option: true, box: true }],
   launchOptions: [{}, { scope: 'worker', option: true, box: true }],
   webSecurity: [true, { scope: 'worker', option: true, box: true }],
+  preloadPages: [false, { scope: 'worker', option: true, box: true }],
   connectOptions: [async ({ _optionConnectOptions }, use) => {
     await use(connectOptionsFromEnv() || _optionConnectOptions);
   }, { scope: 'worker', option: true, box: true }],
@@ -517,7 +519,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     await use(browserName === 'chromium' && !explicitReuse && !debugging && !connectOptions && process.env.FLASHWRIGHT_ISOLATION !== 'strict' && kRecyclingVideoModes.has(normalizeVideoMode(video)));
   }, { scope: 'worker', box: true }],
 
-  context: async ({ browser, video, _reuseContext, _recycleContext, _contextFactory }, use, testInfoPublic) => {
+  context: async ({ browser, video, trace, preloadPages, _reuseContext, _recycleContext, _contextFactory }, use, testInfoPublic) => {
     const browserImpl = browser as BrowserImpl;
     const testInfo = testInfoPublic as TestInfoImpl;
     const show = typeof video === 'string' ? undefined : video.show;
@@ -546,10 +548,17 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     throwIfInAllHook(testInfo);
     const context = await browser.newContext({ [kRecycleContext]: true } as BrowserContextOptions) as BrowserContextImpl;
     rememberRecycledContext(browser);
+    // Flashwright: the next test's page loads while this one runs (see preloadHistory.ts). Tests
+    // whose first run is traced start tracing before they navigate: they get no preload.
+    const traceMode = (typeof trace === 'string' ? trace : trace?.mode) ?? 'off';
+    const preloading = preloadPages && ['off', 'on-first-retry', 'on-all-retries', 'retry-with-trace'].includes(traceMode) && canPreloadPages(testInfo);
+    const takenAt = preloading ? preloadNextPage(browserImpl, testInfo) : 0;
     await installScreencastTitleUpdater(testInfo, context, show?.test);
     await use(context);
     const closeReason = testInfo.status === 'timedOut' ? 'Test timeout of ' + testInfo.timeout + 'ms exceeded.' : 'Test ended.';
     await context.close({ reason: closeReason, [kRecycleContext]: true } as { reason: string });
+    if (preloading)
+      recordFirstNavigation(context, testInfo, takenAt);
   },
 
   page: async ({ context, _reuseContext, _recycleContext }, use) => {

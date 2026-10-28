@@ -111,15 +111,9 @@ export class BrowserContextDispatcher extends Dispatcher<BrowserContext, channel
       this._dispose();
     });
     this.addObjectListener(BrowserContext.Events.PageError, (pageError: PageError, page: Page) => {
-      this._dispatchEvent('pageError', {
-        error: serializeError(pageError.error),
-        page: PageDispatcher.from(this, page),
-        location: {
-          url: pageError.location.url,
-          line: pageError.location.lineNumber,
-          column: pageError.location.columnNumber,
-        },
-      });
+      // Flashwright: a preloaded document's errors are reported when its goto shows it.
+      if (!page.preload)
+        this._dispatchPageError(pageError, page);
     });
     this.addObjectListener(BrowserContext.Events.Console, (message: ConsoleMessage) => {
       const pageDispatcher = PageDispatcher.fromNullable(this, message.page());
@@ -158,6 +152,8 @@ export class BrowserContextDispatcher extends Dispatcher<BrowserContext, channel
       // - We are redirected from a reported request so that redirectedTo was updated on client.
       // - We are a navigation request and dispatcher will be reported as a part of the goto return value and newDocument param anyways.
       //   By the time requestFinished is triggered to update the request, we should have a request on the client already.
+      if (isHiddenByPreload(request))
+        return;
       const redirectFromDispatcher = request.redirectedFrom() && this.connection.existingDispatcher(request.redirectedFrom());
       if (!redirectFromDispatcher && !this._shouldDispatchNetworkEvent(request, 'request') && !request.isNavigationRequest())
         return;
@@ -168,6 +164,8 @@ export class BrowserContextDispatcher extends Dispatcher<BrowserContext, channel
       });
     });
     this.addObjectListener(BrowserContext.Events.Response, (response: Response) => {
+      if (isHiddenByPreload(response.request()))
+        return;
       const requestDispatcher = this.connection.existingDispatcher<RequestDispatcher>(response.request());
       if (!requestDispatcher && !this._shouldDispatchNetworkEvent(response.request(), 'response'))
         return;
@@ -177,6 +175,8 @@ export class BrowserContextDispatcher extends Dispatcher<BrowserContext, channel
       });
     });
     this.addObjectListener(BrowserContext.Events.RequestFailed, (request: Request) => {
+      if (isHiddenByPreload(request))
+        return;
       const requestDispatcher = this.connection.existingDispatcher<RequestDispatcher>(request);
       if (!requestDispatcher && !this._shouldDispatchNetworkEvent(request, 'requestFailed'))
         return;
@@ -188,6 +188,8 @@ export class BrowserContextDispatcher extends Dispatcher<BrowserContext, channel
       });
     });
     this.addObjectListener(BrowserContext.Events.RequestFinished, ({ request, response }: { request: Request, response: Response | null }) => {
+      if (isHiddenByPreload(request))
+        return;
       const requestDispatcher = this.connection.existingDispatcher<RequestDispatcher>(request);
       if (!requestDispatcher && !this._shouldDispatchNetworkEvent(request, 'requestFinished'))
         return;
@@ -198,6 +200,24 @@ export class BrowserContextDispatcher extends Dispatcher<BrowserContext, channel
         page: PageDispatcher.fromNullable(this, request.frame()?._page.initializedOrUndefined()),
       });
     });
+  }
+
+  private _dispatchPageError(pageError: PageError, page: Page) {
+    this._dispatchEvent('pageError', {
+      error: serializeError(pageError.error),
+      page: PageDispatcher.from(this, page),
+      location: {
+        url: pageError.location.url,
+        line: pageError.location.lineNumber,
+        column: pageError.location.columnNumber,
+      },
+    });
+  }
+
+  // Flashwright: see PageDispatcher._showPreloadedDocument.
+  _showPageErrors(page: Page) {
+    for (const pageError of page.takePreloadPageErrors())
+      this._dispatchPageError(pageError, page);
   }
 
   private _shouldDispatchNetworkEvent(request: Request, event: channels.BrowserContextUpdateSubscriptionParams['event'] & channels.PageUpdateSubscriptionParams['event']): boolean {
@@ -467,4 +487,10 @@ export class BrowserContextDispatcher extends Dispatcher<BrowserContext, channel
       this._context.clock.resumeNoReply();
     this._clockPaused = false;
   }
+}
+
+// Flashwright: what a preloaded document's requests do is not reported before its goto shows it,
+// nor after it is put back to a blank tab (see pagePreload.ts).
+function isHiddenByPreload(request: Request): boolean {
+  return !!request._preload && !request._preload.shown;
 }

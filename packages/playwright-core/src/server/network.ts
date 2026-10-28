@@ -25,6 +25,7 @@ import { SdkObject } from './instrumentation';
 import type * as contexts from './browserContext';
 import type * as frames from './frames';
 import type * as pages from './page';
+import type { PagePreload } from './pagePreload';
 import type * as types from './types';
 import type { NormalizedContinueOverrides } from './types';
 import type { HeadersArray, NameValue } from '@isomorphic/types';
@@ -197,6 +198,8 @@ export class Request extends SdkObject {
   _redirectedTo: Request | null = null;
   readonly _documentId?: string;
   readonly _isFavicon: boolean;
+  // Flashwright: the preload whose document made this request (see pagePreload.ts).
+  _preload: PagePreload | undefined;
   _failureText: string | null = null;
   private _url: string;
   private _resourceType: ResourceType;

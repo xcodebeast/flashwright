@@ -100,14 +100,15 @@ export class BrowserDispatcher extends Dispatcher<Browser, channels.BrowserChann
     return { context: contextDispatcher };
   }
 
-  async closeRecycledContext(params: channels.BrowserCloseRecycledContextParams, progress: Progress): Promise<void> {
+  async closeRecycledContext(params: channels.BrowserCloseRecycledContextParams, progress: Progress): Promise<channels.BrowserCloseRecycledContextResult> {
     const context = this._object.contextForReuse();
+    const firstNavigation = context?.takeFirstNavigation();
     // A context that cannot be recycled again (e.g. it was paused for debugging) closes now, as it
     // would without recycling. Closing also settles any call that is still waiting on it.
     if (context && !context.canResetForReuse()) {
       // The context dispatcher disposes itself when the context closes.
       await context.close(progress, { reason: params.reason });
-      return;
+      return { firstNavigation };
     }
     const contextDispatcher = context ? this.connection.existingDispatcher<BrowserContextDispatcher>(context) : undefined;
     if (contextDispatcher) {
@@ -118,6 +119,11 @@ export class BrowserDispatcher extends Dispatcher<Browser, channels.BrowserChann
     const recycled = context?.startRecycle();
     if (recycled)
       await progress.race(recycled);
+    return { firstNavigation };
+  }
+
+  async preloadNextPage(params: channels.BrowserPreloadNextPageParams, progress: Progress): Promise<void> {
+    await progress.race(this._object.preloadNextPage(params));
   }
 
   async close(params: channels.BrowserCloseParams, progress: Progress): Promise<void> {

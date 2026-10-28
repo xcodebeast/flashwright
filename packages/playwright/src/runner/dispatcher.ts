@@ -118,6 +118,9 @@ export class Dispatcher {
     // 3. Claim both the job and the worker slot.
     this._queue.splice(jobIndex, 1);
     const jobDispatcher = new JobDispatcher(job, this._testRun, this._ignoreMaxFailures ? undefined : () => this.stop().catch(() => {}));
+    // Flashwright: the next job this worker can run, for preloadPages. With one worker it is the
+    // next one it runs.
+    jobDispatcher.nextTestId = this._queue.find(next => next.workerHash === job.workerHash)?.tests[0]?.id;
     this._workerSlots[workerIndex].jobDispatcher = jobDispatcher;
 
     // 4. Run the job. This is the only async operation.
@@ -315,6 +318,7 @@ class JobDispatcher {
   jobResult = new ManualPromise<{ remainingJob?: TestGroup, isolatedRetriesJob?: TestGroup, didFail: boolean }>();
 
   readonly job: TestGroup;
+  nextTestId: string | undefined;
   private _testRun: TestRun;
   // Missing callback means that maxFailures should be ignored, e.g. in teardown phases.
   private _onMaxFailuresReached?: () => void;
@@ -614,6 +618,7 @@ class JobDispatcher {
       entries: this.job.tests.map(test => {
         return { testId: test.id, retry: test.results.length, planAnnotations: test._planAnnotations };
       }),
+      nextTestId: this.nextTestId,
     };
     worker.runTestGroup(runPayload);
 

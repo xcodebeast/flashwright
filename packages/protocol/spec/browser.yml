@@ -149,6 +149,24 @@ Browser:
       title: Close context
       parameters:
         reason: string
+      returns:
+        # Flashwright: how the test's page was first navigated (see preloadNextPage).
+        firstNavigation:
+          type: object?
+          properties:
+            url: string
+            # Nothing else was called between taking the context and that navigation.
+            first: boolean
+
+    # Flashwright: preloadPages. The tab the next test gets (in a second recycled context) loads
+    # this path, relative to the URL of the last test's first navigation, while the current test
+    # runs; without a path, the URL this test navigates to first.
+    preloadNextPage:
+      internal: true
+      parameters:
+        path: string?
+        # How long the current test is expected to take, in milliseconds.
+        expectedDuration: float?
 
     newBrowserCDPSession:
       title: Create CDP session
