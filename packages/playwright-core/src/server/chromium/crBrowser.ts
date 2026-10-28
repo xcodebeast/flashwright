@@ -24,7 +24,7 @@ import { Browser } from '../browser';
 import { BrowserContext, raceWithTimeout, verifyGeolocation } from '../browserContext';
 import { Frame } from '../frames';
 import * as network from '../network';
-import { Page } from '../page';
+import { Page, Worker } from '../page';
 import { PipeTransport } from '../pipeTransport';
 import { CRConnection, ConnectionEvents } from './crConnection';
 import { CRPage } from './crPage';
@@ -655,6 +655,10 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
     await Promise.all(crPages.map(replaceDocument));
   }
 
+  protected override hasServiceWorkers(): boolean {
+    return this.serviceWorkers().length > 0;
+  }
+
   protected override async doClearCacheThrough(page: Page): Promise<void> {
     // The previous pages of a recycled context are closing: clearCache() would reach them too.
     await (page.delegate as CRPage)._networkManager.clearCache();
@@ -664,6 +668,16 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
     // Storage.clearDataForOrigin acts on the storage partition of the session's browser context.
     const session = (page.delegate as CRPage)._mainFrameSession._client;
     await Promise.all(origins.map(origin => session.send('Storage.clearDataForOrigin', { origin, storageTypes: 'all' })));
+    // A running service worker outlives the clearing of its registration, and would still be one
+    // of the next test's context's service workers: stop it, and wait until it is gone.
+    const serviceWorkers = this.serviceWorkers();
+    if (!serviceWorkers.length)
+      return;
+    const gone = Promise.all(serviceWorkers.map(serviceWorker => new Promise<void>(f => serviceWorker.once(Worker.Events.Close, () => f()))));
+    await session.send('ServiceWorker.enable');
+    await session.send('ServiceWorker.stopAllWorkers');
+    await session.send('ServiceWorker.disable');
+    await raceWithTimeout(gone, kStopPageTimeout, undefined);
   }
 
   async cancelDownload(guid: string) {

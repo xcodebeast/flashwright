@@ -245,9 +245,13 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
 
   // Called when the test using a recycled context ends: its pages close and the context is reset
   // right away, while the runner moves on to the next test, which then only waits for the rest.
-  startRecycle() {
+  // Service workers the test started are stopped before it ends, like closing a context would:
+  // then the returned promise settles once the reset is done.
+  startRecycle(): Promise<unknown> | undefined {
+    const hadServiceWorkers = this.hasServiceWorkers();
     this._pendingRecycle = this._recycle(nullProgress);
     this._pendingRecycle.catch(() => {});
+    return hadServiceWorkers ? this._pendingRecycle.catch(() => {}) : undefined;
   }
 
   // Flashwright: the context of a browser handed over by another process (see browserHandoff.ts)
@@ -463,6 +467,10 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
 
   // Recycling needs a backend that can clear all per-origin storage without navigating.
   supportsRecycling(): boolean {
+    return false;
+  }
+
+  protected hasServiceWorkers(): boolean {
     return false;
   }
 

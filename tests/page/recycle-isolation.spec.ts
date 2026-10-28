@@ -60,6 +60,7 @@ it('leaves storage, permissions and context settings behind', async ({ page, ser
 it('sees a fresh context', async ({ page, server }) => {
   const context = page.context();
   expect(context.pages()).toEqual([page]);
+  expect(context.serviceWorkers()).toEqual([]);
   expect(page.url()).toBe('about:blank');
   expect(await context.cookies()).toEqual([]);
   const [request] = await Promise.all([

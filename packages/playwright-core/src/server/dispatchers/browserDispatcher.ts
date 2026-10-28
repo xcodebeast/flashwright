@@ -115,7 +115,9 @@ export class BrowserDispatcher extends Dispatcher<Browser, channels.BrowserChann
       await progress.race(contextDispatcher.stopPendingOperations(new Error(params.reason), 50));
       contextDispatcher._dispose();
     }
-    context?.startRecycle();
+    const recycled = context?.startRecycle();
+    if (recycled)
+      await progress.race(recycled);
   }
 
   async close(params: channels.BrowserCloseParams, progress: Progress): Promise<void> {
