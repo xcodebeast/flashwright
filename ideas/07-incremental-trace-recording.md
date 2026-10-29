@@ -2,6 +2,8 @@
 
 **Priority:** high when traces are enabled · **Scope:** CI diagnostics, large DOMs and action-dense traces · **Effort:** large.
 
+**Status:** partly implemented, differently. On ordinary pages the largest trace cost was not snapshot traversal: traces fetched every script body from the browser and then threw it away, which held up each page load. `d1ef099a` stopped that, making traced runs 1.43× faster on TodoMVC with one worker. Not done: dirty-subtree capture. On small pages most of what remains is the round trip of each snapshot, about 0.3 ms, not the size of the DOM.
+
 Research proposal, 2026-10-29. No new performance measurements. Trace-off runs should incur no new observer or processing work.
 
 ## Remaining cost

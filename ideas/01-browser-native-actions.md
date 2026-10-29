@@ -2,6 +2,8 @@
 
 **Priority:** high · **Scope:** most interaction-heavy suites · **Effort:** very large, including Chromium work.
 
+**Status:** partly implemented. Done, without a browser change: fewer dependent browser exchanges per action, two round trips fewer per pointer action (`f19b5bb7`) and more batching in `501ec6ee`. Not done: one browser command per action, or moving the action into the browser.
+
 Research proposal, 2026-10-29. Source audit through `1aebba9e` plus the active worktree. No new measurements; proposed gains are hypotheses. The existing warm browser, context recycling, reactive waits, scroll/measurement pipelining and opt-in worker/browser sharing are the baseline.
 
 ## Remaining cost

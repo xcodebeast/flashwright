@@ -2,6 +2,8 @@
 
 **Priority:** high · **Scope:** normal local JavaScript/TypeScript runs · **Effort:** medium to large.
 
+**Status:** not implemented. Related work is done: `81bd7167` and `dd9e31d0` cut other per-call costs (stack capture, errors created ahead of time, expression normalization, GUIDs). Measured per call after them: `page.title` 195 µs, `page.evaluate` 280 µs, `toHaveText` 455 µs, `locator.click` 1535 µs. The dispatch and validation path this idea targets is unchanged.
+
 Research proposal, 2026-10-29. No new benchmarks. This targets the client/server boundary inside Node, independently of the browser-command reduction in [idea 01](01-browser-native-actions.md).
 
 ## Remaining cost

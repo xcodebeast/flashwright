@@ -1,6 +1,6 @@
 # Remove protection-only Chromium machinery in a dedicated browser build
 
-**Scope:** an explicitly selected custom Chromium backend. **Effort:** monumental, spanning Chromium/V8 and platform maintenance. **Priority:** exploratory; unchanged partial removals already failed their speed-advancement gate.
+**Scope:** an explicitly selected custom Chromium backend. **Effort:** monumental, spanning Chromium/V8 and platform maintenance. **Priority:** exploratory, and a last resort: the partial removals built so far measured no speedup.
 
 Research proposal, updated 2026-10-29. **Status: partially implemented in private browser prototypes; incomplete and not shipped in current Flashwright.** Formerly `idea02.md`. This update inspects source and retained evidence only; no new builds or measurements.
 
@@ -10,7 +10,7 @@ The current [README](../README.md) explicitly says Flashwright uses Playwright's
 
 The retained [Idea 02 handoff](../workbench/idea02-current-handoff-001/report.txt) documents actual private Chromium 148/Linux builds with selected OS sandbox, site-policy/enforcement and V8 sandbox/check omissions. It explicitly marks all five original requirements short of complete acceptance. The [Linux build report](../workbench/idea02-linux-build-001/handoff-report.txt) records a linked source-removal stage, so describing this as an entirely unimplemented idea would be wrong.
 
-The [cumulative application decision](../workbench/idea02-combined-applications-002/postrun-decision.json) records 480 passing test executions across 32 launches, but zero cells qualifying for its declared advancement rule: at least 20% reduction in both reversed blocks for three of four application/worker cells. It rejects advancing or repeating the unchanged selected removals. Those historical builds and narrow tests do not validate the current shipped browser or establish that completing the broader rewrite would help.
+The [combined-applications analysis](../workbench/idea02-combined-applications-002/analysis.json) records 480 passing test executions across 32 launches. On TodoMVC and SVGOMG, with one and four workers, the build with the removals ran within run-to-run noise of the normal build (about ±5%, faster in some runs and slower in others). Repeating those unchanged removals would add nothing. Those historical builds and narrow tests do not validate the current shipped browser or establish that completing the broader rewrite would help.
 
 ## Design
 

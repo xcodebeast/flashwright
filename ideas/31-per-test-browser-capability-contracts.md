@@ -10,7 +10,7 @@ The current [`TestTypeImpl`](../packages/playwright/src/common/testType.ts) and 
 
 Substantial private work exists. The [contract prototype decision](../workbench/capability-contract-004/decision.json) records frozen declarations, painting/capture restrictions and targeted correctness checks, while leaving broader enforcement incomplete. Later evidence covers [DOM storage exclusion](../workbench/capability-dom-storage-006/export-summary.json), selected [IndexedDB discovery](../workbench/capability-indexeddb-discovery-012/decision.json) and [exclusion](../workbench/capability-indexeddb-exclusion-013/decision.json). A [network-boundary experiment](../workbench/capability-network-boundary-014/plan.json) targets service-worker initialization; it explicitly does not implement arbitrary network subsets. These are distinct partial implementations, not the whole proposal.
 
-The later [backend timing decision](../workbench/capability-backend-timing-023/postrun-decision.json) records no configuration meeting its declared 20% elapsed-time reduction gate for painting/capture exclusion. It retains ordinary defaults and rejects repeating that unchanged screen. This does not disprove every capability specialization or establish a current-product speedup.
+The later [backend timing analysis](../workbench/capability-backend-timing-023/analysis.json) measured no difference from excluding painting and capture: restricted runs took 0.99–1.01× the time of full runs, with one and four workers, on both Flashwright and Playwright. Repeating that unchanged experiment would add nothing. It does not rule out other capability exclusions, and it says nothing about the current product.
 
 ## Design
 
