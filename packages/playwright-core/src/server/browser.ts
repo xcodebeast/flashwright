@@ -82,6 +82,9 @@ export type BrowserOptions = {
   launchKey?: string;
   // Flashwright: the recycled contexts of a browser handed over by another process.
   adoptContexts?: BrowserHandoffMetadata['contexts'];
+  // Flashwright: the bundled Chromium, launched without extensions, which can add styles that the
+  // page's style sheets do not list (see pseudoContent.ts in the injected script).
+  noExtensions?: boolean;
 };
 
 // Flashwright: what a browser keeps for one user of recycled contexts. The test runner's workers that

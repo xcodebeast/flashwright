@@ -612,6 +612,251 @@ test('should support search element', async ({ page }) => {
   await expect.soft(page.getByRole('search', { name: 'example' })).toBeVisible();
 });
 
+// Role queries skip the elements that cannot have the role, list the labels of a document once and
+// skip pseudo-element styles that no rule can give content to: in the utility world, they must find
+// what the role and name of each element, computed on its own in the main world, say.
+async function roleQueryMismatches(page: Page, toImpl: (rpcObject: any) => any) {
+  // Use $eval to force injected script.
+  const expected = await page.$eval('html', () => {
+    const injected = (window as any).__injectedScript;
+    const elements: Element[] = [];
+    const collect = (root: Document | ShadowRoot) => {
+      for (const element of root.querySelectorAll('*')) {
+        elements.push(element);
+        if (element.shadowRoot)
+          collect(element.shadowRoot);
+      }
+    };
+    collect(document);
+    const byRole: Record<string, number[]> = {};
+    const byName: Record<string, number[]> = {};
+    elements.forEach((element, index) => {
+      element.setAttribute('data-fw-index', String(index));
+      const role = injected.utils.getAriaRole(element);
+      if (!role)
+        return;
+      (byRole[role] ??= []).push(index);
+      const name = injected.utils.normalizeWhiteSpace(injected.utils.getElementAccessibleNameText(element, true));
+      if (name && !/["\\]/.test(name))
+        (byName[JSON.stringify([role, name])] ??= []).push(index);
+    });
+    return { byRole, byName };
+  });
+  const roles = [...new Set([...Object.keys(expected.byRole), 'none', 'presentation', 'generic', 'row', 'cell', 'button', 'textbox', 'img'])];
+  const names = Object.keys(expected.byName).map(key => JSON.parse(key) as [string, string]);
+  const injected = await (await toImpl(page).mainFrame().utilityContext()).injectedScript();
+  const received = await injected.evaluate((injected, { roles, names }) => {
+    const query = (selector: string) => injected.querySelectorAll(injected.parseSelector(selector), document).map(e => +e.getAttribute('data-fw-index')!);
+    return {
+      byRole: Object.fromEntries(roles.map(role => [role, query(`internal:role=${role}[include-hidden]`)])),
+      byName: Object.fromEntries(names.map(([role, name]) => [JSON.stringify([role, name]), query(`internal:role=${role}[name="${name}"s][include-hidden]`)])),
+    };
+  }, { roles, names });
+  const sorted = (list: number[] | undefined) => [...(list ?? [])].sort((a, b) => a - b);
+  const mismatches = [];
+  for (const role of roles) {
+    if (JSON.stringify(sorted(expected.byRole[role])) !== JSON.stringify(sorted(received.byRole[role])))
+      mismatches.push({ role, expected: sorted(expected.byRole[role]), received: sorted(received.byRole[role]) });
+  }
+  for (const key of Object.keys(expected.byName)) {
+    if (JSON.stringify(sorted(expected.byName[key])) !== JSON.stringify(sorted(received.byName[key])))
+      mismatches.push({ name: key, expected: sorted(expected.byName[key]), received: sorted(received.byName[key]) });
+  }
+  return mismatches;
+}
+
+test('role queries find the elements with the role, axe-core implicit-role', async ({ page, asset, server, toImpl }) => {
+  await page.goto(server.EMPTY_PAGE);
+  const testCases = require(asset('axe-core/implicit-role'));
+  for (const testCase of testCases) {
+    await page.setContent(`<body>${testCase.html}</body>`);
+    expect.soft(await roleQueryMismatches(page, toImpl), `checking ${JSON.stringify(testCase)}`).toEqual([]);
+  }
+});
+
+test('role queries find the elements with the role, axe-core accessible-text', async ({ page, asset, server, toImpl }) => {
+  await page.goto(server.EMPTY_PAGE);
+  const testCases = require(asset('axe-core/accessible-text'));
+  for (const testCase of testCases) {
+    await page.setContent(`<body>${testCase.html}</body>`);
+    expect.soft(await roleQueryMismatches(page, toImpl), `checking ${JSON.stringify(testCase)}`).toEqual([]);
+  }
+});
+
+test('role queries find the elements with the role, every tag', async ({ page, toImpl }) => {
+  const inputTypes = ['', 'text', 'email', 'search', 'tel', 'url', 'hidden', 'file', 'button', 'checkbox', 'image', 'number', 'radio', 'range', 'reset', 'submit', 'color', 'date', 'password', 'bogus'];
+  await page.setContent(`
+    <a href="#">link</a><a>anchor</a><map><area href="#" alt="area"><area alt="no href"></map>
+    <article><footer>article footer</footer><header>article header</header></article><aside></aside><blockquote></blockquote>
+    <button>button</button><code></code><datalist id="list"></datalist>
+    <dl><dt>term</dt><dd>definition</dd></dl><dl role="none"><dt>term</dt><dd>definition</dd></dl><dl role="presentation"><div><dt>term</dt></div></dl>
+    <del></del><details><summary>summary</summary>details</details><dfn></dfn><dialog open>dialog</dialog><em></em>
+    <fieldset><legend>legend</legend></fieldset><figure><figcaption>caption</figcaption></figure><footer>footer</footer>
+    <form></form><form aria-label="named form"></form><h1>h1</h1><h2>h2</h2><h3>h3</h3><h4>h4</h4><h5>h5</h5><h6>h6</h6>
+    <header>header</header><nav><header>nav header</header></nav><hr>
+    <img alt=""><img alt="image"><img alt="" title="title"><img alt="" aria-label="label"><img alt="" tabindex="0"><img>
+    ${inputTypes.map(type => `<input type="${type}" aria-label="${type || 'default'} input">`).join('')}
+    <input list="list" aria-label="list input"><input type="search" list="list" aria-label="search list input">
+    <ins></ins><ul><li>item</li></ul><ul role="none"><li>item</li></ul><ol role="presentation"><li>item</li></ol><li>orphan item</li>
+    <main></main><mark></mark><math></math><menu></menu><meter value="1"></meter><nav></nav><ol></ol>
+    <select><optgroup label="group"><option>option</option></optgroup></select><select multiple><option>option</option></select><select size="3"><option>option</option></select>
+    <output></output><p>paragraph</p><progress></progress><search></search><section></section><section aria-label="named section"></section>
+    <strong></strong><sub></sub><sup></sup><svg><a href="#"><text>svg link</text></a></svg><textarea></textarea><time></time>
+    <table><caption>table</caption><thead><tr><th>column</th><th>column</th></tr></thead><tbody><tr><th>row</th><td>cell</td></tr></tbody><tfoot><tr><td>foot</td><td></td></tr></tfoot></table>
+    <table><tr><th scope="col">col</th><th scope="row">row</th><th scope="colgroup">colgroup</th><th scope="rowgroup">rowgroup</th></tr></table>
+    <table><tr><th>lonely</th></tr></table><table><tr><th>one</th></tr><tr><td>two</td></tr></table>
+    <table role="grid"><tr><td>gridcell</td></tr></table><table role="treegrid"><tr><td>gridcell</td></tr></table>
+    <table role="presentation"><tr><td>presentational</td></tr></table><table role="none"><tbody><tr><td>none</td></tr></tbody></table>
+    <table role="none" aria-label="conflict"><tr><td>conflict</td></tr></table>
+    <div role="row">div row</div><div role="bogus button">bogus button</div><div role="bogus">bogus</div><span role="">empty role</span>
+    <button role="none">focusable none</button><li role="presentation" aria-label="label">presentation item</li><div role="generic">generic</div>
+    <div hidden><button>hidden button</button><tr><td>hidden cell</td></tr></div>
+    <div id="host"></div>
+  `);
+  await page.evaluate(() => {
+    const shadow = document.querySelector('#host')!.attachShadow({ mode: 'open' });
+    shadow.innerHTML = `<table><tr><td>shadow cell</td></tr></table><button>shadow button</button><span role="row">shadow row</span>`;
+  });
+  expect(await roleQueryMismatches(page, toImpl)).toEqual([]);
+});
+
+test('names from labels, also after the labels change', async ({ page, toImpl }) => {
+  await page.setContent(`
+    <label for="first">First</label><input id="first"><label for="first">Third</label>
+    <label>Nested <input id="nested"></label>
+    <label for="other">Points elsewhere <input id="inner"></label><input id="other">
+    <label for="hidden">Hidden</label><input type="hidden" id="hidden">
+    <label for="div">Div</label><div id="div"></div>
+    <label for="dup">Duplicate</label><input id="dup"><input id="dup">
+    <label>Button label <button id="button">Click</button></label>
+    <label for="select">Select</label><select id="select"><option>option</option></select>
+    <label for="meter">Meter</label><meter id="meter" value="1"></meter>
+    <label for="output">Output</label><output id="output"></output>
+    <label for="progress">Progress</label><progress id="progress"></progress>
+    <label for="textarea">Textarea</label><textarea id="textarea"></textarea>
+    <label for="file">File</label><input type="file" id="file">
+    <table><tr><td><label>In a cell <input type="checkbox"></label></td><td><button>Edit</button></td></tr></table>
+    <div id="host"></div>
+  `);
+  await page.evaluate(() => {
+    const shadow = document.querySelector('#host')!.attachShadow({ mode: 'open' });
+    shadow.innerHTML = `<label for="shadow">Shadow</label><input id="shadow"><label>Shadow nested <input></label>`;
+  });
+  const labelMismatches = async () => {
+    // Use $eval to force injected script.
+    const expected = await page.$eval('html', () => {
+      const injected = (window as any).__injectedScript;
+      const controls: Element[] = [];
+      const collect = (root: Document | ShadowRoot) => {
+        for (const element of root.querySelectorAll('*')) {
+          if ((element as HTMLInputElement).labels)
+            controls.push(element);
+          if (element.shadowRoot)
+            collect(element.shadowRoot);
+        }
+      };
+      collect(document);
+      const byText: Record<string, number[]> = {};
+      controls.forEach((control, index) => {
+        control.setAttribute('data-fw-control', String(index));
+        for (const label of (control as HTMLInputElement).labels) {
+          const controls = (byText[injected.utils.normalizeWhiteSpace(label.textContent)] ??= []);
+          if (!controls.includes(index))
+            controls.push(index);
+        }
+      });
+      return byText;
+    });
+    const injected = await (await toImpl(page).mainFrame().utilityContext()).injectedScript();
+    const received = await injected.evaluate((injected, texts) => {
+      return Object.fromEntries(texts.map(text => [text, injected.querySelectorAll(injected.parseSelector(`internal:label="${text}"s`), document).map(e => +e.getAttribute('data-fw-control')!)]));
+    }, Object.keys(expected));
+    return Object.keys(expected).filter(text => JSON.stringify(expected[text]) !== JSON.stringify(received[text])).map(text => ({ text, expected: expected[text], received: received[text] }));
+  };
+  expect(await labelMismatches()).toEqual([]);
+  expect(await roleQueryMismatches(page, toImpl)).toEqual([]);
+  await expect(page.getByRole('textbox', { name: 'First Third', exact: true })).toHaveCount(1);
+  await expect(page.getByLabel('Points elsewhere')).toHaveAttribute('id', 'other');
+
+  await page.evaluate(() => {
+    document.querySelector('label[for=first]')!.setAttribute('for', 'other');
+    document.querySelector('#textarea')!.before(document.querySelector('label[for=textarea]')!.cloneNode(true));
+    document.querySelector('label[for=select]')!.remove();
+    document.querySelector('#nested')!.closest('label')!.prepend(document.createElement('input'));
+  });
+  expect(await labelMismatches()).toEqual([]);
+  expect(await roleQueryMismatches(page, toImpl)).toEqual([]);
+  await expect(page.getByRole('textbox', { name: 'Third', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('combobox', { name: 'Select' })).toHaveCount(0);
+});
+
+test('names from pseudo-element content', async ({ page, toImpl }) => {
+  const content = `
+    <style>
+      .a::before { content: "A" } #b::after { content: "B" } button.c:not(.d)::before { content: "C" }
+      :is(.e, .f)::before { content: "E" } td > .in-cell::after { content: "TD" } td > s::after { content: "S" } [data-g]::before { content: "G" }
+      .h\\:i::before { content: "HI" } .j\u00a0k::before { content: "NBSP" } .\\31 23::before { content: "123" }
+      @media screen { .l::before { content: "L" } } @layer x { .m::before { content: "M" } } @supports (display: grid) { .n::before { content: attr(data-n) } }
+      .o::before { content: counter(c) } .p::before { content: "" } .q::before { content: none } .r::before { content: "R"; display: none }
+      .s::before, .t::after { content: "ST" } .seed::before { content: "" }
+    </style>
+    <form>
+    <button class="a"></button><button id="b"></button><button class="c"></button><button class="c d">cd</button>
+    <button class="e"></button><button class="f"></button><table><tr><td><button class="in-cell">cell</button></td><td><s role="button">struck</s></td></tr></table>
+    <button data-g></button><button class="h:i"></button><button class="j\u00a0k"></button><button class="j k">jk</button><button class="123"></button>
+    <button class="l"></button><button class="m"></button><button class="n" data-n="N"></button><button class="o"></button>
+    <button class="p">p</button><button class="q">q</button><button class="r">r</button><button class="s"></button><button class="t"></button>
+    <q role="button">quote</q><button>plain</button><button class="seed">seed</button>
+    </form>
+    <x-host role="button"></x-host><x-closed-host role="button"></x-closed-host>
+    <x-slot><button>slotted</button></x-slot><x-closed-slot><button>closed slotted</button></x-closed-slot><x-parts></x-parts>
+  `;
+  const attachShadows = () => page.evaluate(() => {
+    document.querySelector('x-host')!.attachShadow({ mode: 'open' }).innerHTML = '<style>:host::before { content: "HOST" }</style>';
+    document.querySelector('x-closed-host')!.attachShadow({ mode: 'closed' }).innerHTML = '<style>:host::before { content: "CLOSED HOST" }</style>';
+    document.querySelector('x-slot')!.attachShadow({ mode: 'open' }).innerHTML = '<style>::slotted(button)::before { content: "SLOT" }</style><slot></slot>';
+    document.querySelector('x-closed-slot')!.attachShadow({ mode: 'closed' }).innerHTML = '<style>::slotted(button)::before { content: "CLOSED SLOT" }</style><slot></slot>';
+    document.querySelector('x-parts')!.attachShadow({ mode: 'open' }).innerHTML = '<style>button::after { content: "IN" }</style><button part="label">part</button><button>inner</button>';
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('.adopted::before { content: "ADOPTED" }');
+    document.adoptedStyleSheets = [sheet];
+    const adopted = document.createElement('button');
+    adopted.className = 'adopted';
+    document.querySelector('form')!.append(adopted);
+    // The pseudo-element exists before its animation starts, and its rule stops matching after.
+    const seed = document.querySelector('.seed')!;
+    if (getComputedStyle(seed, '::before').content !== '""')
+      throw new Error('The ::before of .seed has no content');
+    const animation = seed.animate([{ content: '"ANIMATED"' }, { content: '"ANIMATED"' }], { pseudoElement: '::before', duration: 100000, fill: 'both' });
+    animation.pause();
+    seed.classList.remove('seed');
+  });
+  await page.setContent('<!doctype html>' + content);
+  await attachShadows();
+  expect(await roleQueryMismatches(page, toImpl)).toEqual([]);
+  await expect(page.getByRole('button', { name: 'CLOSED HOST', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'CLOSED SLOTclosed slotted', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'NBSP', exact: true })).toHaveCount(1);
+
+  // Class and id selectors ignore case in quirks mode.
+  await page.setContent(content.replace('.a::before', '.A::before').replace('#b::after', '#B::after'));
+  await attachShadows();
+  expect(await page.evaluate(() => document.compatMode)).toBe('BackCompat');
+  expect(await roleQueryMismatches(page, toImpl)).toEqual([]);
+  await expect(page.getByRole('button', { name: 'A', exact: true })).toHaveCount(1);
+
+  // ::part() rules of the document reach into shadow trees.
+  await page.setContent('<!doctype html>' + content);
+  await attachShadows();
+  await page.evaluate(() => {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync('x-parts::part(label)::before { content: "PART" }');
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+  });
+  expect(await roleQueryMismatches(page, toImpl)).toEqual([]);
+  await expect(page.getByRole('button', { name: 'PARTpartIN', exact: true })).toHaveCount(1);
+});
+
 function toArray(x: any): any[] {
   return Array.isArray(x) ? x : [x];
 }

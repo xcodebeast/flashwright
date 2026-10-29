@@ -140,6 +140,7 @@ export abstract class BrowserType extends SdkObject {
         userDataDir: persistent ? userDataDir : undefined,
         launchKey: browserLaunchKey(this._name, options),
         adoptContexts: offer?.metadata.contexts,
+        noExtensions: this._name === 'chromium' && launchesWithoutExtensions(options),
       };
       if (persistent)
         validateBrowserContextOptions(persistent, browserOptions);
@@ -400,6 +401,16 @@ export abstract class BrowserType extends SdkObject {
   abstract amendEnvironment(env: NodeJS.ProcessEnv, userDataDir: string, isPersistent: boolean, options: types.LaunchOptions): NodeJS.ProcessEnv;
   abstract doRewriteStartupLog(logs: string): string;
   abstract attemptToGracefullyCloseBrowser(transport: ConnectionTransport): void;
+}
+
+// Flashwright: Chromium's default arguments disable extensions. A custom executable or another channel,
+// like Chrome, can still get them from policies.
+function launchesWithoutExtensions(options: types.LaunchOptions): boolean {
+  if (options.executablePath || (options.channel && !options.channel.startsWith('chromium')))
+    return false;
+  if (options.ignoreAllDefaultArgs || options.ignoreDefaultArgs?.includes('--disable-extensions'))
+    return false;
+  return !(options.args ?? []).some(arg => arg.startsWith('--load-extension') || arg.startsWith('--disable-extensions-except') || arg.startsWith('--enable-extensions'));
 }
 
 function copyTestHooks(from: object, to: object) {

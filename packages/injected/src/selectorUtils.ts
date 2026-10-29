@@ -16,6 +16,7 @@
 
 import { normalizeWhiteSpace } from '@isomorphic/stringUtils';
 
+import { getElementLabelElements } from './domUtils';
 import { getAriaLabelledByElements } from './roleUtils';
 
 import type { AttributeSelectorPart } from '@isomorphic/selectorParser';
@@ -128,7 +129,7 @@ export function getElementLabels(textCache: Map<Element | ShadowRoot, ElementTex
   // https://html.spec.whatwg.org/multipage/forms.html#category-label
   const isNonHiddenInput = element.nodeName === 'INPUT' && (element as HTMLInputElement).type !== 'hidden';
   if (['BUTTON', 'METER', 'OUTPUT', 'PROGRESS', 'SELECT', 'TEXTAREA'].includes(element.nodeName) || isNonHiddenInput) {
-    const labels = (element as HTMLInputElement).labels;
+    const labels = getElementLabelElements(element);
     if (labels)
       return [...labels].map(label => elementText(textCache, label));
   }

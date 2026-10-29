@@ -111,6 +111,7 @@ export class FrameExecutionContext extends js.ExecutionContext {
         browserName: this.frame._page.browserContext._browser.options.name,
         shouldPrependErrorPrefix: this.delegate.shouldPrependErrorPrefix(),
         isUtilityWorld: this.world === 'utility',
+        noExtensionStyles: !!this.frame._page.browserContext._browser.options.noExtensions,
         customEngines,
       };
       const globalsSnapshot = this.frame._page.delegate.noUtilityWorld?.() ? js.mainWorldGlobalsSnapshotSource : '';

@@ -16,7 +16,8 @@
 
 import * as css from '@isomorphic/cssTokenizer';
 
-import { beginDOMCaches, closestCrossShadow, elementSafeTagName, enclosingShadowRootOrDocument, endDOMCaches, getElementComputedStyle, isElementStyleVisibilityVisible, isListBoxSelect, isVisibleTextNode, parentElementOrShadowHost } from './domUtils';
+import { beginDOMCaches, closestCrossShadow, elementSafeTagName, enclosingShadowRootOrDocument, endDOMCaches, getElementComputedStyle, getElementLabelElements, isElementStyleVisibilityVisible, isListBoxSelect, isVisibleTextNode, parentElementOrShadowHost } from './domUtils';
+import { beginPseudoContentCaches, endPseudoContentCaches, mayHavePseudoContent } from './pseudoContent';
 
 import type { AriaRole } from '@isomorphic/ariaSnapshot';
 
@@ -239,6 +240,95 @@ const kPresentationInheritanceParents: { [tagName: string]: string[] } = {
   'TR': ['THEAD', 'TBODY', 'TFOOT', 'TABLE'],
 };
 
+// Flashwright: the roles that each tag above can give, so that a query by role only computes the
+// roles of the elements that can have it: an element without a role attribute has the role its tag
+// gives it, or none, or the presentation role of its parent. Keep in sync with
+// kImplicitRoleByTagName: a tag missing here can have any role.
+const kImplicitRolesByTagName: { [tagName: string]: AriaRole[] } = {
+  'A': ['link'],
+  'AREA': ['link'],
+  'ARTICLE': ['article'],
+  'ASIDE': ['complementary'],
+  'BLOCKQUOTE': ['blockquote'],
+  'BUTTON': ['button'],
+  'CAPTION': ['caption'],
+  'CODE': ['code'],
+  'DATALIST': ['listbox'],
+  'DD': ['definition'],
+  'DEL': ['deletion'],
+  'DETAILS': ['group'],
+  'DFN': ['term'],
+  'DIALOG': ['dialog'],
+  'DT': ['term'],
+  'EM': ['emphasis'],
+  'FIELDSET': ['group'],
+  'FIGURE': ['figure'],
+  'FOOTER': ['contentinfo'],
+  'FORM': ['form'],
+  'H1': ['heading'],
+  'H2': ['heading'],
+  'H3': ['heading'],
+  'H4': ['heading'],
+  'H5': ['heading'],
+  'H6': ['heading'],
+  'HEADER': ['banner'],
+  'HR': ['separator'],
+  'HTML': ['document'],
+  'IMG': ['img', 'presentation'],
+  'INPUT': ['button', 'checkbox', 'combobox', 'radio', 'searchbox', 'slider', 'spinbutton', 'textbox'],
+  'INS': ['insertion'],
+  'LI': ['listitem'],
+  'MAIN': ['main'],
+  'MARK': ['mark'],
+  'MATH': ['math'],
+  'MENU': ['list'],
+  'METER': ['meter'],
+  'NAV': ['navigation'],
+  'OL': ['list'],
+  'OPTGROUP': ['group'],
+  'OPTION': ['option'],
+  'OUTPUT': ['status'],
+  'P': ['paragraph'],
+  'PROGRESS': ['progressbar'],
+  'SEARCH': ['search'],
+  'SECTION': ['region'],
+  'SELECT': ['combobox', 'listbox'],
+  'STRONG': ['strong'],
+  'SUB': ['subscript'],
+  'SUP': ['superscript'],
+  'SVG': ['img'],
+  'TABLE': ['table'],
+  'TBODY': ['rowgroup'],
+  'TD': ['cell', 'gridcell'],
+  'TEXTAREA': ['textbox'],
+  'TFOOT': ['rowgroup'],
+  'TH': ['columnheader', 'rowheader'],
+  'THEAD': ['rowgroup'],
+  'TIME': ['time'],
+  'TR': ['row'],
+  'UL': ['list'],
+};
+
+let tagsByImplicitRole: Map<string, Set<string>> | undefined;
+
+// The tags of the elements without a role attribute that can have `role`, or undefined when any
+// element can have it.
+export function tagsWithImplicitRole(role: string): Set<string> | undefined {
+  if (role === 'none' || role === 'presentation')
+    return;
+  if (!tagsByImplicitRole) {
+    tagsByImplicitRole = new Map();
+    const unlisted = Object.keys(kImplicitRoleByTagName).filter(tagName => !kImplicitRolesByTagName[tagName]);
+    for (const roleName of validRoles)
+      tagsByImplicitRole.set(roleName, new Set(unlisted));
+    for (const [tagName, roles] of Object.entries(kImplicitRolesByTagName)) {
+      for (const roleName of roles)
+        tagsByImplicitRole.get(roleName)!.add(tagName);
+    }
+  }
+  return tagsByImplicitRole.get(role);
+}
+
 function getImplicitAriaRole(element: Element): AriaRole | null {
   const implicitRole = kImplicitRoleByTagName[elementSafeTagName(element)]?.(element) || '';
   if (!implicitRole)
@@ -267,10 +357,23 @@ const validRoles: AriaRole[] = ['alert', 'alertdialog', 'application', 'article'
   'spinbutton', 'status', 'strong', 'subscript', 'superscript', 'switch', 'tab', 'table', 'tablist', 'tabpanel', 'term', 'textbox', 'time', 'timer',
   'toolbar', 'tooltip', 'tree', 'treegrid', 'treeitem'];
 
+// Flashwright: a set for the lookup, below.
+const validRoleSet = new Set<string>(validRoles);
+
 function getExplicitAriaRole(element: Element): AriaRole | null {
+  // Flashwright: most elements have no role attribute, and a query asks for every element's role
+  // (also for the ancestors of each cell, row or list item, see getImplicitAriaRole).
+  const attribute = element.getAttribute('role');
+  if (!attribute)
+    return null;
+  const cached = cacheExplicitAriaRole?.get(element);
+  if (cached !== undefined)
+    return cached;
   // https://www.w3.org/TR/wai-aria-1.2/#document-handling_author-errors_roles
-  const roles = (element.getAttribute('role') || '').split(' ').map(role => role.trim());
-  return roles.find(role => validRoles.includes(role as any)) as AriaRole || null;
+  const roles = attribute.split(' ').map(role => role.trim());
+  const role = roles.find(role => validRoleSet.has(role)) as AriaRole || null;
+  cacheExplicitAriaRole?.set(element, role);
+  return role;
 }
 
 function hasPresentationConflictResolution(element: Element, role: string | null) {
@@ -303,8 +406,12 @@ function getAriaBoolean(attr: string | null) {
   return attr === null ? undefined : attr.toLowerCase() === 'true';
 }
 
+// Flashwright: sets for the checks that run for every element an accessible name visits.
+const kIgnoredForAriaTags = new Set(['STYLE', 'SCRIPT', 'NOSCRIPT', 'TEMPLATE']);
+const kPresentationRoles = new Set(['presentation', 'none']);
+
 export function isElementIgnoredForAria(element: Element) {
-  return ['STYLE', 'SCRIPT', 'NOSCRIPT', 'TEMPLATE'].includes(elementSafeTagName(element));
+  return kIgnoredForAriaTags.has(elementSafeTagName(element));
 }
 
 // https://www.w3.org/TR/wai-aria-1.2/#tree_exclusion, but including "none" and "presentation" roles
@@ -411,6 +518,11 @@ export function getCSSContent(element: Element, pseudo?: '::before' | '::after')
   const cache = pseudo === '::before' ? cachePseudoContentBefore : (pseudo === '::after' ? cachePseudoContentAfter : cachePseudoContent);
   if (cache?.has(element))
     return cache?.get(element);
+  // Flashwright: see pseudoContent.ts.
+  if (pseudo && !mayHavePseudoContent(element)) {
+    cache?.set(element, undefined);
+    return undefined;
+  }
 
   const style = getElementComputedStyle(element, pseudo);
   let content: string | undefined;
@@ -505,10 +617,13 @@ function allowsNameFromContent(role: string, targetDescendant: boolean) {
   //
   // See chromium implementation here:
   // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/modules/accessibility/ax_object.cc;l=6338;drc=3decef66bc4c08b142a19db9628e9efe68973e64;bpv=0;bpt=1
-  const alwaysAllowsNameFromContent = ['button', 'cell', 'checkbox', 'columnheader', 'gridcell', 'heading', 'link', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'option', 'radio', 'row', 'rowheader', 'switch', 'tab', 'tooltip', 'treeitem'].includes(role);
-  const descendantAllowsNameFromContent = targetDescendant && ['', 'caption', 'code', 'contentinfo', 'definition', 'deletion', 'emphasis', 'insertion', 'list', 'listitem', 'mark', 'none', 'paragraph', 'presentation', 'region', 'row', 'rowgroup', 'section', 'strong', 'subscript', 'superscript', 'table', 'term', 'time'].includes(role);
+  const alwaysAllowsNameFromContent = kAlwaysAllowsNameFromContentRoles.has(role);
+  const descendantAllowsNameFromContent = targetDescendant && kDescendantAllowsNameFromContentRoles.has(role);
   return alwaysAllowsNameFromContent || descendantAllowsNameFromContent;
 }
+
+const kAlwaysAllowsNameFromContentRoles = new Set(['button', 'cell', 'checkbox', 'columnheader', 'gridcell', 'heading', 'link', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'option', 'radio', 'row', 'rowheader', 'switch', 'tab', 'tooltip', 'treeitem']);
+const kDescendantAllowsNameFromContentRoles = new Set(['', 'caption', 'code', 'contentinfo', 'definition', 'deletion', 'emphasis', 'insertion', 'list', 'listitem', 'mark', 'none', 'paragraph', 'presentation', 'region', 'row', 'rowgroup', 'section', 'strong', 'subscript', 'superscript', 'table', 'term', 'time']);
 
 export type AccessibleName = CompositeString & {
   derivedFromContent: boolean,
@@ -688,10 +803,11 @@ function getTextAlternativeInternal(element: Element, options: AccessibleNameOpt
   if (options.visitedElements.has(element))
     return emptyCompositeString();
 
-  const childOptions: AccessibleNameOptions = {
+  // Flashwright: the same options, unless they change.
+  const childOptions: AccessibleNameOptions = options.embeddedInTargetElement === 'self' ? {
     ...options,
-    embeddedInTargetElement: options.embeddedInTargetElement === 'self' ? 'descendant' : options.embeddedInTargetElement,
-  };
+    embeddedInTargetElement: 'descendant',
+  } : options;
 
   // step 2a. Hidden Not Referenced: If the current node is hidden and is:
   // Not part of an aria-labelledby or aria-describedby traversal, where the node directly referenced by that relation was hidden.
@@ -743,7 +859,7 @@ function getTextAlternativeInternal(element: Element, options: AccessibleNameOpt
   // However, browsers and and wpt test name_heading-combobox-focusable-alternative-manual.html follow this behavior,
   // and there is an issue filed for this: https://github.com/w3c/accname/issues/64
   if (!!options.embeddedInLabel || !!options.embeddedInLabelledBy || options.embeddedInTargetElement === 'descendant') {
-    const isOwnLabel = [...(element as (HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement)).labels || []].includes(element as any);
+    const isOwnLabel = [...getElementLabelElements(element) || []].includes(element as any);
     const isOwnLabelledBy = (labelledBy || []).includes(element);
     if (!isOwnLabel && !isOwnLabelledBy) {
       // Searchbox is a subclass of textbox, so it is handled the same way.
@@ -796,7 +912,7 @@ function getTextAlternativeInternal(element: Element, options: AccessibleNameOpt
   }
 
   // step 2e.
-  if (!['presentation', 'none'].includes(role)) {
+  if (!kPresentationRoles.has(role)) {
     // https://w3c.github.io/html-aam/#input-type-button-input-type-submit-and-input-type-reset-accessible-name-computation
     //
     // SPEC DIFFERENCE.
@@ -822,7 +938,7 @@ function getTextAlternativeInternal(element: Element, options: AccessibleNameOpt
     // No browsers respect the title attribute, although w3c accname tests disagree. We follow browsers.
     if (tagName === 'INPUT' && (element as HTMLInputElement).type === 'file') {
       options.visitedElements.add(element);
-      const labels = (element as HTMLInputElement).labels || [];
+      const labels = getElementLabelElements(element) || [];
       if (labels.length && !options.embeddedInLabelledBy)
         return getAccessibleNameFromAssociatedLabels(labels, options);
       return compositeString('Choose File', element, options.collectElements);
@@ -834,7 +950,7 @@ function getTextAlternativeInternal(element: Element, options: AccessibleNameOpt
     // Spec says to ignore this when aria-labelledby is defined, but all browsers take it into account.
     if (tagName === 'INPUT' && (element as HTMLInputElement).type === 'image') {
       options.visitedElements.add(element);
-      const labels = (element as HTMLInputElement).labels || [];
+      const labels = getElementLabelElements(element) || [];
       if (labels.length && !options.embeddedInLabelledBy)
         return getAccessibleNameFromAssociatedLabels(labels, options);
       const alt = element.getAttribute('alt') || '';
@@ -851,7 +967,7 @@ function getTextAlternativeInternal(element: Element, options: AccessibleNameOpt
     // https://w3c.github.io/html-aam/#button-element-accessible-name-computation
     if (!labelledBy && tagName === 'BUTTON') {
       options.visitedElements.add(element);
-      const labels = (element as HTMLButtonElement).labels || [];
+      const labels = getElementLabelElements(element) || [];
       if (labels.length)
         return getAccessibleNameFromAssociatedLabels(labels, options);
       // From here, fallthrough to step 2f.
@@ -860,7 +976,7 @@ function getTextAlternativeInternal(element: Element, options: AccessibleNameOpt
     // https://w3c.github.io/html-aam/#output-element-accessible-name-computation
     if (!labelledBy && tagName === 'OUTPUT') {
       options.visitedElements.add(element);
-      const labels = (element as HTMLOutputElement).labels || [];
+      const labels = getElementLabelElements(element) || [];
       if (labels.length)
         return getAccessibleNameFromAssociatedLabels(labels, options);
       return compositeString(element.getAttribute('title') || '', element, options.collectElements);
@@ -873,7 +989,7 @@ function getTextAlternativeInternal(element: Element, options: AccessibleNameOpt
     // Note: WebKit does not follow the spec and uses placeholder when aria-labelledby is present.
     if (!labelledBy && (tagName === 'TEXTAREA' || tagName === 'SELECT' || tagName === 'INPUT' || tagName === 'METER' || tagName === 'PROGRESS')) {
       options.visitedElements.add(element);
-      const labels = (element as (HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLMeterElement | HTMLProgressElement)).labels || [];
+      const labels = getElementLabelElements(element) || [];
       if (labels.length)
         return getAccessibleNameFromAssociatedLabels(labels, options);
 
@@ -981,7 +1097,7 @@ function getTextAlternativeInternal(element: Element, options: AccessibleNameOpt
   }
 
   // See https://w3c.github.io/html-aam/#summary-element-accessible-name-computation for "summary"-specific check.
-  const shouldNameFromContentForSummary = tagName === 'SUMMARY' && !['presentation', 'none'].includes(role);
+  const shouldNameFromContentForSummary = tagName === 'SUMMARY' && !kPresentationRoles.has(role);
 
   // step 2f + step 2h.
   if (allowsNameFromContent(role, options.embeddedInTargetElement === 'descendant') ||
@@ -1004,7 +1120,7 @@ function getTextAlternativeInternal(element: Element, options: AccessibleNameOpt
   }
 
   // step 2i.
-  if (!['presentation', 'none'].includes(role) || tagName === 'IFRAME' || tagName === 'FRAME') {
+  if (!kPresentationRoles.has(role) || tagName === 'IFRAME' || tagName === 'FRAME') {
     options.visitedElements.add(element);
     const title = element.getAttribute('title') || '';
     if (trimFlatString(title))
@@ -1280,13 +1396,16 @@ let cachePseudoContentBefore: Map<Element, string | undefined> | undefined;
 let cachePseudoContentAfter: Map<Element, string | undefined> | undefined;
 let cachePointerEvents: Map<Element, boolean> | undefined;
 let cacheAriaRole: Map<Element, AriaRole | null> | undefined;
+let cacheExplicitAriaRole: Map<Element, AriaRole | null> | undefined;
 let cacheAriaDisabled: Map<Element, boolean> | undefined;
 let cachesCounter = 0;
 
 export function beginAriaCaches() {
   beginDOMCaches();
+  beginPseudoContentCaches();
   ++cachesCounter;
   cacheAriaRole ??= new Map();
+  cacheExplicitAriaRole ??= new Map();
   cacheAriaDisabled ??= new Map();
   cacheAccessibleName ??= new Map();
   cacheAccessibleNameHidden ??= new Map();
@@ -1317,8 +1436,10 @@ export function endAriaCaches() {
     cachePseudoContentAfter = undefined;
     cachePointerEvents = undefined;
     cacheAriaRole = undefined;
+    cacheExplicitAriaRole = undefined;
     cacheAriaDisabled = undefined;
   }
+  endPseudoContentCaches();
   endDOMCaches();
 }
 

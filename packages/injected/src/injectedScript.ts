@@ -86,6 +86,8 @@ export type InjectedScriptOptions = {
   browserName: string;
   shouldPrependErrorPrefix?: boolean;
   isUtilityWorld?: boolean;
+  // Flashwright: the browser was launched without extensions, see BrowserOptions.noExtensions.
+  noExtensionStyles?: boolean;
   customEngines: { name: string, source: string }[];
 };
 
@@ -259,7 +261,7 @@ export class InjectedScript {
     this._browserName = options.browserName;
     this._shouldPrependErrorPrefix = !!options.shouldPrependErrorPrefix;
     this._isUtilityWorld = !!options.isUtilityWorld;
-    setGlobalOptions({ browserNameForWorkarounds: options.browserName });
+    setGlobalOptions({ browserNameForWorkarounds: options.browserName, isUtilityWorld: this._isUtilityWorld, noExtensionStyles: !!options.noExtensionStyles });
 
     this._setupGlobalListenersRemovalDetection();
     this._setupHitTargetInterceptors();
@@ -528,9 +530,15 @@ export class InjectedScript {
       queryAll: (root: SelectorRoot, selector: string): Element[] => {
         const { matcher } = createTextMatcher(selector, true);
         const allElements = this._evaluator._queryCSS({ scope: root as Document | Element, pierceShadow: true }, '*');
-        return allElements.filter(element => {
-          return getElementLabels(this._evaluator._cacheText, element).some(label => matcher(label));
-        });
+        // Flashwright: the DOM caches list the labels of the document once, see getElementLabelElements.
+        beginDOMCaches();
+        try {
+          return allElements.filter(element => {
+            return getElementLabels(this._evaluator._cacheText, element).some(label => matcher(label));
+          });
+        } finally {
+          endDOMCaches();
+        }
       }
     };
   }

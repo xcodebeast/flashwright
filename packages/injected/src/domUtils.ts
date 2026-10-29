@@ -16,10 +16,18 @@
 
 type GlobalOptions = {
   browserNameForWorkarounds?: string;
+  // Flashwright: in the utility world, page scripts cannot change what the DOM API returns.
+  isUtilityWorld?: boolean;
+  // Flashwright: no extension can add styles that the page's style sheets do not list.
+  noExtensionStyles?: boolean;
 };
 let globalOptions: GlobalOptions = {};
 export function setGlobalOptions(options: GlobalOptions) {
   globalOptions = options;
+}
+
+export function getGlobalOptions(): Readonly<GlobalOptions> {
+  return globalOptions;
 }
 
 export function isInsideScope(scope: Node, element: Element | undefined): boolean {
@@ -184,10 +192,41 @@ export function elementSafeTagName(element: Element) {
   return element.tagName.toUpperCase();
 }
 
+// Flashwright: a browser finds a control's `labels` by walking its whole document, again after any
+// change to the DOM, so asking every control of a page grows with the square of the page: 100 ms
+// for the 1,600 controls of a page, after each render. While the DOM caches are on, the labels of a
+// document are listed once, by the control they label. An element keeps its own `labels` in a shadow
+// tree, where a label of another tree can label it (reference target), and in the main world, where
+// page scripts can change what `labels` and `control` return.
+export function getElementLabelElements(element: Element): ArrayLike<HTMLLabelElement> & Iterable<HTMLLabelElement> | null | undefined {
+  const labels = (element as HTMLInputElement).labels as NodeListOf<HTMLLabelElement> | null | undefined;
+  if (!labels || !cacheLabels || !globalOptions.isUtilityWorld)
+    return labels;
+  const root = element.getRootNode();
+  if (root.nodeType !== 9 /* Node.DOCUMENT_NODE */)
+    return labels;
+  let labelsByControl = cacheLabels.get(root as Document);
+  if (!labelsByControl) {
+    labelsByControl = new Map();
+    for (const label of (root as Document).querySelectorAll('label')) {
+      const control = (label as HTMLLabelElement).control;
+      if (!control)
+        continue;
+      let controlLabels = labelsByControl.get(control);
+      if (!controlLabels)
+        labelsByControl.set(control, controlLabels = []);
+      controlLabels.push(label as HTMLLabelElement);
+    }
+    cacheLabels.set(root as Document, labelsByControl);
+  }
+  return labelsByControl.get(element) ?? [];
+}
+
 let cacheStyle: Map<Element, CSSStyleDeclaration | undefined> | undefined;
 let cacheStyleBefore: Map<Element, CSSStyleDeclaration | undefined> | undefined;
 let cacheStyleAfter: Map<Element, CSSStyleDeclaration | undefined> | undefined;
 let cacheStyleVisibility: Map<Element, boolean> | undefined;
+let cacheLabels: Map<Document, Map<Element, HTMLLabelElement[]>> | undefined;
 let cachesCounter = 0;
 
 export function beginDOMCaches() {
@@ -196,6 +235,7 @@ export function beginDOMCaches() {
   cacheStyleBefore ??= new Map();
   cacheStyleAfter ??= new Map();
   cacheStyleVisibility ??= new Map();
+  cacheLabels ??= new Map();
 }
 
 export function endDOMCaches() {
@@ -204,5 +244,6 @@ export function endDOMCaches() {
     cacheStyleBefore = undefined;
     cacheStyleAfter = undefined;
     cacheStyleVisibility = undefined;
+    cacheLabels = undefined;
   }
 }

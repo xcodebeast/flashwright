@@ -17,7 +17,8 @@
 import { parseAttributeSelector } from '@isomorphic/selectorParser';
 import { normalizeWhiteSpace } from '@isomorphic/stringUtils';
 
-import { beginAriaCaches, endAriaCaches, getAriaChecked, getAriaDisabled, getAriaExpanded, getAriaLevel, getAriaPressed, getAriaRole, getAriaSelected, getElementAccessibleDescription, getElementAccessibleNameText, isElementHiddenForAria, kAriaCheckedRoles, kAriaExpandedRoles, kAriaLevelRoles, kAriaPressedRoles, kAriaSelectedRoles } from './roleUtils';
+import { elementSafeTagName } from './domUtils';
+import { beginAriaCaches, endAriaCaches, getAriaChecked, getAriaDisabled, getAriaExpanded, getAriaLevel, getAriaPressed, getAriaRole, getAriaSelected, getElementAccessibleDescription, getElementAccessibleNameText, isElementHiddenForAria, kAriaCheckedRoles, kAriaExpandedRoles, kAriaLevelRoles, kAriaPressedRoles, kAriaSelectedRoles, tagsWithImplicitRole } from './roleUtils';
 import { matchesAttributePart } from './selectorUtils';
 
 import type { AttributeSelectorOperator, AttributeSelectorPart } from '@isomorphic/selectorParser';
@@ -187,12 +188,15 @@ function queryRole(scope: SelectorRoot, options: RoleEngineOptions, internal: bo
     result.push(element);
   };
 
+  // Flashwright: without a role attribute, only some tags can have the role.
+  const tags = tagsWithImplicitRole(options.role);
   const query = (root: Element | ShadowRoot | Document) => {
     const shadows: ShadowRoot[] = [];
     if ((root as Element).shadowRoot)
       shadows.push((root as Element).shadowRoot!);
     for (const element of root.querySelectorAll('*')) {
-      match(element);
+      if (!tags || tags.has(elementSafeTagName(element)) || element.getAttribute('role'))
+        match(element);
       if (element.shadowRoot)
         shadows.push(element.shadowRoot);
     }
