@@ -236,6 +236,11 @@ function validateConfig(file: string, config: Config) {
       throw errorWithFile(file, `config.shard.current must be a positive number, not greater than config.shard.total`);
   }
 
+  if ('workersPerProcess' in config && config.workersPerProcess !== undefined) {
+    if (typeof config.workersPerProcess !== 'number' || !Number.isInteger(config.workersPerProcess) || config.workersPerProcess < 1)
+      throw errorWithFile(file, `config.workersPerProcess must be a positive integer`);
+  }
+
   if ('updateSnapshots' in config && config.updateSnapshots !== undefined) {
     if (typeof config.updateSnapshots !== 'string' || !['all', 'changed', 'missing', 'none', 'default'].includes(config.updateSnapshots))
       throw errorWithFile(file, `config.updateSnapshots must be one of "all", "changed", "missing", "none" or "default"`);

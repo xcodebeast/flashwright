@@ -836,6 +836,7 @@ export const baseFullConfig: reporterTypes.FullConfig = {
   tags: [],
   updateSnapshots: 'default',
   updateSourceMethod: 'patch',
+  workersPerProcess: 1,
   version: '',
   workers: 0,
   webServer: null,

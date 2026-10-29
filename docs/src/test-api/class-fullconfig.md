@@ -176,3 +176,9 @@ See [`property: TestConfig.webServer`].
 - type: <[int]>
 
 See [`property: TestConfig.workers`].
+
+## property: FullConfig.workersPerProcess
+* since: v1.64
+- type: <[int]>
+
+See [`property: TestConfig.workersPerProcess`].

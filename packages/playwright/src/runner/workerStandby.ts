@@ -45,6 +45,9 @@ let restartCount = 0;
 let keepSpare = false;
 let cpus = 1;
 let hadHint = false;
+// Workers that share a worker process (config.workersPerProcess): the previous run's until the
+// config is loaded.
+let workersPerProcess = 1;
 
 // Variables that change how Playwright or Node behave while modules load. A standby worker
 // started with different values cannot be reconfigured after the fact.
@@ -76,11 +79,12 @@ export function prespawnWorkerForTestCommand(argv: string[]) {
   cpus = os.availableParallelism?.() ?? os.cpus().length;
   const hint = readWorkerCountHints()[hintKey];
   hadHint = !!hint;
+  workersPerProcess = hint?.workersPerProcess ?? 1;
   // A runner that a warm session prepared also starts one for each browser the session holds.
   const sessionBrowsers = Number(process.env.FLASHWRIGHT_SESSION_STANDBYS) || 0;
   const count = Math.max(1, Math.min(Math.max(hint?.workers || 1, sessionBrowsers), cpus));
   keepSpare = !!hint?.restarts && count < cpus;
-  for (let i = 0; i < count + (keepSpare ? 1 : 0); i++)
+  for (let i = 0; i < Math.ceil(count / workersPerProcess) + (keepSpare ? 1 : 0); i++)
     spawnStandby();
   process.once('exit', () => {
     discardStandbys();
@@ -92,7 +96,7 @@ function spawnStandby(waitsForNextPhase = false) {
   const entryScript = workerEntryScript();
   // The test runner marks its process tree with PLAYWRIGHT_TEST before starting workers. A standby
   // for the next phase of projects knows it will wait, and prepares right away.
-  const env = { ...workerEnv({}), PLAYWRIGHT_TEST: '1', FLASHWRIGHT_SPECULATIVE_BROWSER: waitsForNextPhase ? 'next-phase' : '1', ...sessionStandbyEnv() };
+  const env = { ...workerEnv({}), PLAYWRIGHT_TEST: '1', FLASHWRIGHT_SPECULATIVE_BROWSER: waitsForNextPhase ? 'next-phase' : '1', FLASHWRIGHT_SPECULATIVE_LANES: String(workersPerProcess), ...sessionStandbyEnv() };
   const child = child_process.fork(entryScript, {
     detached: false,
     env,
@@ -100,7 +104,7 @@ function spawnStandby(waitsForNextPhase = false) {
   });
   child.on('error', () => {});
   // In a warm session, the browser of a previous run may be waiting for it (see session.ts).
-  requestSessionBrowser(child);
+  requestSessionBrowser(child, workersPerProcess);
   const ready = new Promise<boolean>(resolve => {
     const onMessage = (message: any) => {
       if (message?.method === 'ready') {
@@ -132,13 +136,14 @@ export function recordWorkerRestart(moreTestsToRun: boolean) {
 export function ensureStandbys(count: number, forNextPhase = false) {
   if (!enabled)
     return;
-  while (standbys.length < count)
+  while (standbys.length < Math.ceil(count / workersPerProcess))
     spawnStandby(forNextPhase);
 }
 
 // Called once the config is loaded. Without a hint from a previous run (a first run, or CI), start
 // the configured number of workers now rather than when the first tests are dispatched.
-export function ensureStandbysForConfig(configuredWorkers: number) {
+export function ensureStandbysForConfig(configuredWorkers: number, configuredWorkersPerProcess: number) {
+  workersPerProcess = configuredWorkersPerProcess;
   if (enabled && !hadHint)
     ensureStandbys(Math.min(configuredWorkers, cpus));
 }
@@ -196,7 +201,7 @@ function workerCountHintKey(argv: string[]) {
   return crypto.createHash('sha1').update([process.cwd(), config, workers].join('\0')).digest('hex').slice(0, 16);
 }
 
-function readWorkerCountHints(): Record<string, { workers: number, restarts?: number, usedAt: number }> {
+function readWorkerCountHints(): Record<string, { workers: number, restarts?: number, workersPerProcess?: number, usedAt: number }> {
   try {
     return JSON.parse(fs.readFileSync(hintFile, 'utf8'));
   } catch {
@@ -209,7 +214,7 @@ function writeWorkerCountHint() {
     return;
   try {
     const hints = readWorkerCountHints();
-    hints[hintKey] = { workers: workerCount, restarts: restartCount, usedAt: Date.now() };
+    hints[hintKey] = { workers: workerCount, restarts: restartCount, workersPerProcess, usedAt: Date.now() };
     const recent = Object.entries(hints).sort((a, b) => b[1].usedAt - a[1].usedAt).slice(0, maxHints);
     // Write a sibling file and rename it, so concurrent runs never read a partial file.
     const temporary = `${hintFile}.${process.pid}`;

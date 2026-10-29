@@ -23,6 +23,7 @@ import { ProcessHost } from './processHost';
 import { ipc } from '../common';
 import { artifactsFolderName } from '../isomorphic/folders';
 
+import type { LaneOptions } from './processHost';
 import type { TestGroup } from './testGroups';
 
 
@@ -35,6 +36,7 @@ type WorkerHostOptions = {
   outputDir: string;
   pauseOnError: boolean;
   pauseAtEnd: boolean;
+  lanes?: LaneOptions;
 };
 
 export class WorkerHost extends ProcessHost {
@@ -50,7 +52,7 @@ export class WorkerHost extends ProcessHost {
       ...options.extraEnv,
       FORCE_COLOR: '1',
       DEBUG_COLORS: process.env.DEBUG_COLORS === undefined ? '1' : process.env.DEBUG_COLORS,
-    });
+    }, options.lanes);
     this.workerIndex = workerIndex;
     this.parallelIndex = options.parallelIndex;
     this._hash = testGroup.workerHash;

@@ -36,6 +36,14 @@ import type { Location } from '../../types/testReporter';
 import type { config as commonConfig, FullConfigInternal, test as testNs } from '../common';
 import type { TestAnnotation, TestInfoError } from '../../types/test';
 
+// Flashwright: the workers this process runs, one per lane (see config.workersPerProcess). Process-wide
+// events go to the worker of the lane they come from, or to the one running a test.
+const laneWorkers: WorkerMain[] = [];
+
+function currentWorker(): WorkerMain | undefined {
+  return (globals.currentLane()?.worker as WorkerMain | undefined) ?? laneWorkers.find(worker => worker._currentTest) ?? laneWorkers[0];
+}
+
 export class WorkerMain extends ProcessRunner {
   private _params: ipc.WorkerInitParams;
   private _config!: FullConfigInternal;
@@ -57,7 +65,7 @@ export class WorkerMain extends ProcessRunner {
   private _isStopped = false;
   // This promise resolves once the single "run test group" call finishes.
   private _runFinished = new ManualPromise<void>();
-  private _currentTest: TestInfoImpl | null = null;
+  _currentTest: TestInfoImpl | null = null;
   private _lastRunningTests: testNs.TestCase[] = [];
   private _totalRunningTests = 0;
   // Suites that had their beforeAll hooks, but not afterAll hooks executed.
@@ -79,12 +87,18 @@ export class WorkerMain extends ProcessRunner {
     // when it was sopped before running any test group.
     this._runFinished.resolve();
 
-    process.on('unhandledRejection', reason => this.unhandledError(reason));
-    process.on('uncaughtException', error => this.unhandledError(error));
+    laneWorkers.push(this);
+    const lane = globals.currentLane();
+    if (lane)
+      lane.worker = this;
+    if (laneWorkers.length > 1)
+      return;
+
+    process.on('unhandledRejection', reason => currentWorker()?.unhandledError(reason));
+    process.on('uncaughtException', error => currentWorker()?.unhandledError(error));
     // eslint-disable-next-line no-restricted-properties
     process.stdout.write = (chunk: string | Buffer, cb?: any) => {
-      this.dispatchEvent('stdOut', ipc.stdioChunkToParams(chunk));
-      this._currentTest?._tracing.appendStdioToTrace('stdout', chunk);
+      currentWorker()?._writeStdio('stdout', chunk);
       if (typeof cb === 'function')
         process.nextTick(cb);
       return true;
@@ -93,13 +107,17 @@ export class WorkerMain extends ProcessRunner {
     if (!process.env.PW_RUNNER_DEBUG) {
       // eslint-disable-next-line no-restricted-properties
       process.stderr.write = (chunk: string | Buffer, cb?: any) => {
-        this.dispatchEvent('stdErr', ipc.stdioChunkToParams(chunk));
-        this._currentTest?._tracing.appendStdioToTrace('stderr', chunk);
+        currentWorker()?._writeStdio('stderr', chunk);
         if (typeof cb === 'function')
           process.nextTick(cb);
         return true;
       };
     }
+  }
+
+  _writeStdio(kind: 'stdout' | 'stderr', chunk: string | Buffer) {
+    this.dispatchEvent(kind === 'stdout' ? 'stdOut' : 'stdErr', ipc.stdioChunkToParams(chunk));
+    this._currentTest?._tracing.appendStdioToTrace(kind, chunk);
   }
 
   private _stop(): Promise<void> {
@@ -127,6 +145,7 @@ export class WorkerMain extends ProcessRunner {
   }
 
   override async gracefullyClose() {
+    const lastLane = laneWorkers.every(worker => worker === this);
     try {
       await this._stop();
       if (!this._config) {
@@ -142,7 +161,9 @@ export class WorkerMain extends ProcessRunner {
       await this._fixtureRunner.teardownScope('worker', fakeTestInfo, runnable).catch(() => {});
       // Close any other browsers launched in this process. This includes anything launched
       // manually in the test/hooks and internal browsers like Playwright Inspector.
-      await fakeTestInfo._runWithTimeout(runnable, () => gracefullyCloseAll()).catch(() => {});
+      // Flashwright: unless other lanes of the process still run.
+      if (lastLane)
+        await fakeTestInfo._runWithTimeout(runnable, () => gracefullyCloseAll()).catch(() => {});
       this._fatalErrors.push(...fakeTestInfo.errors);
     } catch (e) {
       this._fatalErrors.push(testInfoError(e));
@@ -153,6 +174,8 @@ export class WorkerMain extends ProcessRunner {
       const payload: ipc.TeardownErrorsPayload = { fatalErrors: this._fatalErrors.map(ipc.toTestInfoErrorPayload) };
       this.dispatchEvent('teardownErrors', payload);
     }
+    if (laneWorkers.includes(this))
+      laneWorkers.splice(laneWorkers.indexOf(this), 1);
   }
 
   private _appendProcessTeardownDiagnostics(error: TestInfoError) {

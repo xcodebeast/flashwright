@@ -31,7 +31,19 @@ export const defaultTimeout = 30000;
 // we make these maps global.
 const cachedFileSuites = new Map<string, Suite>();
 
+// Flashwright: lanes of a worker process (see config.workersPerProcess) load their files one at a time:
+// a file's tests go to the suite of the file being loaded.
+let lastLoad: Promise<unknown> = Promise.resolve();
+
 export async function loadTestFile(file: string, config: FullConfigInternal, testErrors?: TestError[]): Promise<Suite> {
+  if (!isWorkerProcess() || cachedFileSuites.has(file))
+    return await loadTestFileOnce(file, config, testErrors);
+  const load = lastLoad.catch(() => {}).then(() => loadTestFileOnce(file, config, testErrors));
+  lastLoad = load;
+  return await load;
+}
+
+async function loadTestFileOnce(file: string, config: FullConfigInternal, testErrors?: TestError[]): Promise<Suite> {
   if (cachedFileSuites.has(file))
     return cachedFileSuites.get(file)!;
   const suite = new Suite(path.relative(config.config.rootDir, file) || path.basename(file), 'file');

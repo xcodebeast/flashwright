@@ -46,7 +46,8 @@ export type BrowserHandoff = {
   metadata: BrowserHandoffMetadata;
 };
 
-// The test runner's worker leaves the browser it was offered here, before launching.
+// The test runner's worker leaves the browser it was offered here, before launching: one, or one
+// per worker that its process runs.
 const offerKey = Symbol.for('flashwright.browserOffer');
 
 // What decides whether a running browser can stand in for a launch: everything that changes the
@@ -61,9 +62,14 @@ export function browserLaunchKey(browserName: string, options: types.LaunchOptio
 
 // Called by BrowserType before it launches a browser.
 export function takeBrowserOffer(browserName: string, options: types.LaunchOptions): BrowserHandoff | undefined {
-  const offer = (globalThis as any)[offerKey] as BrowserHandoff | undefined;
-  if (!offer || offer.metadata.browserName !== browserName || offer.metadata.launchKey !== browserLaunchKey(browserName, options))
+  const offers = (globalThis as any)[offerKey] as BrowserHandoff | BrowserHandoff[] | undefined;
+  const matches = (offer: BrowserHandoff) => offer.metadata.browserName === browserName && offer.metadata.launchKey === browserLaunchKey(browserName, options);
+  if (Array.isArray(offers)) {
+    const index = offers.findIndex(matches);
+    return index === -1 ? undefined : offers.splice(index, 1)[0];
+  }
+  if (!offers || !matches(offers))
     return;
   delete (globalThis as any)[offerKey];
-  return offer;
+  return offers;
 }

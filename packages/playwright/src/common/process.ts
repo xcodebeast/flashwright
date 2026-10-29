@@ -20,6 +20,7 @@ import { ManualPromise } from '@isomorphic/manualPromise';
 import { setTimeOrigin } from '@isomorphic/time';
 import { setBoxedStackPrefixes } from '@utils/stackTrace';
 
+import { forgetLane, laneById, runInLane } from '../globals';
 import { packageRoot } from '../package';
 import { serializeError } from '../util';
 
@@ -40,6 +41,9 @@ export type ProtocolResponse = {
 };
 
 export class ProcessRunner {
+  // Flashwright: the lane this runner runs in, when the process runs several (see config.workersPerProcess).
+  lane: number | undefined;
+
   async gracefullyClose(): Promise<void> { }
 
   // Flashwright: see WorkerMain.canDetachTeardown.
@@ -49,15 +53,15 @@ export class ProcessRunner {
 
   protected dispatchEvent(method: string, params: any) {
     const response: ProtocolResponse = { method, params };
-    sendMessageToParent({ method: '__dispatch__', params: response });
+    sendMessageToParent({ method: '__dispatch__', params: response, lane: this.lane });
   }
 
   protected async sendRequest(method: string, params?: any): Promise<any> {
-    return await sendRequestToParent(method, params);
+    return await sendRequestToParent(method, params, this.lane);
   }
 
   protected async sendMessageNoReply(method: string, params?: any) {
-    void sendRequestToParent(method, params).catch(() => {});
+    void sendRequestToParent(method, params, this.lane).catch(() => {});
   }
 }
 
@@ -65,6 +69,9 @@ let gracefullyCloseCalled = false;
 let forceExitInitiated = false;
 
 let processRunner: ProcessRunner | undefined;
+// Flashwright: the runners of a process that runs several lanes, by lane.
+const laneRunners = new Map<number, { runner: ProcessRunner, lane: Parameters<typeof runInLane>[0] }>();
+let initialized = false;
 let startingEnv = { ...process.env };
 // Flashwright: a process whose process.exit was replaced may never exit (see canDetachTeardown).
 // eslint-disable-next-line no-restricted-properties
@@ -81,18 +88,51 @@ export function startProcessRunner(create: (params: any) => ProcessRunner) {
   process.on('message', async (message: any) => {
     if (message.method === '__init__') {
       const { processParams, runnerParams } = message.params as { processParams: ProcessInitParams, runnerParams: any };
-      setTimeOrigin(processParams.timeOrigin);
-      if (processParams.env)
-        adoptEnvironment(processParams.env);
-      if (processParams.cwd && processParams.cwd !== process.cwd())
-        process.chdir(processParams.cwd);
-      processRunner = create(runnerParams);
+      if (!initialized) {
+        initialized = true;
+        setTimeOrigin(processParams.timeOrigin);
+        if (processParams.env)
+          adoptEnvironment(processParams.env);
+        if (processParams.cwd && processParams.cwd !== process.cwd())
+          process.chdir(processParams.cwd);
+        // Browsers started ahead of time for lanes that this process will not get.
+        if (processParams.lanes)
+          (globalThis as any)[Symbol.for('flashwright.keepLaneBrowsers')]?.(processParams.lanes);
+      }
+      if (message.lane === undefined) {
+        processRunner = create(runnerParams);
+        return;
+      }
+      const lane = laneById(message.lane);
+      const runner = runInLane(lane, () => create(runnerParams));
+      runner.lane = message.lane;
+      laneRunners.set(message.lane, { runner, lane });
+      return;
+    }
+    if (message.method === '__stop__' && message.lane !== undefined) {
+      const entry = laneRunners.get(message.lane);
+      sendMessageToParent({ method: '__env_produced__', params: producedEnv(), lane: message.lane });
+      // Flashwright: see WorkerMain.canDetachTeardown.
+      if (entry?.runner.canDetachTeardown()) {
+        sendMessageToParent({ method: '__teardown_detached__', lane: message.lane });
+        (globalThis as any)[Symbol.for('flashwright.codeCache')]?.refreshAtExit();
+      }
+      const heartbeat = realSetInterval(() => sendMessageToParent({ method: '__heartbeat__', lane: message.lane }), kHeartbeatInterval);
+      heartbeat.unref();
+      await runInLane(laneById(message.lane), async () => await entry?.runner.gracefullyClose()).catch(() => {});
+      realClearInterval(heartbeat);
+      laneRunners.delete(message.lane);
+      forgetLane(message.lane);
+      sendMessageToParent({ method: '__lane_closed__', lane: message.lane });
+      return;
+    }
+    if (message.method === '__exit__') {
+      // eslint-disable-next-line no-restricted-syntax
+      processExit(0);
       return;
     }
     if (message.method === '__stop__') {
-      const keys = new Set([...Object.keys(process.env), ...Object.keys(startingEnv)]);
-      const producedEnv: EnvProducedPayload = [...keys].filter(key => startingEnv[key] !== process.env[key]).map(key => [key, process.env[key] ?? null]);
-      sendMessageToParent({ method: '__env_produced__', params: producedEnv });
+      sendMessageToParent({ method: '__env_produced__', params: producedEnv() });
       // Flashwright: tells the runner that it may finish without waiting for this process.
       if (processRunner?.canDetachTeardown()) {
         sendMessageToParent({ method: '__teardown_detached__' });
@@ -104,18 +144,24 @@ export function startProcessRunner(create: (params: any) => ProcessRunner) {
     }
     if (message.method === '__dispatch__') {
       const { id, method, params } = message.params as ProtocolRequest;
+      const entry = message.lane === undefined ? undefined : laneRunners.get(message.lane);
       try {
-        const result = await (processRunner as any)[method](params);
+        const result = entry ? await runInLane(entry.lane, () => (entry.runner as any)[method](params)) : await (processRunner as any)[method](params);
         const response: ProtocolResponse = { id, result };
-        sendMessageToParent({ method: '__dispatch__', params: response });
+        sendMessageToParent({ method: '__dispatch__', params: response, lane: message.lane });
       } catch (e) {
         const response: ProtocolResponse = { id, error: serializeError(e) };
-        sendMessageToParent({ method: '__dispatch__', params: response });
+        sendMessageToParent({ method: '__dispatch__', params: response, lane: message.lane });
       }
     }
     if (message.method === '__response__')
       handleResponseFromParent(message.params as ProtocolResponse);
   });
+}
+
+function producedEnv(): EnvProducedPayload {
+  const keys = new Set([...Object.keys(process.env), ...Object.keys(startingEnv)]);
+  return [...keys].filter(key => startingEnv[key] !== process.env[key]).map(key => [key, process.env[key] ?? null]);
 }
 
 // A process started ahead of time takes the environment the runner computed for it.
@@ -134,6 +180,8 @@ function adoptEnvironment(env: Record<string, string | undefined>) {
 }
 
 const kForceExitTimeout = +(process.env.PWTEST_FORCE_EXIT_TIMEOUT || 30000);
+// Flashwright: a test running in another lane may have installed fake timers.
+const { setInterval: realSetInterval, clearInterval: realClearInterval } = globalThis;
 const kHeartbeatInterval = 1000;
 
 async function gracefullyCloseAndExit(forceExit: boolean) {
@@ -151,13 +199,15 @@ async function gracefullyCloseAndExit(forceExit: boolean) {
     heartbeat.unref();
     // Meanwhile, try to gracefully shutdown.
     await processRunner?.gracefullyClose().catch(() => {});
+    for (const { runner, lane } of laneRunners.values())
+      await runInLane(lane, () => runner.gracefullyClose()).catch(() => {});
     clearInterval(heartbeat);
     // eslint-disable-next-line no-restricted-syntax
     processExit(0);
   }
 }
 
-function sendMessageToParent(message: { method: string, params?: any }) {
+function sendMessageToParent(message: { method: string, params?: any, lane?: number }) {
   try {
     process.send!(message);
   } catch (e) {
@@ -175,9 +225,9 @@ function sendMessageToParent(message: { method: string, params?: any }) {
 let lastId = 0;
 const requestCallbacks = new Map<number, ManualPromise<any>>();
 
-async function sendRequestToParent(method: string, params?: any): Promise<any> {
+async function sendRequestToParent(method: string, params?: any, lane?: number): Promise<any> {
   const id = ++lastId;
-  sendMessageToParent({ method: '__request__', params: { id, method, params } });
+  sendMessageToParent({ method: '__request__', params: { id, method, params }, lane });
   const promise = new ManualPromise<any>();
   requestCallbacks.set(id, promise);
   return promise;

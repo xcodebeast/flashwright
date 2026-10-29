@@ -865,3 +865,28 @@ export default defineConfig({
   workers: 3,
 });
 ```
+
+## property: TestConfig.workersPerProcess
+* since: v1.64
+- type: ?<[int]>
+
+How many workers share one worker process. Defaults to `1`: each worker has a process of its own, as in Playwright.
+
+Each worker still runs one test at a time, with a browser of its own. The workers of a process share its Node.js runtime and the code it loaded, which is most of what a worker process takes in memory and in time to start. With 4 workers and `workersPerProcess: 2`, tests run in 2 processes. Only workers of the same project share a process.
+
+A test shares these with the tests that the other workers of its process run at the same time:
+* `process.env`. `TEST_WORKER_INDEX` and `TEST_PARALLEL_INDEX` hold the indexes of one of the workers: use [`property: TestInfo.workerIndex`] and [`property: TestInfo.parallelIndex`] instead. A variable that a test sets is seen by the others.
+* Global variables, and the variables of test files and of the modules they import. Fake timers that a test installs on Node.js's globals also apply to the other tests.
+* The process. A test that calls `process.exit()` or crashes the process ends the other workers' tests too.
+* The JavaScript thread. A test that runs synchronous code for long delays the others.
+
+**Usage**
+
+```js title="playwright.config.ts"
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  workers: 4,
+  workersPerProcess: 2,
+});
+```

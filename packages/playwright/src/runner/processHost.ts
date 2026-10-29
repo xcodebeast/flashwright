@@ -34,6 +34,32 @@ export type ProcessExitData = {
   signal: NodeJS.Signals | null;
 };
 
+// Flashwright: with config.workersPerProcess, a worker process runs several workers at once, each
+// in a lane of its own with its own browser, sharing the process and the code it loaded. The
+// process exits once its last lane has stopped.
+export type LaneOptions = {
+  // Workers that may share the process.
+  perProcess: number;
+  // Workers the run starts at most, to tell a new process how many lanes it will likely get.
+  workers: number;
+  // Only workers of one project share a process: some of what projects configure, like the test id
+  // attribute, applies to the whole process.
+  projectId: string;
+};
+
+type SharedProcess = {
+  process?: child_process.ChildProcess;
+  entryScript: string;
+  projectId: string;
+  capacity: number;
+  lanes: Set<number>;
+  nextLane: number;
+  exiting: boolean;
+  // Resolves once the first lane's runner was initialized, false if the process did not start.
+  started: ManualPromise<boolean>;
+};
+const sharedProcesses: SharedProcess[] = [];
+
 export class ProcessHost extends EventEmitter {
   private process: child_process.ChildProcess | undefined;
   private _didSendStop = false;
@@ -48,16 +74,52 @@ export class ProcessHost extends EventEmitter {
   private _requestHandlers = new Map<string, (params: any) => Promise<any>>();
   // Flashwright: resolved when a stopping worker says that it can finish on its own (see stop).
   private _teardownDetached = new ManualPromise<boolean>();
+  private _shared: SharedProcess | undefined;
+  private _lane: number | undefined;
+  private _laneOptions: LaneOptions | undefined;
 
-  constructor(entryScript: string, processName: string, env: Record<string, string | undefined>) {
+  constructor(entryScript: string, processName: string, env: Record<string, string | undefined>, laneOptions?: LaneOptions) {
     super();
     this._entryScript = entryScript;
     this._processName = processName;
     this._extraEnv = env;
+    this._laneOptions = laneOptions;
   }
 
   async startRunner(runnerParams: any, options: { onStdOut?: (chunk: Buffer | string) => void, onStdErr?: (chunk: Buffer | string) => void } = {}): Promise<ProcessExitData | undefined> {
     assert(!this.process, 'Internal error: starting the same process twice');
+    let lanes: number | undefined;
+    const laneOptions = this._laneOptions;
+    if (laneOptions && laneOptions.perProcess > 1) {
+      const shared = sharedProcesses.find(p => p.entryScript === this._entryScript && p.projectId === laneOptions.projectId && !p.exiting && p.lanes.size < p.capacity);
+      if (shared)
+        return await this._startLane(shared, runnerParams);
+      const running = sharedProcesses.reduce((sum, p) => sum + p.lanes.size, 0);
+      lanes = Math.max(1, Math.min(laneOptions.perProcess, laneOptions.workers - running));
+      this._shared = { entryScript: this._entryScript, projectId: laneOptions.projectId, capacity: laneOptions.perProcess, lanes: new Set([0]), nextLane: 1, exiting: false, started: new ManualPromise() };
+      this._lane = 0;
+      sharedProcesses.push(this._shared);
+    }
+    const result = await this._startProcess(runnerParams, options, lanes);
+    this._shared?.started.resolve(!result);
+    return result;
+  }
+
+  private async _startLane(shared: SharedProcess, runnerParams: any): Promise<ProcessExitData | undefined> {
+    this._shared = shared;
+    this._lane = shared.nextLane++;
+    shared.lanes.add(this._lane);
+    if (!await shared.started) {
+      shared.lanes.delete(this._lane);
+      return { unexpectedly: true, code: null, signal: null };
+    }
+    this.process = shared.process!;
+    this._listen();
+    const processParams: ipc.ProcessInitParams = { timeOrigin: timeOrigin() };
+    this.send({ method: '__init__', params: { processParams, runnerParams } });
+  }
+
+  private async _startProcess(runnerParams: any, options: { onStdOut?: (chunk: Buffer | string) => void, onStdErr?: (chunk: Buffer | string) => void }, lanes: number | undefined): Promise<ProcessExitData | undefined> {
     const env = {
       ...process.env,
       ...this._extraEnv,
@@ -78,21 +140,68 @@ export class ProcessHost extends EventEmitter {
         'ipc',
       ],
     });
-    this.process.on('exit', async (code, signal) => {
+    if (this._shared) {
+      const shared = this._shared;
+      shared.process = this.process;
+      this.process.once('exit', () => {
+        shared.exiting = true;
+        if (sharedProcesses.includes(shared))
+          sharedProcesses.splice(sharedProcesses.indexOf(shared), 1);
+      });
+    }
+    this.process.on('error', e => {});  // do not yell at a send to dead process.
+    // Flashwright: in a warm session, workers hand their browsers over through this process.
+    trackSessionWorker(this.process);
+    this._listen();
+
+    if (options.onStdOut)
+      this.process.stdout?.on('data', options.onStdOut);
+    if (options.onStdErr)
+      this.process.stderr?.on('data', options.onStdErr);
+
+    if (!adopted) {
+      const error = await new Promise<ProcessExitData | undefined>(resolve => {
+        this.process!.once('exit', (code, signal) => resolve({ unexpectedly: true, code, signal }));
+        this.once('ready', () => resolve(undefined));
+      });
+
+      if (error)
+        return error;
+    }
+
+    const processParams: ipc.ProcessInitParams = {
+      timeOrigin: timeOrigin(),
+      ...(adopted ? { env, cwd: process.cwd() } : {}),
+      ...(lanes ? { lanes } : {}),
+    };
+
+    this.send({
+      method: '__init__', params: {
+        processParams,
+        runnerParams
+      }
+    });
+  }
+
+  private _listen() {
+    this.process!.on('exit', async (code, signal) => {
+      if (this._didExitAndRanOnExit || this._processDidExit)
+        return;
       this._processDidExit = true;
       await this.onExit();
       this._didExitAndRanOnExit = true;
       this.emit('exit', { unexpectedly: !this._didSendStop, code, signal } as ProcessExitData);
     });
-    this.process.on('error', e => {});  // do not yell at a send to dead process.
-    // Flashwright: in a warm session, workers hand their browsers over through this process.
-    trackSessionWorker(this.process);
-    this.process.on('message', (message: any, handle: any) => {
+    this.process!.on('message', (message: any, handle: any) => {
       if (receiveWorkerMessage(this.process!, message, handle))
+        return;
+      if (this._shared && (message.lane ?? 0) !== this._lane)
         return;
       if (debug.enabled('pw:test:protocol'))
         debug('pw:test:protocol')('◀ RECV ' + JSON.stringify(message));
-      if (message.method === '__teardown_detached__') {
+      if (message.method === '__lane_closed__') {
+        void this._laneClosed();
+      } else if (message.method === '__teardown_detached__') {
         this._teardownDetached.resolve(true);
       } else if (message.method === '__env_produced__') {
         const producedEnv: ipc.EnvProducedPayload = message.params;
@@ -128,33 +237,22 @@ export class ProcessHost extends EventEmitter {
         this.emit(message.method!, message.params);
       }
     });
+  }
 
-    if (options.onStdOut)
-      this.process.stdout?.on('data', options.onStdOut);
-    if (options.onStdErr)
-      this.process.stderr?.on('data', options.onStdErr);
-
-    if (!adopted) {
-      const error = await new Promise<ProcessExitData | undefined>(resolve => {
-        this.process!.once('exit', (code, signal) => resolve({ unexpectedly: true, code, signal }));
-        this.once('ready', () => resolve(undefined));
-      });
-
-      if (error)
-        return error;
+  // The process stops when its last lane has; until then, a lane that stopped is done.
+  private async _laneClosed() {
+    const shared = this._shared!;
+    shared.lanes.delete(this._lane!);
+    if (!shared.lanes.size) {
+      shared.exiting = true;
+      sharedProcesses.splice(sharedProcesses.indexOf(shared), 1);
+      this.process?.send({ method: '__exit__' });
+      return;
     }
-
-    const processParams: ipc.ProcessInitParams = {
-      timeOrigin: timeOrigin(),
-      ...(adopted ? { env, cwd: process.cwd() } : {}),
-    };
-
-    this.send({
-      method: '__init__', params: {
-        processParams,
-        runnerParams
-      }
-    });
+    this._processDidExit = true;
+    await this.onExit();
+    this._didExitAndRanOnExit = true;
+    this.emit('exit', { unexpectedly: false, code: 0, signal: null } as ProcessExitData);
   }
 
   sendMessage(message: { method: string, params?: any }) {
@@ -233,6 +331,6 @@ export class ProcessHost extends EventEmitter {
   private send(message: { method: string, params?: any }) {
     if (debug.enabled('pw:test:protocol'))
       debug('pw:test:protocol')('SEND ► ' + JSON.stringify(message));
-    this.process?.send(message);
+    this.process?.send(this._lane === undefined ? message : { ...message, lane: this._lane });
   }
 }

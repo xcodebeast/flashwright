@@ -41,6 +41,7 @@ import type { Language } from '@isomorphic/locatorGenerators';
 import type { Progress } from './progress';
 import type * as playwright from '../..';
 import type { BrowserHandoff, BrowserHandoffMetadata } from './browserHandoff';
+import type { ConnectionTransport } from './transport';
 
 export interface BrowserProcess {
   onclose?: ((exitCode: number | null, signal: string | null) => void);
@@ -92,6 +93,7 @@ export abstract class Browser extends SdkObject {
   };
 
   readonly options: BrowserOptions;
+  transport: ConnectionTransport | undefined;
   private _downloads = new Map<string, Download>();
   _defaultContext: BrowserContext | null = null;
   private _startedClosing = false;
@@ -384,6 +386,12 @@ export abstract class Browser extends SdkObject {
   }
 
   // Flashwright: see BrowserContext.outputDirsChanged.
+  // Flashwright: the test runner's worker can run several workers at once, each in an async context
+  // of its own; the one that takes over a browser launched ahead of time gets what it sends.
+  bindToCurrentAsyncContext() {
+    this.transport?.bindToCurrentAsyncContext?.();
+  }
+
   async setOutputDirs(artifactsDir: string, tracesDir: string) {
     this.options.artifactsDir = artifactsDir;
     this.options.downloadsPath = artifactsDir;

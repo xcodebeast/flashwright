@@ -41,6 +41,7 @@ export type ConfigCLIOverrides = {
   shuffle?: string;
   testOrder?: 'longest-first' | 'file';
   timeout?: number;
+  workersPerProcess?: number;
   tsconfig?: string;
   ignoreSnapshots?: boolean;
   updateSnapshots?: 'all' | 'changed' | 'missing' | 'none' | 'default';
@@ -62,6 +63,8 @@ export type ProcessInitParams = {
   // Set when the process was started ahead of time and must adopt the runner's final environment.
   env?: Record<string, string | undefined>;
   cwd?: string;
+  // Flashwright: how many workers the runner expects to run in this process (see workersPerProcess).
+  lanes?: number;
 };
 
 export type WorkerInitParams = {

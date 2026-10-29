@@ -254,6 +254,7 @@ const testOptions: [string, { description: string, choices?: string[], preset?: 
   ['-u, --update-snapshots [mode]', { description: `Update snapshots with actual results. Running tests without the flag defaults to "default"`, choices: ['all', 'changed', 'missing', 'none', 'default'], preset: 'changed' }],
   ['--update-source-method <method>', { description: `Chooses the way source is updated (default: "patch")`, choices: ['overwrite', '3way', 'patch'] }],
   ['-j, --workers <workers>', { description: `Number of concurrent workers or percentage of logical CPU cores, use 1 to run in a single worker (default: 50%)` }],
+  ['--workers-per-process <count>', { description: `Number of workers that share one worker process (default: 1)` }],
   ['-x', { description: `Stop after the first failure` }],
 ];
 

@@ -19,6 +19,8 @@ import { escapeWithQuotes, isString } from '@isomorphic/stringUtils';
 import { pollAgainstDeadline } from '@isomorphic/timeoutRunner';
 import { currentZone } from '@utils/zones';
 
+import { currentLane } from '../globals';
+
 import {
   any,
   anything,
@@ -149,10 +151,13 @@ let _expectConfig: ExpectConfig = { testInfo: null, filteredStackTrace: unfilter
 
 export function setExpectConfig(config: ExpectConfig) {
   _expectConfig = config;
+  const lane = currentLane();
+  if (lane)
+    lane.expectConfig = config;
 }
 
 export function expectConfig(): ExpectConfig {
-  return _expectConfig;
+  return (currentLane()?.expectConfig as ExpectConfig | undefined) ?? _expectConfig;
 }
 
 type ExpectMessage = string | { message?: string };

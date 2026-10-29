@@ -165,7 +165,7 @@ export function createGlobalSetupTasks(config: FullConfigInternal) {
 }
 
 export function createRunTestsTasks(config: FullConfigInternal) {
-  ensureStandbysForConfig(config.config.workers);
+  ensureStandbysForConfig(config.config.workers, config.config.workersPerProcess);
   return [
     createPhasesTask(),
     createReportBeginTask(),

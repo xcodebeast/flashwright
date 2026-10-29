@@ -56,6 +56,8 @@ export interface ConnectionTransport {
   close(): void;  // Note: calling close is expected to issue onclose at some point.
   onmessage?: (message: ProtocolResponse) => void,
   onclose?: (reason?: string) => void,
+  // Flashwright: what the browser sends from now on runs in the current async context.
+  bindToCurrentAsyncContext?(): void,
 }
 
 type WebSocketTransportOptions = {

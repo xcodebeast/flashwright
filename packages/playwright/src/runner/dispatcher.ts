@@ -255,6 +255,8 @@ export class Dispatcher {
       outputDir: project.project.outputDir,
       pauseOnError: !!this._testRun.options.pauseOnError,
       pauseAtEnd,
+      // Flashwright: the workers this phase can still keep busy (see config.workersPerProcess).
+      lanes: { perProcess: this._testRun.config.config.workersPerProcess, workers: Math.min(this._workerSlots.length, this._workerSlots.filter(w => w.jobDispatcher).length + this._queue.length), projectId: testGroup.projectId },
     });
     const handleOutput = (params: ipc.TestOutputPayload) => {
       const chunk = chunkFromParams(params);

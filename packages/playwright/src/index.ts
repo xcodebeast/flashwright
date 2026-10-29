@@ -151,6 +151,7 @@ const utilityFixtures: Fixtures<UtilityTestFixtures, UtilityWorkerFixtures> = {
         }
       },
       runAfterCreateBrowserContext: async (context: BrowserContextImpl) => {
+        laneOfContext.set(context, globals.currentLane());
         context.debugger.on('pausedstatechanged', () => {
           const paused = !!context.debugger.pausedDetails();
           if (pausedContexts.has(context) && !paused) {
@@ -171,6 +172,7 @@ const utilityFixtures: Fixtures<UtilityTestFixtures, UtilityWorkerFixtures> = {
         }
       },
       runAfterCreateRequestContext: async (context: APIRequestContextImpl) => {
+        laneOfContext.set(context, globals.currentLane());
         await artifactsRecorder.didCreateRequestContext(context);
       },
       runBeforeCloseBrowserContext: async (context: BrowserContextImpl) => {
@@ -182,11 +184,13 @@ const utilityFixtures: Fixtures<UtilityTestFixtures, UtilityWorkerFixtures> = {
     };
 
     const clientInstrumentation = playwright._instrumentation;
-    clientInstrumentation.addListener(csiListener);
+    // Flashwright: other lanes of this worker process (see config.workersPerProcess) share playwright.
+    const laneListener = globals.bindToCurrentLane(csiListener);
+    clientInstrumentation.addListener(laneListener);
 
     await use();
 
-    clientInstrumentation.removeListener(csiListener);
+    clientInstrumentation.removeListener(laneListener);
     await artifactsRecorder.didFinishTest();
   }, { auto: 'all-hooks-included',  title: 'trace recording', box: true, timeout: 0 } as any],
 
@@ -240,9 +244,9 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       options.args = [...(options.args ?? []), '--disable-web-security', '--allow-running-insecure-content'];
     }
 
-    playwright._defaultLaunchOptions = options;
+    setPlaywrightDefault(playwright, '_defaultLaunchOptions', options);
     await use(options);
-    playwright._defaultLaunchOptions = undefined;
+    setPlaywrightDefault(playwright, '_defaultLaunchOptions', undefined);
     // Flashwright: in a warm session, a browser started ahead of time that no test used goes back.
     await returnSpeculativeBrowser();
   }, { scope: 'worker', auto: true, box: true }],
@@ -272,7 +276,9 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     const speculativeBrowser = await takeSpeculativeBrowser(browserName, { ..._browserOptions, ...recycleOptions });
     if (speculativeBrowser)
       reportAdoptedLaunch(_browserOptions);
-    const browser = speculativeBrowser ?? await playwright[browserName].launch(recycleOptions);
+    // Flashwright: lanes of a worker process (see config.workersPerProcess) share playwright's default launch options.
+    const browser = speculativeBrowser ?? await playwright[browserName].launch({ ..._browserOptions, ...recycleOptions });
+    laneOfContext.set(browser, globals.currentLane());
     if (process.env.PLAYWRIGHT_DASHBOARD)
       await browser.bind(`worker-${workerInfo.parallelIndex}`);
     await use(browser);
@@ -432,11 +438,11 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     if (debugMode() === 'inspector')
       (testInfo as TestInfoImpl)._setIgnoreTimeouts(true);
 
-    playwright._defaultContextTimeout = actionTimeout || 0;
-    playwright._defaultContextNavigationTimeout = navigationTimeout || 0;
+    setPlaywrightDefault(playwright, '_defaultContextTimeout', actionTimeout || 0);
+    setPlaywrightDefault(playwright, '_defaultContextNavigationTimeout', navigationTimeout || 0);
     await use();
-    playwright._defaultContextTimeout = undefined;
-    playwright._defaultContextNavigationTimeout = undefined;
+    setPlaywrightDefault(playwright, '_defaultContextTimeout', undefined);
+    setPlaywrightDefault(playwright, '_defaultContextNavigationTimeout', undefined);
   }, { auto: 'all-hooks-included',  title: 'context configuration', box: true } as any],
 
   _contextFactory: [async ({ browser, video, _reuseContext, _combinedContextOptions /** mitigate dep-via-auto lack of traceability */ }, use, testInfo) => {
@@ -760,7 +766,7 @@ class SnapshotRecorder {
     if (!this.shouldCaptureUponFinish())
       return;
 
-    await Promise.all(this._artifactsRecorder._playwright._allPages().map(page => this._snapshotPage(page, false)));
+    await Promise.all(this._artifactsRecorder._playwright._allPages().filter(page => inCurrentLane(page.context())).map(page => this._snapshotPage(page, false)));
   }
 
   async persistTemporary() {
@@ -850,8 +856,8 @@ class ArtifactsRecorder {
     this._screenshotRecorder.fixOrdinal();
 
     // Process existing contexts.
-    await Promise.all(this._playwright._allContexts().map(context => this.didCreateBrowserContext(context)));
-    const existingApiRequests = Array.from(this._playwright.request._contexts);
+    await Promise.all(this._playwright._allContexts().filter(inCurrentLane).map(context => this.didCreateBrowserContext(context)));
+    const existingApiRequests = Array.from(this._playwright.request._contexts).filter(inCurrentLane);
     await Promise.all(existingApiRequests.map(c => this.didCreateRequestContext(c)));
   }
 
@@ -904,8 +910,8 @@ class ArtifactsRecorder {
   async didFinishTest() {
     await this.didFinishTestFunction();
 
-    const leftoverContexts = this._playwright._allContexts();
-    const leftoverApiRequests = Array.from(this._playwright.request._contexts);
+    const leftoverContexts = this._playwright._allContexts().filter(inCurrentLane);
+    const leftoverApiRequests = Array.from(this._playwright.request._contexts).filter(inCurrentLane);
 
     // Collect traces/screenshots for remaining contexts.
     await Promise.all(leftoverContexts.map(async context => {
@@ -1037,6 +1043,45 @@ function renderTitle(type: string, method: string, params: Record<string, string
 function renderSubtitle(type: string, method: string, params: Record<string, string> | undefined) {
   const subtitle = renderSubtitleForCall({ type, method, params });
   return subtitle === undefined ? undefined : truncateParam(subtitle);
+}
+
+// Flashwright: the lanes of a worker process (see config.workersPerProcess) share playwright. The
+// defaults that fixtures set on it are kept per lane, for the calls that lane's tests make.
+type PlaywrightDefault = '_defaultLaunchOptions' | '_defaultContextTimeout' | '_defaultContextNavigationTimeout';
+const laneDefaults = new WeakSet<PlaywrightImpl>();
+
+function setPlaywrightDefault<K extends PlaywrightDefault>(playwright: PlaywrightImpl, key: K, value: PlaywrightImpl[K]) {
+  const lane = globals.currentLane();
+  if (!lane) {
+    playwright[key] = value;
+    return;
+  }
+  if (!laneDefaults.has(playwright)) {
+    laneDefaults.add(playwright);
+    for (const name of ['_defaultLaunchOptions', '_defaultContextTimeout', '_defaultContextNavigationTimeout'] as const) {
+      let shared = playwright[name];
+      Object.defineProperty(playwright, name, {
+        configurable: true,
+        get: () => {
+          const options = globals.currentLane()?.playwrightOptions;
+          return options && name in options ? options[name] : shared;
+        },
+        set: value => shared = value,
+      });
+    }
+  }
+  (lane.playwrightOptions ??= {})[key] = value;
+}
+
+// Each lane also records the contexts it created, or that its browser has.
+const laneOfContext = new WeakMap<object, globals.Lane | undefined>();
+
+function inCurrentLane(context: BrowserContextImpl | APIRequestContextImpl): boolean {
+  const lane = globals.currentLane();
+  if (!lane)
+    return true;
+  const owner = laneOfContext.get(context) ?? ('browser' in context ? laneOfContext.get(context.browser() as object) : undefined);
+  return !owner || owner === lane;
 }
 
 function tracing() {

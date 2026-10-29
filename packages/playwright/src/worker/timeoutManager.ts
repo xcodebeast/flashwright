@@ -22,6 +22,10 @@ import { debugTest, formatLocation } from '../util';
 
 import type { Location } from '../../types/testReporter';
 
+// Flashwright: a test that installs fake timers on Node.js's globals still times out, and so does a
+// test running beside it in the same process (see config.workersPerProcess).
+const { setTimeout: realSetTimeout, clearTimeout: realClearTimeout } = globalThis;
+
 export type TimeSlot = {
   timeout: number;
   elapsed: number;
@@ -112,7 +116,7 @@ export class TimeoutManager {
       ]);
     } finally {
       if (running.timer)
-        clearTimeout(running.timer);
+        realClearTimeout(running.timer);
       running.timer = undefined;
       running.slot.elapsed += monotonicTime() - running.start;
       this._running = undefined;
@@ -123,7 +127,7 @@ export class TimeoutManager {
 
   private _updateTimeout(running: Running) {
     if (running.timer)
-      clearTimeout(running.timer);
+      realClearTimeout(running.timer);
     running.timer = undefined;
     if (this._ignoreTimeouts || !running.slot.timeout) {
       running.deadline = kMaxDeadline;
@@ -137,7 +141,7 @@ export class TimeoutManager {
     if (timeout <= 0)
       running.timeoutPromise.reject(this._createTimeoutError(running));
     else
-      running.timer = setTimeout(() => running.timeoutPromise.reject(this._createTimeoutError(running)), timeout);
+      running.timer = realSetTimeout(() => running.timeoutPromise.reject(this._createTimeoutError(running)), timeout);
   }
 
   defaultSlot() {

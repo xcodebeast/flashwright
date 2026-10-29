@@ -136,6 +136,7 @@ function overridesFromOptions(options: { [key: string]: any }): ipc.ConfigCLIOve
       trace: options.trace,
     },
     workers: options.workers,
+    workersPerProcess: options.workersPerProcess ? parseWorkersPerProcess(options.workersPerProcess) : undefined,
   };
 
   if (options.browser) {
@@ -175,6 +176,13 @@ function resolveShuffleOption(shuffle?: string | boolean): string | undefined {
   if (shuffle === true)
     return String(Math.floor(Math.random() * 1e9));
   return shuffle;
+}
+
+function parseWorkersPerProcess(value: string): number {
+  const count = Number(value);
+  if (!Number.isInteger(count) || count < 1)
+    throw new Error(`--workers-per-process "${value}" must be a positive integer`);
+  return count;
 }
 
 function resolveShardOption(shard?: string): ipc.ConfigCLIOverrides['shard'] {

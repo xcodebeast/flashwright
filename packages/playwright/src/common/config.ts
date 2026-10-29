@@ -110,6 +110,7 @@ export class FullConfigInternal {
       updateSourceMethod: takeFirst(configCLIOverrides.updateSourceMethod, userConfig.updateSourceMethod, 'patch'),
       version: packageJSON.version,
       workers: resolveWorkers(takeFirst((configCLIOverrides.debug || configCLIOverrides.pause) ? 1 : undefined, configCLIOverrides.workers, userConfig.workers, '50%')),
+      workersPerProcess: takeFirst(configCLIOverrides.workersPerProcess, userConfig.workersPerProcess, 1),
       webServer: null,
     };
     for (const key in userConfig) {
