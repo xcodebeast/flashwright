@@ -1,5 +1,5 @@
 // Complete `test` command wall-clock: stock Playwright vs the Flashwright fork.
-// Usage: node bench/run.mjs <todomvc|svgomg> <workers> <iterations> <engine,...>
+// Usage: node bench/run.mjs <todomvc|svgomg|shop|inventory|workload:name> <workers> <iterations> <engine,...>
 // An engine can carry environment variables: fork:NAME=value+NAME2=value. USE_<option>=<json>
 // sets a test option and CONFIG_<key>=<json> a config property, for example
 // fork:USE_instantAnimations=true or fork:CONFIG_testOrder="file" (values cannot contain commas).
@@ -10,6 +10,7 @@ import { join, resolve } from 'node:path';
 import { applicationCorpusDirectory, loadApplicationCorpus, materializeApplicationTests, startApplicationServer } from './application-corpus.mjs';
 import { startWorkloadServer, workloadSpec } from './workloads/server.mjs';
 import { startShopServer } from './apps/shop/server.mjs';
+import { startInventoryServer } from './apps/inventory/server.mjs';
 import { cp } from 'node:fs/promises';
 
 const [app = 'todomvc', workersArg = '1', iterationsArg = '3', enginesArg = 'stock,fork'] = process.argv.slice(2);
@@ -31,8 +32,10 @@ await rm(base, { recursive: true, force: true });
 const workload = app.startsWith('workload:') ? app.slice('workload:'.length) : undefined;
 // `shop` is a realistic app suite: setup project with saved auth, fullyParallel, API latency.
 const shop = app === 'shop';
-const corpus = workload || shop ? undefined : await loadApplicationCorpus(applicationCorpusDirectory(app));
-const server = shop ? await startShopServer() : workload ? await startWorkloadServer() : await startApplicationServer(corpus);
+// `inventory` is an admin page of about 9,000 elements, with tests that use role, label and text locators.
+const inventory = app === 'inventory';
+const corpus = workload || shop || inventory ? undefined : await loadApplicationCorpus(applicationCorpusDirectory(app));
+const server = shop ? await startShopServer() : inventory ? await startInventoryServer() : workload ? await startWorkloadServer() : await startApplicationServer(corpus);
 
 const projects = {};
 for (const engine of engines) {
@@ -59,8 +62,8 @@ export const test = base.extend({
   }, { scope: 'worker', auto: true }],
 });
 ` : `export { test, expect, defineConfig } from ${JSON.stringify(definition.pkg)};\n`);
-  if (shop) {
-    await cp(join(import.meta.dirname, 'apps/shop/tests'), join(project, 'tests'), { recursive: true });
+  if (shop || inventory) {
+    await cp(join(import.meta.dirname, 'apps', app, 'tests'), join(project, 'tests'), { recursive: true });
   } else if (workload) {
     await mkdir(join(project, 'tests'), { recursive: true });
     await writeFile(join(project, 'tests', `${workload}.spec.ts`), workloadSpec(workload, 15));
@@ -71,6 +74,8 @@ export const test = base.extend({
     reporter: [['json', { outputFile: join(project, 'report.json') }], ...(process.env.HTML_REPORT ? [['html', { open: 'never', outputFolder: join(project, 'html-report') }]] : []), ...(process.env.STEPS ? [[resolve(import.meta.dirname, 'step-reporter.cjs')], [resolve(import.meta.dirname, 'step-tree-reporter.cjs')], [resolve(import.meta.dirname, 'worker-timeline.cjs')]] : [])],
     outputDir: join(project, 'results'),
     use: { headless: true, viewport: { width: 1280, height: 720 }, trace: 'off', video: 'off', screenshot: 'off' } };
+  if (inventory)
+    config.fullyParallel = true;
   if (shop) {
     Object.assign(config, { fullyParallel: true, projects: [
       { name: 'setup', testMatch: /.*\.setup\.ts/.source },
@@ -88,7 +93,7 @@ async function runOnce(engine, extraArgs = []) {
   await rm(join(project, 'report.json'), { force: true });
   // The warm session keeps working after a run, also during the next engine's run: it is measured
   // on its own, as the engine variant FLASHWRIGHT_SESSION=1.
-  const env = { FLASHWRIGHT_SESSION: '0', ...process.env, FLASHWRIGHT_APPLICATION_URL: server.url, FORCE_COLOR: '0', STEP_OUT: join(project, 'steps.txt'), ...(workload || shop ? { BENCH_BASE_URL: server.url } : {}) };
+  const env = { FLASHWRIGHT_SESSION: '0', ...process.env, FLASHWRIGHT_APPLICATION_URL: server.url, FORCE_COLOR: '0', STEP_OUT: join(project, 'steps.txt'), ...(workload || shop || inventory ? { BENCH_BASE_URL: server.url } : {}) };
   for (const assignment of variant.split('+').filter(Boolean)) { const [k, ...v] = assignment.split('='); env[k] = v.length ? v.join('=') : '1'; }
   // The step reporters read the start time from a file: a variable that changes on every run would
   // keep a warm session (FLASHWRIGHT_SESSION) from matching the next run.

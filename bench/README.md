@@ -18,7 +18,7 @@ node bench/run.mjs todomvc 1 15 stock,fork   # one scenario: <scenario> <workers
 node bench/matrix.mjs 15                     # every scenario with 1 and 4 workers
 ```
 
-Scenarios: `todomvc` and `svgomg` (Playwright's example suites, in `apps/`), `shop` (a single-page app with a sign-in setup project and 40 ms API latency) and `workload:<name>` (15 tests that each exercise one thing; see `workloads/server.mjs`).
+Scenarios: `todomvc` and `svgomg` (Playwright's example suites, in `apps/`), `shop` (a single-page app with a sign-in setup project and 40 ms API latency), `inventory` (an admin page of about 9,000 elements whose 19 tests find elements by role, label and text) and `workload:<name>` (15 tests that each exercise one thing; see `workloads/server.mjs`).
 
 An engine can carry environment variables and options: `fork:USE_failFastWhenIdle=false` sets a test option, `fork:CONFIG_testOrder="file"` a config property, `fork:NAME=value` anything else (values cannot contain commas). `BENCH_ARGS` adds arguments to the test command, for example a single test file. `BASE_DIR=<checkout>` adds the engine `base`, the fork as built in another checkout, to compare two builds: `git worktree add workbench/fork-base <commit>`, copy `node_modules` into it, `npm run build` there, then `BASE_DIR=workbench/fork-base node bench/run.mjs todomvc 1 9 base,fork`. A summary line ends with `FAILED <n>/<runs> runs` when tests failed: such timings are not comparable.
 
