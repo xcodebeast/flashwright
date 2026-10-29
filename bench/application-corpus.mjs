@@ -117,6 +117,8 @@ export async function startApplicationServer(corpus) {
       'Content-Type': { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
         '.json': 'application/json', '.map': 'application/json', '.woff2': 'font/woff2', '.png': 'image/png', '.svg': 'image/svg+xml' }[extname(entry.path)] ?? 'application/octet-stream',
       'Cache-Control': 'no-store',
+      // BENCH_ETAG=1 sends a validator, as most servers do (traces fetch a script body once per validator).
+      ...(process.env.BENCH_ETAG ? { 'ETag': `"${createHash('sha1').update(contents).digest('hex')}"` } : {}),
     });
     response.end(contents);
   });

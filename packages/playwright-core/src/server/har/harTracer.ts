@@ -372,13 +372,18 @@ export class HarTracer {
       this._addBarrier(page || request.serviceWorker(), compressionCalculationBarrier.barrier);
 
     // Flashwright: a script body that is left out is not fetched either. Asking the browser for it
-    // while the page loads held up the load, and what happened after it, by milliseconds.
+    // while the page loads held up the load, and what happened after it, by milliseconds. One that is
+    // recorded is fetched once for its URL and validators (see scriptBodyKey).
     const omitBody = this._options.omitScripts && request.resourceType() === 'script';
-    const promise = (omitBody ? Promise.resolve(undefined) : response.internalBody()).then(buffer => {
+    const bodyKey = !omitBody && request.resourceType() === 'script' ? scriptBodyKey(response) : undefined;
+    const knownBody = bodyKey ? takeScriptBody(bodyKey) : undefined;
+    const promise = (omitBody ? Promise.resolve(undefined) : knownBody ? Promise.resolve(knownBody) : response.internalBody()).then(buffer => {
       if (!buffer) {
         compressionCalculationBarrier?.setDecodedBodySize(0);
         return;
       }
+      if (bodyKey && !knownBody)
+        rememberScriptBody(bodyKey, buffer);
 
       const content = harEntry.response.content;
       compressionCalculationBarrier?.setDecodedBodySize(buffer.length);
@@ -561,7 +566,7 @@ export class HarTracer {
         content.encoding = 'base64';
       }
     } else if (this._options.content === 'attach') {
-      const shortName = calculateSha1(buffer) + '.' + (mime.getExtension(content.mimeType) || 'dat');
+      const shortName = bufferSha1(buffer) + '.' + (mime.getExtension(content.mimeType) || 'dat');
       if (this._started)
         content._file = this._delegate.onContentBlob(shortName, buffer);
     }
@@ -828,3 +833,58 @@ function safeDateToISOString(value: string | number) {
 }
 
 const startedDateSymbol = Symbol('startedDate');
+
+// Flashwright: the script bodies that traces recorded, by URL, status and validators. A worker whose
+// tests load the same script, like an application's bundle in every test, fetches it from the
+// browser once: a 1 MB bundle took tens of milliseconds per test to fetch, hash and record. Only
+// responses with an ETag or Last-Modified validator are remembered, most recently used last.
+const kScriptBodiesBytes = 64 * 1024 * 1024;
+const scriptBodies = new Map<string, Buffer>();
+let scriptBodiesBytes = 0;
+
+function scriptBodyKey(response: network.Response): string | undefined {
+  const etag = response.headerValue('etag');
+  const lastModified = response.headerValue('last-modified');
+  if (!etag && !lastModified)
+    return;
+  return JSON.stringify([response.url(), response.status(), etag, lastModified, response.headerValue('content-length'), response.headerValue('content-encoding')]);
+}
+
+function takeScriptBody(key: string): Buffer | undefined {
+  const buffer = scriptBodies.get(key);
+  if (buffer) {
+    scriptBodies.delete(key);
+    scriptBodies.set(key, buffer);
+  }
+  return buffer;
+}
+
+function rememberScriptBody(key: string, buffer: Buffer) {
+  if (buffer.length > kScriptBodiesBytes / 4)
+    return;
+  const previous = scriptBodies.get(key);
+  if (previous) {
+    scriptBodies.delete(key);
+    scriptBodiesBytes -= previous.length;
+  }
+  scriptBodies.set(key, buffer);
+  scriptBodiesBytes += buffer.length;
+  for (const [oldKey, oldBuffer] of scriptBodies) {
+    if (scriptBodiesBytes <= kScriptBodiesBytes)
+      break;
+    scriptBodies.delete(oldKey);
+    scriptBodiesBytes -= oldBuffer.length;
+  }
+}
+
+// Flashwright: a remembered script body is hashed once.
+const bufferSha1s = new WeakMap<Buffer, string>();
+
+function bufferSha1(buffer: Buffer): string {
+  let sha1 = bufferSha1s.get(buffer);
+  if (!sha1) {
+    sha1 = calculateSha1(buffer);
+    bufferSha1s.set(buffer, sha1);
+  }
+  return sha1;
+}

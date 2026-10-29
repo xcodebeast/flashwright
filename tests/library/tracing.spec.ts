@@ -1054,6 +1054,32 @@ function expectBlue(pixels: Buffer, offset: number) {
   expect(a).toBe(255);
 }
 
+// Flashwright: a trace that records script bodies fetches one once per URL and validators.
+test('should record script bodies by their validators', async ({ context, page, server }, testInfo) => {
+  let version = 'one';
+  server.setRoute('/app.js', (req, res) => {
+    res.setHeader('Content-Type', 'text/javascript');
+    res.setHeader('ETag', `"${version}"`);
+    res.end(`window.version = '${version}';`);
+  });
+  server.setRoute('/app.html', (req, res) => {
+    res.setHeader('Content-Type', 'text/html');
+    res.end('<script src="/app.js"></script>');
+  });
+  const recordedScript = async (name: string) => {
+    await context.tracing.start({ snapshots: true, live: true } as any);
+    await page.goto(server.PREFIX + '/app.html');
+    await context.tracing.stop({ path: testInfo.outputPath(name) });
+    const { events, resources } = await parseTraceRaw(testInfo.outputPath(name));
+    const script = events.find(e => e.type === 'resource-snapshot' && e.snapshot.request.url.endsWith('/app.js'));
+    return resources.get(script.snapshot.response.content._file).toString();
+  };
+  expect(await recordedScript('first.zip')).toBe(`window.version = 'one';`);
+  expect(await recordedScript('again.zip')).toBe(`window.version = 'one';`);
+  version = 'two';
+  expect(await recordedScript('changed.zip')).toBe(`window.version = 'two';`);
+});
+
 function relativeStack(action: ActionTraceEvent, stacks: Map<string, StackFrame[]>): string[] {
   const stack = stacks.get(action.callId) || [];
   return stack.map(f => f.file.replace(__dirname + path.sep, ''));

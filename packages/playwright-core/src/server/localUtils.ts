@@ -57,8 +57,10 @@ export async function zip(progress: Progress, stackSessions: Map<string, StackSe
 
   const addFile = (file: string, name: string) => {
     try {
+      // Flashwright: resources, like an application bundle in every test's trace, compress at the
+      // fastest level: 14 -> 5 ms for a 1 MB script, 20% larger.
       if (fs.statSync(file).isFile())
-        zipFile.addFile(file, name);
+        zipFile.addFile(file, name, name.startsWith('resources/') ? { compressionLevel: 1 } : undefined);
     } catch (e) {
     }
   };
