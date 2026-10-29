@@ -74,6 +74,36 @@ const crossOriginFetchTest = (expected: string, options = '') => `
   });
 `;
 
+test('should give every test a new context with isolation: strict', async ({ runInlineTest }) => {
+  const files = (use: string) => ({
+    'playwright.config.ts': `export default { workers: 1, use: ${use} };`,
+    'a.spec.ts': `
+      import { test, expect } from '@playwright/test';
+      for (const name of ['one', 'two'])
+        test(name, async ({ context }) => console.log('%%' + context._guid));
+    `,
+  });
+  // A recycled context is the same browser context in every test of the worker.
+  const recycled = await runInlineTest(files(`{}`));
+  expect(recycled.exitCode).toBe(0);
+  expect(new Set(recycled.outputLines).size).toBe(1);
+  const strict = await runInlineTest(files(`{ isolation: 'strict' }`));
+  expect(strict.exitCode).toBe(0);
+  expect(new Set(strict.outputLines).size).toBe(2);
+});
+
+test('should reject an unknown isolation', async ({ runInlineTest }) => {
+  const result = await runInlineTest({
+    'playwright.config.ts': `export default { use: { isolation: 'none' } };`,
+    'a.spec.ts': `
+      import { test } from '@playwright/test';
+      test('pass', async ({ page }) => {});
+    `,
+  });
+  expect(result.exitCode).toBe(1);
+  expect(result.output).toContain(`isolation must be 'recycled' or 'strict', not "none"`);
+});
+
 test('should turn off CORS with webSecurity: false', async ({ runInlineTest }) => {
   const result = await runInlineTest({
     'secure.spec.ts': crossOriginFetchTest('blocked'),

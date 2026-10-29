@@ -7256,6 +7256,32 @@ export interface PlaywrightWorkerOptions {
    */
   preloadPages: boolean;
   /**
+   * How tests are kept apart from each other. Defaults to `'recycled'`, or to `'strict'` when the
+   * `FLASHWRIGHT_ISOLATION` environment variable is `strict`.
+   * - `'recycled'` - each worker keeps one browser context and gives every test a new tab in it, after resetting
+   *   everything a test can change: cookies, storage of every visited origin, caches, permissions, service workers,
+   *   routes, init scripts and the clock. The context's renderer stays warm, so the page loads faster. Chromium only;
+   *   other browsers, and tests that record video, debug or connect to a remote browser, always get a new context.
+   * - `'strict'` - every test gets a new browser context, like Playwright. Slower, but nothing a reset could miss
+   *   carries over from one test to the next, and a crash or a busy script in one test's page cannot affect the next
+   *   test's.
+   *
+   * **Usage**
+   *
+   * ```js
+   * // playwright.config.ts
+   * import { defineConfig } from '@playwright/test';
+   *
+   * export default defineConfig({
+   *   use: {
+   *     isolation: 'strict',
+   *   },
+   * });
+   * ```
+   *
+   */
+  isolation: 'recycled' | 'strict';
+  /**
    * **Usage**
    *
    * ```js

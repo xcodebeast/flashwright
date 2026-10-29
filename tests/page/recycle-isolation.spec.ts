@@ -16,7 +16,7 @@
 
 // Flashwright recycles browser contexts between tests. Each "leaves" test changes state a test
 // can change; the following "sees" test must observe exactly what a brand-new context offers.
-// These pass unchanged with FLASHWRIGHT_ISOLATION=strict, which uses a new context per test.
+// These pass unchanged with isolation: 'strict', which uses a new context per test.
 
 import { test as it, expect } from './pageTest';
 
