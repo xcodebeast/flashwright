@@ -251,7 +251,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     await returnSpeculativeBrowser();
   }, { scope: 'worker', auto: true, box: true }],
 
-  browser: [async ({ playwright, browserName, _browserOptions, connectOptions, _recycleContext }, use, workerInfo) => {
+  browser: [async ({ playwright, browserName, _browserOptions, connectOptions, _recycleContext, _reuseContext }, use, workerInfo) => {
     if (!['chromium', 'firefox', 'webkit'].includes(browserName))
       throw new Error(`Unexpected browserName "${browserName}", must be one of "chromium", "firefox" or "webkit"`);
 
@@ -273,15 +273,28 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     // Flashwright: only the browser whose contexts are recycled gets the switches that keep their
     // renderers warm; browsers that tests launch themselves keep Playwright's defaults.
     const recycleOptions = (_recycleContext ? { recycleContexts: true } : {}) as LaunchOptions;
-    const speculativeBrowser = await takeSpeculativeBrowser(browserName, { ..._browserOptions, ...recycleOptions });
-    if (speculativeBrowser)
-      reportAdoptedLaunch(_browserOptions);
-    // Flashwright: lanes of a worker process (see config.workersPerProcess) share playwright's default launch options.
-    const browser = speculativeBrowser ?? await playwright[browserName].launch({ ..._browserOptions, ...recycleOptions });
-    laneOfContext.set(browser, globals.currentLane());
-    if (process.env.PLAYWRIGHT_DASHBOARD)
-      await browser.bind(`worker-${workerInfo.parallelIndex}`);
+    const launch = async () => {
+      const speculativeBrowser = await takeSpeculativeBrowser(browserName, { ..._browserOptions, ...recycleOptions });
+      if (speculativeBrowser)
+        reportAdoptedLaunch(_browserOptions);
+      // Flashwright: lanes of a worker process (see config.workersPerProcess) share playwright's default launch options.
+      const browser = speculativeBrowser ?? await playwright[browserName].launch({ ..._browserOptions, ...recycleOptions });
+      if (process.env.PLAYWRIGHT_DASHBOARD)
+        await browser.bind(`worker-${workerInfo.parallelIndex}`);
+      return browser as BrowserImpl;
+    };
+    // Flashwright: the workers of a process (see config.workersPerProcess) share a browser launched
+    // with the same options, unless they reuse contexts the way Playwright does, which keeps one
+    // context per browser.
+    const lane = globals.currentLane();
+    const shared = lane && !(_reuseContext && !_recycleContext) ? joinSharedBrowser(lane, browserName, { ..._browserOptions, ...recycleOptions }, launch) : undefined;
+    const browser = shared ? await shared.browser : await launch();
+    if (!shared)
+      laneOfContext.set(browser, lane);
     await use(browser);
+    if (shared && !shared.leave())
+      return;
+    (browser as BrowserImpl)._contextOwner = undefined;
     // Flashwright: in a warm session, the next run's workers take the browser over (see session.ts).
     if (await handBrowsersToSession(browser, true))
       return;
@@ -552,13 +565,14 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     // Flashwright: a recycled context is created and closed through the public methods, so the
     // calls are logged, traced and reported like a fresh context.
     throwIfInAllHook(testInfo);
-    const context = await browser.newContext({ [kRecycleContext]: true } as BrowserContextOptions) as BrowserContextImpl;
+    const slot = laneSlot();
+    const context = await browser.newContext({ [kRecycleContext]: slot || true } as BrowserContextOptions) as BrowserContextImpl;
     rememberRecycledContext(browser);
     // Flashwright: the next test's page loads while this one runs (see preloadHistory.ts). Tests
     // whose first run is traced start tracing before they navigate: they get no preload.
     const traceMode = (typeof trace === 'string' ? trace : trace?.mode) ?? 'off';
     const preloading = preloadPages && ['off', 'on-first-retry', 'on-all-retries', 'retry-with-trace'].includes(traceMode) && canPreloadPages(testInfo);
-    const takenAt = preloading ? preloadNextPage(browserImpl, testInfo) : 0;
+    const takenAt = preloading ? preloadNextPage(browserImpl, testInfo, slot) : 0;
     await installScreencastTitleUpdater(testInfo, context, show?.test);
     await use(context);
     const closeReason = testInfo.status === 'timedOut' ? 'Test timeout of ' + testInfo.timeout + 'ms exceeded.' : 'Test ended.';
@@ -1073,6 +1087,62 @@ function setPlaywrightDefault<K extends PlaywrightDefault>(playwright: Playwrigh
   (lane.playwrightOptions ??= {})[key] = value;
 }
 
+// The browsers that lanes share, by browser and launch options, without where each lane writes its
+// files: the browser writes into the folders of the lane that launched it, which stay until the
+// process exits (see the runner's ProcessHost). Each lane has a slot of its own in it for its
+// recycled context, '' for the first one; a lane that replaces another takes the free slot, and its
+// recycled context with it.
+type SharedBrowser = { browser: Promise<BrowserImpl>, slots: Set<number> };
+const sharedBrowsers = new Map<string, SharedBrowser>();
+const laneSlots = new WeakMap<globals.Lane, string>();
+
+function joinSharedBrowser(lane: globals.Lane, browserName: string, options: LaunchOptions, launch: () => Promise<BrowserImpl>) {
+  const rest: LaunchOptions & { tracesDir?: string, artifactsDir?: string } = { ...options };
+  delete rest.tracesDir;
+  delete rest.artifactsDir;
+  const key = JSON.stringify([browserName, rest]);
+  let shared = sharedBrowsers.get(key);
+  if (!shared) {
+    const created: SharedBrowser = {
+      slots: new Set(),
+      browser: launch().then(browser => {
+        browser._contextOwner = () => globals.currentLane();
+        return browser;
+      }, error => {
+        if (sharedBrowsers.get(key) === created)
+          sharedBrowsers.delete(key);
+        throw error;
+      }),
+    };
+    shared = created;
+    sharedBrowsers.set(key, shared);
+  }
+  let slot = 0;
+  while (shared.slots.has(slot))
+    slot++;
+  shared.slots.add(slot);
+  laneSlots.set(lane, slot ? String(slot) : '');
+  const joined = shared;
+  return {
+    browser: joined.browser,
+    // True for the last lane to leave, which then closes or hands over the browser.
+    leave: () => {
+      joined.slots.delete(slot);
+      laneSlots.delete(lane);
+      if (joined.slots.size)
+        return false;
+      if (sharedBrowsers.get(key) === joined)
+        sharedBrowsers.delete(key);
+      return true;
+    },
+  };
+}
+
+function laneSlot(): string {
+  const lane = globals.currentLane();
+  return lane ? laneSlots.get(lane) ?? '' : '';
+}
+
 // Each lane also records the contexts it created, or that its browser has.
 const laneOfContext = new WeakMap<object, globals.Lane | undefined>();
 
@@ -1080,7 +1150,7 @@ function inCurrentLane(context: BrowserContextImpl | APIRequestContextImpl): boo
   const lane = globals.currentLane();
   if (!lane)
     return true;
-  const owner = laneOfContext.get(context) ?? ('browser' in context ? laneOfContext.get(context.browser() as object) : undefined);
+  const owner = laneOfContext.get(context) ?? ('browser' in context ? context._owner ?? laneOfContext.get(context.browser() as object) : undefined);
   return !owner || owner === lane;
 }
 

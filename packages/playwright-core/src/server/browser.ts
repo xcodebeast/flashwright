@@ -41,7 +41,6 @@ import type { Language } from '@isomorphic/locatorGenerators';
 import type { Progress } from './progress';
 import type * as playwright from '../..';
 import type { BrowserHandoff, BrowserHandoffMetadata } from './browserHandoff';
-import type { ConnectionTransport } from './transport';
 
 export interface BrowserProcess {
   onclose?: ((exitCode: number | null, signal: string | null) => void);
@@ -81,8 +80,26 @@ export type BrowserOptions = {
   noInspectorEnableOnConnect?: boolean;
   // Flashwright: what a browser handed over to another process must match (see browserHandoff.ts).
   launchKey?: string;
-  // Flashwright: the recycled context of a browser handed over by another process.
-  adoptContext?: BrowserHandoffMetadata['context'];
+  // Flashwright: the recycled contexts of a browser handed over by another process.
+  adoptContexts?: BrowserHandoffMetadata['contexts'];
+};
+
+// Flashwright: what a browser keeps for one user of recycled contexts. The test runner's workers that
+// share a process also share its browser (see its workersPerProcess option): each one has a slot of
+// its own, the default slot '' otherwise.
+type ReuseSlot = {
+  contextForReuse?: { context: BrowserContext, hash: string, prepared?: boolean };
+  // preloadPages (see pagePreload.ts): the second recycled context, whose tab loads the next test's
+  // page while the current test uses the other one.
+  standby?: { context: BrowserContext, hash: string };
+  creatingStandby: boolean;
+  // The latest hint, while the second context is being created.
+  standbyHint?: PreloadHint;
+  preloading: boolean;
+  lastRecycleParams?: channels.BrowserNewContextForReuseParams;
+  takenAt: number;
+  firstNavigationUrl?: string;
+  lastFirstNavigationUrl?: string;
 };
 
 export abstract class Browser extends SdkObject {
@@ -93,22 +110,10 @@ export abstract class Browser extends SdkObject {
   };
 
   readonly options: BrowserOptions;
-  transport: ConnectionTransport | undefined;
   private _downloads = new Map<string, Download>();
   _defaultContext: BrowserContext | null = null;
   private _startedClosing = false;
-  private _contextForReuse: { context: BrowserContext, hash: string, prepared?: boolean } | undefined;
-  // Flashwright: preloadPages (see pagePreload.ts). The second recycled context, whose tab loads
-  // the next test's page while the current test uses the other one.
-  private _standby: { context: BrowserContext, hash: string } | undefined;
-  private _creatingStandby = false;
-  // The latest hint, while the second context is being created.
-  private _standbyHint: PreloadHint | undefined;
-  private _preloading = false;
-  private _lastRecycleParams: channels.BrowserNewContextForReuseParams | undefined;
-  private _takenAt = 0;
-  private _firstNavigationUrl: string | undefined;
-  private _lastFirstNavigationUrl: string | undefined;
+  private _slots = new Map<string, ReuseSlot>();
   private _loadDurations = new Map<string, number>();
   _closeReason: string | undefined;
   _isBrowserCollocatedWithServer: boolean = true;
@@ -167,37 +172,47 @@ export abstract class Browser extends SdkObject {
     }
   }
 
-  async newContextForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams, recycle = false): Promise<BrowserContext> {
+  private _slot(key: string): ReuseSlot {
+    let slot = this._slots.get(key);
+    if (!slot) {
+      slot = { creatingStandby: false, preloading: false, takenAt: 0 };
+      this._slots.set(key, slot);
+    }
+    return slot;
+  }
+
+  async newContextForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams, recycle = false, slotKey = ''): Promise<BrowserContext> {
+    const slot = this._slot(slotKey);
     if (recycle)
-      this._lastRecycleParams = params;
-    if (recycle && this._standby)
-      this._swapStandby(BrowserContext.reusableContextHash(params) + ':recycle');
-    const context = await this._newContextForReuse(progress, params, recycle);
-    if (recycle && this._preloading)
-      this._contextTaken(context);
+      slot.lastRecycleParams = params;
+    if (recycle && slot.standby)
+      this._swapStandby(slot, BrowserContext.reusableContextHash(params) + ':recycle');
+    const context = await this._newContextForReuse(progress, params, recycle, slotKey);
+    if (recycle && slot.preloading)
+      this._contextTaken(slot, context);
     return context;
   }
 
   // Flashwright: a browser that preloads alternates between its two recycled contexts. The one the
   // previous test used is being reset; the other one has the tab this test gets, maybe preloaded.
-  private _swapStandby(hash: string) {
-    const standby = this._standby!;
-    const current = this._contextForReuse;
+  private _swapStandby(slot: ReuseSlot, hash: string) {
+    const standby = slot.standby!;
+    const current = slot.contextForReuse;
     if (standby.hash !== hash || !standby.context.canResetForReuse()) {
       // A test with other options: what the second context prepared is of no use.
-      this._standby = undefined;
+      slot.standby = undefined;
       standby.context.close(nullProgress, { reason: 'Context reused' }).catch(() => {});
       return;
     }
     if (!current || current.hash !== hash || current.prepared)
       return;
-    this._standby = { context: current.context, hash: current.hash };
-    this._contextForReuse = standby;
+    slot.standby = { context: current.context, hash: current.hash };
+    slot.contextForReuse = standby;
   }
 
-  private _contextTaken(context: BrowserContext) {
-    this._takenAt = monotonicTime();
-    this._firstNavigationUrl = undefined;
+  private _contextTaken(slot: ReuseSlot, context: BrowserContext) {
+    slot.takenAt = monotonicTime();
+    slot.firstNavigationUrl = undefined;
     watchFirstNavigation(context);
   }
 
@@ -205,54 +220,59 @@ export abstract class Browser extends SdkObject {
   // the tab the next test gets loads `path` (or, without one, the URL this test navigates to first)
   // in the second recycled context, created on the first call.
   async preloadNextPage(params: channels.BrowserPreloadNextPageParams) {
-    const current = this._contextForReuse;
-    const reuseParams = this._lastRecycleParams;
+    const slotKey = params.slot ?? '';
+    const slot = this._slot(slotKey);
+    const current = slot.contextForReuse;
+    const reuseParams = slot.lastRecycleParams;
     if (!current || !current.hash.endsWith(':recycle') || !current.context.isRecycleMode() || !reuseParams)
       return;
-    if (!this._preloading) {
-      this._preloading = true;
-      this._contextTaken(current.context);
+    if (!slot.preloading) {
+      slot.preloading = true;
+      this._contextTaken(slot, current.context);
     }
-    const hint = { path: params.path, expectedEnd: params.expectedDuration === undefined ? undefined : this._takenAt + params.expectedDuration };
-    if (this._standby) {
-      this._standby.context.setPreloadHint(hint);
+    const hint = { path: params.path, expectedEnd: params.expectedDuration === undefined ? undefined : slot.takenAt + params.expectedDuration };
+    if (slot.standby) {
+      slot.standby.context.setPreloadHint(hint);
       return;
     }
-    this._standbyHint = hint;
-    if (this._creatingStandby)
+    slot.standbyHint = hint;
+    if (slot.creatingStandby)
       return;
-    this._creatingStandby = true;
+    slot.creatingStandby = true;
     try {
       const context = await this.newContext(nullProgress, reuseParams, true /* recycle */, false /* announce */);
       context.reuseParams = reuseParams;
+      context.reuseSlot = slotKey;
       context.markRecycled();
-      this._standby = { context, hash: current.hash };
-      context.setPreloadHint(this._standbyHint!);
+      slot.standby = { context, hash: current.hash };
+      context.setPreloadHint(slot.standbyHint!);
     } catch {
     } finally {
-      this._creatingStandby = false;
-      this._standbyHint = undefined;
+      slot.creatingStandby = false;
+      slot.standbyHint = undefined;
     }
   }
 
   // Called by the first navigation of the test that uses a recycled context.
   onFirstNavigation(context: BrowserContext, url: string) {
-    if (context !== this._contextForReuse?.context)
+    const slot = this._slots.get(context.reuseSlot);
+    if (!slot || context !== slot.contextForReuse?.context)
       return;
-    this._firstNavigationUrl = url;
+    slot.firstNavigationUrl = url;
     if (/^https?:/.test(url))
-      this._lastFirstNavigationUrl = url;
-    this._standby?.context.schedulePreload();
+      slot.lastFirstNavigationUrl = url;
+    slot.standby?.context.schedulePreload();
   }
 
-  // The URL a preload hint stands for (see BrowserContext.setPreloadHint).
-  preloadUrl(path: string | undefined): string | undefined {
+  // The URL a preload hint of `context` stands for (see BrowserContext.setPreloadHint).
+  preloadUrl(context: BrowserContext, path: string | undefined): string | undefined {
+    const slot = this._slots.get(context.reuseSlot);
     if (path === undefined)
-      return this._firstNavigationUrl;
-    if (!this._lastFirstNavigationUrl)
+      return slot?.firstNavigationUrl;
+    if (!slot?.lastFirstNavigationUrl)
       return undefined;
     try {
-      return new URL(path, this._lastFirstNavigationUrl).href;
+      return new URL(path, slot.lastFirstNavigationUrl).href;
     } catch {
       return undefined;
     }
@@ -271,10 +291,11 @@ export abstract class Browser extends SdkObject {
       this._loadDurations.delete(this._loadDurations.keys().next().value!);
   }
 
-  private async _newContextForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams, recycle = false): Promise<BrowserContext> {
+  private async _newContextForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams, recycle: boolean, slotKey: string): Promise<BrowserContext> {
+    const slot = this._slot(slotKey);
     // Flashwright: recycled contexts (see BrowserContext.setRecycleMode) never stand in for reused ones.
     const hash = BrowserContext.reusableContextHash(params) + (recycle ? ':recycle' : '');
-    const reuse = this._contextForReuse;
+    const reuse = slot.contextForReuse;
     // Flashwright: a context prepared ahead of time has no storage; it takes this test's storage state.
     const takesStorageState = !!reuse?.prepared && !!params.storageState && reuse.hash === BrowserContext.reusableContextHash({ ...params, storageState: undefined }) + ':recycle';
     if (reuse && (hash === reuse.hash || takesStorageState) && reuse.context.canResetForReuse()) {
@@ -283,26 +304,34 @@ export abstract class Browser extends SdkObject {
           await reuse.context.applyPreparedStorageState(progress, params.storageState!);
         else
           await progress.race(reuse.context.discardPreparedStorageStatePage());
-        this._contextForReuse = { context: reuse.context, hash };
+        slot.contextForReuse = { context: reuse.context, hash };
+        // Its events go to whoever took it, like for a context created for them.
+        reuse.context.bindToCurrentAsyncContext();
         return reuse.context;
       }
     }
-    if (this._contextForReuse) {
+    if (slot.contextForReuse) {
       // Flashwright: a recycled context that does not fit this test (prepared ahead of time for other
       // options, or the previous test's) records nothing, so it closes in the background.
-      if (this._contextForReuse.hash.endsWith(':recycle'))
-        this._contextForReuse.context.close(nullProgress, { reason: 'Context reused' }).catch(() => {});
+      if (slot.contextForReuse.hash.endsWith(':recycle'))
+        slot.contextForReuse.context.close(nullProgress, { reason: 'Context reused' }).catch(() => {});
       else
-        await this._contextForReuse.context.close(progress, { reason: 'Context reused' });
+        await slot.contextForReuse.context.close(progress, { reason: 'Context reused' });
     }
     const context = await this.newContext(progress, params, recycle);
     context.reuseParams = params;
-    this._contextForReuse = { context, hash };
+    context.reuseSlot = slotKey;
+    slot.contextForReuse = { context, hash };
     return context;
   }
 
-  contextForReuse() {
-    return this._contextForReuse?.context;
+  contextForReuse(slotKey = '') {
+    return this._slots.get(slotKey)?.contextForReuse?.context;
+  }
+
+  // Whether `context` is the one its slot hands to the next test that asks.
+  isContextForReuse(context: BrowserContext) {
+    return this.contextForReuse(context.reuseSlot) === context;
   }
 
   // Flashwright: a browser started before the test runner knows what its tests need creates the
@@ -311,7 +340,8 @@ export abstract class Browser extends SdkObject {
   // (newContextForReuse), which also applies the test's storage state; a test asking for a different
   // context gets a new one and this one closes.
   async prepareRecycledContext(params: channels.BrowserNewContextForRecycleParams, options: { storageState?: boolean } = {}) {
-    const reuse = this._contextForReuse;
+    const slot = this._slot('');
+    const reuse = slot.contextForReuse;
     if (reuse) {
       // A context handed over by another process (see adoptHandedOverContext) still needs the tab
       // that restores the tests' storage state.
@@ -321,31 +351,34 @@ export abstract class Browser extends SdkObject {
     }
     const context = await this.newContext(nullProgress, params, true /* recycle */, false /* announce */);
     context.reuseParams = params;
-    this._contextForReuse = { context, hash: BrowserContext.reusableContextHash(params) + ':recycle', prepared: true };
+    slot.contextForReuse = { context, hash: BrowserContext.reusableContextHash(params) + ':recycle', prepared: true };
     context.startRecycle();
     // The tests used a storage state last time: also open the page that will restore it.
     if (options.storageState)
       context.prepareStorageStatePage();
   }
 
-  // Flashwright: a browser handed over by another process brings the context its tests used, with
-  // the tab that keeps the renderer warm. It becomes the prepared recycled context, like
-  // prepareRecycledContext's, and is reset once more before a test takes it.
-  async adoptHandedOverContext(handedOver: BrowserHandoffMetadata['context']) {
+  // Flashwright: a browser handed over by another process brings the contexts its tests used, one
+  // per slot, each with the tab that keeps its renderer warm. Each becomes the prepared recycled
+  // context of its slot, like prepareRecycledContext's, and is reset once more before a test takes it.
+  async adoptHandedOverContext(handedOver: BrowserHandoffMetadata['contexts'][number]) {
     const params = { ...handedOver.params };
     const options = { ...params } as types.BrowserContextOptions;
     validateBrowserContextOptions(options, this.options);
     const context = await this.doAdoptContext(handedOver.id, options);
     context.reuseParams = params;
+    context.reuseSlot = handedOver.slot;
     context.setRecycleMode(true);
     context.addVisitedOrigins(handedOver.origins);
-    this._contextForReuse = { context, hash: BrowserContext.reusableContextHash(params) + ':recycle', prepared: true };
+    this._slot(handedOver.slot).contextForReuse = { context, hash: BrowserContext.reusableContextHash(params) + ':recycle', prepared: true };
   }
 
-  // Called once the handed-over context's existing tab is attached.
+  // Called once the handed-over contexts' existing tabs are attached.
   startAdoptedContextRecycle() {
-    if (this._contextForReuse?.prepared)
-      this._contextForReuse.context.startRecycle();
+    for (const slot of this._slots.values()) {
+      if (slot.contextForReuse?.prepared)
+        slot.contextForReuse.context.startRecycle();
+    }
   }
 
   // Flashwright: in a warm test session, the worker that launched this browser hands it to the
@@ -355,19 +388,29 @@ export abstract class Browser extends SdkObject {
   // A headed browser is not handed over: its window would stay open between runs.
   async handoffForSession(): Promise<BrowserHandoff | undefined> {
     // The second recycled context of a browser that preloads stays behind.
-    const standby = this._standby;
-    this._standby = undefined;
-    this._preloading = false;
-    await standby?.context.close(nullProgress, { reason: 'Browser handed over' }).catch(() => {});
-    const reuse = this._contextForReuse;
+    const standbys: BrowserContext[] = [];
+    for (const slot of this._slots.values()) {
+      if (slot.standby)
+        standbys.push(slot.standby.context);
+      slot.standby = undefined;
+      slot.preloading = false;
+    }
+    await Promise.all(standbys.map(context => context.close(nullProgress, { reason: 'Browser handed over' }).catch(() => {})));
     const release = this.options.browserProcess.release;
     if (!release || !this.options.launchKey || this.options.persistent || this.options.headful || this._startedClosing || !this.isConnected())
       return;
-    if (!reuse || !reuse.hash.endsWith(':recycle') || this.contexts().some(context => context !== reuse.context))
+    const reused = [...this._slots.entries()].filter(([, slot]) => slot.contextForReuse);
+    if (!reused.length || reused.some(([, slot]) => !slot.contextForReuse!.hash.endsWith(':recycle')))
       return;
-    const handedOverContext = await reuse.context.prepareForHandoff();
-    if (!handedOverContext)
+    if (this.contexts().some(context => !reused.some(([, slot]) => slot.contextForReuse!.context === context)))
       return;
+    const handedOverContexts: BrowserHandoffMetadata['contexts'] = [];
+    for (const [key, slot] of reused) {
+      const handedOverContext = await slot.contextForReuse!.context.prepareForHandoff();
+      if (!handedOverContext)
+        return;
+      handedOverContexts.push({ slot: key, ...handedOverContext });
+    }
     const pipes = await this.doDetachForHandoff().catch(() => undefined);
     if (!pipes)
       return;
@@ -380,18 +423,12 @@ export abstract class Browser extends SdkObject {
         launchKey: this.options.launchKey,
         pid,
         tempDirectories,
-        context: handedOverContext,
+        contexts: handedOverContexts,
       },
     };
   }
 
   // Flashwright: see BrowserContext.outputDirsChanged.
-  // Flashwright: the test runner's worker can run several workers at once, each in an async context
-  // of its own; the one that takes over a browser launched ahead of time gets what it sends.
-  bindToCurrentAsyncContext() {
-    this.transport?.bindToCurrentAsyncContext?.();
-  }
-
   async setOutputDirs(artifactsDir: string, tracesDir: string) {
     this.options.artifactsDir = artifactsDir;
     this.options.downloadsPath = artifactsDir;

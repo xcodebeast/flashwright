@@ -80,11 +80,12 @@ export function prespawnWorkerForTestCommand(argv: string[]) {
   const hint = readWorkerCountHints()[hintKey];
   hadHint = !!hint;
   workersPerProcess = hint?.workersPerProcess ?? 1;
-  // A runner that a warm session prepared also starts one for each browser the session holds.
+  // A runner that a warm session prepared also starts one for each browser the session holds: the
+  // workers of a process share one.
   const sessionBrowsers = Number(process.env.FLASHWRIGHT_SESSION_STANDBYS) || 0;
-  const count = Math.max(1, Math.min(Math.max(hint?.workers || 1, sessionBrowsers), cpus));
+  const count = Math.max(1, Math.min(Math.max(Math.ceil((hint?.workers || 1) / workersPerProcess), sessionBrowsers), cpus));
   keepSpare = !!hint?.restarts && count < cpus;
-  for (let i = 0; i < Math.ceil(count / workersPerProcess) + (keepSpare ? 1 : 0); i++)
+  for (let i = 0; i < count + (keepSpare ? 1 : 0); i++)
     spawnStandby();
   process.once('exit', () => {
     discardStandbys();
@@ -96,7 +97,7 @@ function spawnStandby(waitsForNextPhase = false) {
   const entryScript = workerEntryScript();
   // The test runner marks its process tree with PLAYWRIGHT_TEST before starting workers. A standby
   // for the next phase of projects knows it will wait, and prepares right away.
-  const env = { ...workerEnv({}), PLAYWRIGHT_TEST: '1', FLASHWRIGHT_SPECULATIVE_BROWSER: waitsForNextPhase ? 'next-phase' : '1', FLASHWRIGHT_SPECULATIVE_LANES: String(workersPerProcess), ...sessionStandbyEnv() };
+  const env = { ...workerEnv({}), PLAYWRIGHT_TEST: '1', FLASHWRIGHT_SPECULATIVE_BROWSER: waitsForNextPhase ? 'next-phase' : '1', ...sessionStandbyEnv() };
   const child = child_process.fork(entryScript, {
     detached: false,
     env,
@@ -104,7 +105,7 @@ function spawnStandby(waitsForNextPhase = false) {
   });
   child.on('error', () => {});
   // In a warm session, the browser of a previous run may be waiting for it (see session.ts).
-  requestSessionBrowser(child, workersPerProcess);
+  requestSessionBrowser(child);
   const ready = new Promise<boolean>(resolve => {
     const onMessage = (message: any) => {
       if (message?.method === 'ready') {

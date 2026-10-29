@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import { AsyncResource } from 'async_hooks';
 import fs from 'fs';
 
 import { rewriteErrorMessage } from '@utils/stackTrace';
@@ -145,6 +146,12 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   private _calledBeforeFirstNavigation = false;
   // Flashwright: the options a recycled or reused context was created with (see Browser.newContextForReuse).
   reuseParams: channels.BrowserNewContextForReuseParams | undefined;
+  // Flashwright: the slot whose recycled context this is (see Browser.newContextForReuse).
+  reuseSlot = '';
+  // Flashwright: the async context that created the context, or took it for reuse, where clients
+  // get its events (see DispatcherConnection.sendEvent): the test runner's worker can run several
+  // workers at once, each in an async context of its own, with one browser.
+  asyncResource = new AsyncResource('BrowserContext');
 
   constructor(browser: Browser, options: types.BrowserContextOptions, browserContextId: string | undefined) {
     super(browser, 'browser-context');
@@ -290,9 +297,9 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     const hint = this._preloadHint;
     const page = this._heldPage;
     // Only the context waiting for the next test preloads, not one a test has taken.
-    if (!hint || this._recycling || !page || page.preload || this._closedStatus !== 'open' || this._browser.contextForReuse() === this)
+    if (!hint || this._recycling || !page || page.preload || this._closedStatus !== 'open' || this._browser.isContextForReuse(this))
       return;
-    const url = this._browser.preloadUrl(hint.path);
+    const url = this._browser.preloadUrl(this, hint.path);
     if (!url)
       return;
     this._preloadHint = undefined;
@@ -300,7 +307,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     this._clearPreloadTimer();
     this._preloadTimer = setTimeout(() => {
       this._preloadTimer = undefined;
-      if (page === this._heldPage && !page.isClosedOrClosingOrCrashed() && !this._recycling && this._browser.contextForReuse() !== this)
+      if (page === this._heldPage && !page.isClosedOrClosingOrCrashed() && !this._recycling && !this._browser.isContextForReuse(this))
         this._startPreload(page, url);
     }, delay);
   }
@@ -325,7 +332,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
       const others = this.possiblyUninitializedPages().filter(p => p !== page && !p.isStorageStatePage);
       if (others.length || this._downloads.size || this.hasServiceWorkers())
         preload.markUnusable();
-      if (this._browser.contextForReuse() !== this)
+      if (!this._browser.isContextForReuse(this))
         preload.discardIfUnusable();
     }, () => {});
   }
@@ -333,7 +340,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   // A preloaded document did something its goto could not report. A context that no test has
   // taken yet is reset right away; otherwise the goto or the next call does it.
   preloadBecameUnusable(preload: PagePreload) {
-    if (this._browser.contextForReuse() !== this)
+    if (!this._browser.isContextForReuse(this))
       preload.discard().catch(() => {});
   }
 
@@ -410,11 +417,15 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
       this._origins.add(origin);
   }
 
+  bindToCurrentAsyncContext() {
+    this.asyncResource = new AsyncResource('BrowserContext');
+  }
+
   // Flashwright: called before the browser is handed over to another process. Waits for the reset
   // that started when the last test ended and describes the context for the process that adopts it,
   // or returns undefined when it cannot move: it holds state that lives in this process (a client
   // certificate proxy, a HAR recording, a video) or that a reset cannot clear.
-  async prepareForHandoff(): Promise<BrowserHandoffMetadata['context'] | undefined> {
+  async prepareForHandoff(): Promise<Omit<BrowserHandoffMetadata['contexts'][number], 'slot'> | undefined> {
     const params = this.reuseParams;
     if (!this._recycleMode || !this.supportsRecycling() || !params || !this._browserContextId || this._closedStatus !== 'open' || this._recyclingPrevented)
       return;

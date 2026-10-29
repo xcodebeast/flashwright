@@ -139,13 +139,12 @@ export abstract class BrowserType extends SdkObject {
         originalLaunchOptions: options,
         userDataDir: persistent ? userDataDir : undefined,
         launchKey: browserLaunchKey(this._name, options),
-        adoptContext: offer?.metadata.context,
+        adoptContexts: offer?.metadata.contexts,
       };
       if (persistent)
         validateBrowserContextOptions(persistent, browserOptions);
       copyTestHooks(options, browserOptions);
       const browser = await progress.race(this.connectToTransport(transport, browserOptions, browserLogsCollector));
-      browser.transport = transport;
       (browser as any)._userDataDirForTest = userDataDir;
       // We assume no control when using custom arguments, and do not prepare the default context in that case.
       if (persistent && !options.ignoreAllDefaultArgs)
@@ -294,7 +293,7 @@ export abstract class BrowserType extends SdkObject {
       artifactsDir = await progress.race(fs.promises.mkdtemp(path.join(os.tmpdir(), 'playwright-artifacts-')));
       tempDirectories.push(artifactsDir);
     }
-    const transport = new PipeTransport(offer.write, offer.read, true);
+    const transport = new PipeTransport(offer.write, offer.read);
     const exited = new Promise<void>(resolve => {
       if (!offer.read.readable)
         resolve();

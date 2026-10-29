@@ -47,6 +47,9 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
   _closeReason: string | undefined;
   // Flashwright: the protocol parameters of the last recycled context created in this browser.
   _lastRecycleParams: channels.BrowserNewContextForRecycleParams | undefined;
+  // Flashwright: the test runner's workers that share a browser each see the contexts they created:
+  // returns who calls, and contexts() lists what that caller created (and contexts nobody owns).
+  _contextOwner: (() => unknown) | undefined;
 
   static from(browser: channels.BrowserChannel): Browser {
     return (browser as any)._object;
@@ -68,10 +71,13 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
   async newContext(options: BrowserContextOptions = {}): Promise<BrowserContext> {
     // Flashwright: the test runner asks for a recycled context through the public method, so the
     // call is logged, traced and reported exactly like creating a new context.
-    if ((options as any)[kRecycleContext]) {
+    // The value is the slot of the worker it is for, when the workers of a process share their
+    // browser (see the server's Browser.newContextForReuse).
+    const recycle = (options as any)[kRecycleContext];
+    if (recycle) {
       const rest = { ...options };
       delete (rest as any)[kRecycleContext];
-      return await this._innerNewContext(rest, true, true);
+      return await this._innerNewContext(rest, true, typeof recycle === 'string' ? recycle : '');
     }
     return await this._innerNewContext(options, false);
   }
@@ -96,16 +102,20 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
     await this._channel.disconnectFromReusedContext({ reason }, kNoTimeout);
   }
 
-  async _innerNewContext(userOptions: BrowserContextOptions = {}, forReuse: boolean, recycle = false): Promise<BrowserContext> {
+  async _innerNewContext(userOptions: BrowserContextOptions = {}, forReuse: boolean, recycleSlot?: string): Promise<BrowserContext> {
     const options = this._browserType._playwright.selectors._withSelectorOptions(userOptions);
     await this._instrumentation.runBeforeCreateBrowserContext(options);
     const contextOptions = await prepareBrowserContextParams(options);
+    const recycle = recycleSlot !== undefined;
     if (recycle)
       this._lastRecycleParams = contextOptions;
-    const response = recycle ? await this._channel.newContextForRecycle(contextOptions, kNoTimeout) : forReuse ? await this._channel.newContextForReuse(contextOptions, kNoTimeout) : await this._channel.newContext(contextOptions, kNoTimeout);
+    const response = recycle ? await this._channel.newContextForRecycle({ ...contextOptions, slot: recycleSlot || undefined }, kNoTimeout) : forReuse ? await this._channel.newContextForReuse(contextOptions, kNoTimeout) : await this._channel.newContext(contextOptions, kNoTimeout);
     const context = BrowserContext.from(response.context);
     if (forReuse)
       context._forReuse = true;
+    if (recycle)
+      context._recycleSlot = recycleSlot || undefined;
+    context._owner = this._contextOwner?.();
     if (options.logger)
       context._logger = options.logger;
     await context._initializeHarFromOptions(options.recordHar);
@@ -145,7 +155,11 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
   }
 
   contexts(): BrowserContext[] {
-    return [...this._contexts];
+    const contexts = [...this._contexts];
+    if (!this._contextOwner)
+      return contexts;
+    const owner = this._contextOwner();
+    return contexts.filter(context => context._owner === undefined || context._owner === owner);
   }
 
   version(): string {

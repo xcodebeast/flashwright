@@ -142,6 +142,9 @@ Browser:
             credentials:
               type: array?
               items: SetVirtualCredential
+        # Flashwright: the workers of a test runner's process share its browser, each with a slot
+        # of its own for its recycled context.
+        slot: string?
       returns:
         context: BrowserContext
 
@@ -149,6 +152,7 @@ Browser:
       title: Close context
       parameters:
         reason: string
+        slot: string?
       returns:
         # Flashwright: how the test's page was first navigated (see preloadNextPage).
         firstNavigation:
@@ -167,6 +171,7 @@ Browser:
         path: string?
         # How long the current test is expected to take, in milliseconds.
         expectedDuration: float?
+        slot: string?
 
     newBrowserCDPSession:
       title: Create CDP session

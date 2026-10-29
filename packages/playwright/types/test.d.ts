@@ -2100,9 +2100,13 @@ interface TestConfig<TestArgs = {}, WorkerArgs = {}> {
   /**
    * How many workers share one worker process. Defaults to `1`: each worker has a process of its own, as in Playwright.
    *
-   * Each worker still runs one test at a time, with a browser of its own. The workers of a process share its Node.js
-   * runtime and the code it loaded, which is most of what a worker process takes in memory and in time to start. With 4
-   * workers and `workersPerProcess: 2`, tests run in 2 processes. Only workers of the same project share a process.
+   * Each worker still runs one test at a time. The workers of a process share its Node.js runtime, the code it loaded,
+   * and the browser: each worker's tests get contexts of their own in it, and
+   * [browser.contexts()](https://playwright.dev/docs/api/class-browser#browser-contexts) lists only those. With 4
+   * workers and `workersPerProcess: 2`, tests run in 2 processes with 2 browsers. Only workers of the same project
+   * share a process, and workers that reuse one context for all their tests (see
+   * [testOptions.reuseContext](https://playwright.dev/docs/api/class-testoptions#test-options-reuse-context)) get a
+   * browser of their own.
    *
    * A test shares these with the tests that the other workers of its process run at the same time:
    * - `process.env`. `TEST_WORKER_INDEX` and `TEST_PARALLEL_INDEX` hold the indexes of one of the workers: use
@@ -2112,6 +2116,12 @@ interface TestConfig<TestArgs = {}, WorkerArgs = {}> {
    * - Global variables, and the variables of test files and of the modules they import. Fake timers that a test
    *   installs on Node.js's globals also apply to the other tests.
    * - The process. A test that calls `process.exit()` or crashes the process ends the other workers' tests too.
+   * - The browser. A test that closes the browser, or makes it crash, ends the other workers' tests too, and what
+   *   applies to the whole browser, like
+   *   [browser.newBrowserCDPSession()](https://playwright.dev/docs/api/class-browser#browser-new-browser-cdp-session)
+   *   or
+   *   [browser.startTracing([page, options])](https://playwright.dev/docs/api/class-browser#browser-start-tracing),
+   *   covers their pages as well.
    * - The JavaScript thread. A test that runs synchronous code for long delays the others.
    *
    * **Usage**

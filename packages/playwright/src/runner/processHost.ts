@@ -40,8 +40,6 @@ export type ProcessExitData = {
 export type LaneOptions = {
   // Workers that may share the process.
   perProcess: number;
-  // Workers the run starts at most, to tell a new process how many lanes it will likely get.
-  workers: number;
   // Only workers of one project share a process: some of what projects configure, like the test id
   // attribute, applies to the whole process.
   projectId: string;
@@ -88,19 +86,16 @@ export class ProcessHost extends EventEmitter {
 
   async startRunner(runnerParams: any, options: { onStdOut?: (chunk: Buffer | string) => void, onStdErr?: (chunk: Buffer | string) => void } = {}): Promise<ProcessExitData | undefined> {
     assert(!this.process, 'Internal error: starting the same process twice');
-    let lanes: number | undefined;
     const laneOptions = this._laneOptions;
     if (laneOptions && laneOptions.perProcess > 1) {
       const shared = sharedProcesses.find(p => p.entryScript === this._entryScript && p.projectId === laneOptions.projectId && !p.exiting && p.lanes.size < p.capacity);
       if (shared)
         return await this._startLane(shared, runnerParams);
-      const running = sharedProcesses.reduce((sum, p) => sum + p.lanes.size, 0);
-      lanes = Math.max(1, Math.min(laneOptions.perProcess, laneOptions.workers - running));
       this._shared = { entryScript: this._entryScript, projectId: laneOptions.projectId, capacity: laneOptions.perProcess, lanes: new Set([0]), nextLane: 1, exiting: false, started: new ManualPromise() };
       this._lane = 0;
       sharedProcesses.push(this._shared);
     }
-    const result = await this._startProcess(runnerParams, options, lanes);
+    const result = await this._startProcess(runnerParams, options);
     this._shared?.started.resolve(!result);
     return result;
   }
@@ -119,7 +114,7 @@ export class ProcessHost extends EventEmitter {
     this.send({ method: '__init__', params: { processParams, runnerParams } });
   }
 
-  private async _startProcess(runnerParams: any, options: { onStdOut?: (chunk: Buffer | string) => void, onStdErr?: (chunk: Buffer | string) => void }, lanes: number | undefined): Promise<ProcessExitData | undefined> {
+  private async _startProcess(runnerParams: any, options: { onStdOut?: (chunk: Buffer | string) => void, onStdErr?: (chunk: Buffer | string) => void }): Promise<ProcessExitData | undefined> {
     const env = {
       ...process.env,
       ...this._extraEnv,
@@ -172,7 +167,6 @@ export class ProcessHost extends EventEmitter {
     const processParams: ipc.ProcessInitParams = {
       timeOrigin: timeOrigin(),
       ...(adopted ? { env, cwd: process.cwd() } : {}),
-      ...(lanes ? { lanes } : {}),
     };
 
     this.send({
@@ -250,8 +244,10 @@ export class ProcessHost extends EventEmitter {
       return;
     }
     this._processDidExit = true;
-    await this.onExit();
     this._didExitAndRanOnExit = true;
+    // What the lane leaves behind goes when the process exits: the browser that its lanes share
+    // writes into the folders of the lane that launched it.
+    this.process?.once('exit', () => void this.onExit());
     this.emit('exit', { unexpectedly: false, code: 0, signal: null } as ProcessExitData);
   }
 

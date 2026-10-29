@@ -66,8 +66,9 @@ export function canPreloadPages(testInfo: TestInfoImpl): boolean {
   return workers === 1 || workers * 2 < os.availableParallelism();
 }
 
-// Called when a test takes its recycled context. Returns when the test took it.
-export function preloadNextPage(browser: BrowserImpl, testInfo: TestInfoImpl): number {
+// Called when a test takes its recycled context, from the browser slot of its worker (see
+// config.workersPerProcess). Returns when the test took it.
+export function preloadNextPage(browser: BrowserImpl, testInfo: TestInfoImpl, slot: string): number {
   const takenAt = monotonicTime();
   const nextTestId = testInfo._nextTestId;
   if (!nextTestId)
@@ -77,7 +78,7 @@ export function preloadNextPage(browser: BrowserImpl, testInfo: TestInfoImpl): n
   if (next && !next.first)
     return takenAt;
   const current = entries.get(testInfo.testId);
-  browser._wrapApiCall(() => browser._preloadNextPage({ path: next?.path, expectedDuration: current?.duration }), { internal: true }).catch(() => {});
+  browser._wrapApiCall(() => browser._preloadNextPage({ path: next?.path, expectedDuration: current?.duration, slot: slot || undefined }), { internal: true }).catch(() => {});
   return takenAt;
 }
 

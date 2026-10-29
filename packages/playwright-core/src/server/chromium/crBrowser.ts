@@ -85,10 +85,14 @@ export class CRBrowser extends Browser {
     browser.options.headful = !version.userAgent.includes('Headless');
     if (!options.persistent) {
       // Flashwright: a browser handed over by another process (see browserHandoff.ts) brings its
-      // recycled context; it must be known before attaching to the tab it kept open.
-      const adopted = options.adoptContext && await browser.adoptHandedOverContext(options.adoptContext).then(() => true, () => false);
-      if (options.adoptContext && !adopted)
-        await session.send('Target.disposeBrowserContext', { browserContextId: options.adoptContext.id }).catch(() => {});
+      // recycled contexts; they must be known before attaching to the tabs they kept open.
+      let adopted = false;
+      for (const handedOver of options.adoptContexts ?? []) {
+        if (await browser.adoptHandedOverContext(handedOver).then(() => true, () => false))
+          adopted = true;
+        else
+          await session.send('Target.disposeBrowserContext', { browserContextId: handedOver.id }).catch(() => {});
+      }
       await session.send('Target.setAutoAttach', { autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
       if (adopted) {
         // Target.setAutoAttach does not wait for existing targets to attach; a call afterwards does.

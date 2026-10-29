@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-import { AsyncResource } from 'async_hooks';
-
 import { debugLogger } from '@utils/debugLogger';
 
 import type { ConnectionTransport, ProtocolRequest, ProtocolResponse } from './transport';
@@ -30,16 +28,10 @@ export class PipeTransport implements ConnectionTransport {
 
   onmessage?: (message: ProtocolResponse) => void;
 
-  private _asyncResource: AsyncResource | undefined;
-
-  // Flashwright: `adopted` pipes were received from another process; what the browser sends runs in
-  // the async context that took it over, like for a browser launched there.
-  constructor(pipeWrite: NodeJS.WritableStream, pipeRead: NodeJS.ReadableStream, adopted = false) {
+  constructor(pipeWrite: NodeJS.WritableStream, pipeRead: NodeJS.ReadableStream) {
     this._pipeRead = pipeRead;
     this._pipeWrite = pipeWrite;
-    if (adopted)
-      this.bindToCurrentAsyncContext();
-    pipeRead.on('data', buffer => this._asyncResource ? this._asyncResource.runInAsyncScope(() => this._dispatch(buffer)) : this._dispatch(buffer));
+    pipeRead.on('data', buffer => this._dispatch(buffer));
     pipeRead.on('close', () => {
       this._closed = true;
       if (this._onclose)
@@ -48,10 +40,6 @@ export class PipeTransport implements ConnectionTransport {
     pipeRead.on('error', e => debugLogger.log('error', e));
     pipeWrite.on('error', e => debugLogger.log('error', e));
     this.onmessage = undefined;
-  }
-
-  bindToCurrentAsyncContext() {
-    this._asyncResource = new AsyncResource('PipeTransport');
   }
 
   get onclose() {

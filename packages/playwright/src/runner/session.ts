@@ -364,20 +364,17 @@ export function sessionStandbyEnv(): Record<string, string> {
   return offersBrowsers && sessionChannel?.connected ? { FLASHWRIGHT_SESSION_OFFER: '1' } : {};
 }
 
-// A standby that will run several workers (config.workersPerProcess) asks for a browser for each.
-export function requestSessionBrowser(child: child_process.ChildProcess, count = 1) {
+export function requestSessionBrowser(child: child_process.ChildProcess) {
   if (!sessionChannel)
     return;
   sessionStandbys.add(child);
   child.once('exit', () => sessionStandbys.delete(child));
   if (!offersBrowsers || !sessionChannel.connected)
     return;
-  for (let i = 0; i < count; i++) {
-    const id = String(++lastRequestId);
-    standbyRequests.set(id, child);
-    child.once('exit', () => standbyRequests.delete(id));
-    sessionChannel.send({ method: kBrowserRequest, params: { id } });
-  }
+  const id = String(++lastRequestId);
+  standbyRequests.set(id, child);
+  child.once('exit', () => standbyRequests.delete(id));
+  sessionChannel.send({ method: kBrowserRequest, params: { id } });
 }
 
 // Called by ProcessHost for every message of a worker; true when the message was a browser

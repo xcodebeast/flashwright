@@ -192,7 +192,12 @@ export function beforeClientCall(object: SdkObject, type: string, method: string
   if (!awaitingFirstNavigation.size)
     return;
   const discards: Promise<void>[] = [];
+  const owner = object.attribution.context;
   for (const context of awaitingFirstNavigation) {
+    // Calls on what belongs to another context are another test's: the workers of the test runner's
+    // process share a browser (see its workersPerProcess).
+    if (owner && owner !== context)
+      continue;
     if (!isAllowedBeforeFirstNavigation(context, object, type, method))
       discards.push(context.callBeforeFirstNavigation());
   }
@@ -207,7 +212,11 @@ function isAllowedBeforeFirstNavigation(context: BrowserContext, object: SdkObje
     return (object as Frame)._page?.browserContext === context;
   if (type === 'BrowserContext' && method === 'newPage')
     return object === context;
-  if (type === 'Browser' && (method === 'preloadNextPage' || method === 'closeRecycledContext'))
+  // What the test runner calls when a test takes or gives back its recycled context, or sets up its
+  // locators: another worker's test, when the workers of its process share the browser.
+  if (type === 'Browser' && (method === 'preloadNextPage' || method === 'closeRecycledContext' || method === 'newContextForRecycle'))
+    return true;
+  if (type === 'BrowserContext' && method === 'setTestIdAttributeName')
     return true;
   return false;
 }

@@ -74,6 +74,10 @@ export class BrowserContext extends ChannelOwner<channels.BrowserContextChannel>
   _timeoutSettings: TimeoutSettings;
   _ownerPage: Page | undefined;
   _forReuse = false;
+  // Flashwright: the slot of the recycled context's worker (see Browser.newContext).
+  _recycleSlot: string | undefined;
+  // Flashwright: see Browser._contextOwner.
+  _owner: unknown;
   // Flashwright: how the test using this recycled context first navigated, known once it closed.
   _firstNavigation: channels.BrowserCloseRecycledContextResult['firstNavigation'];
   private _closedPromise: Promise<void>;
@@ -531,7 +535,7 @@ export class BrowserContext extends ChannelOwner<channels.BrowserContextChannel>
       for (const page of this.pages())
         page._onClose();
       this._onClose();
-      const { firstNavigation } = await this._browser!._channel.closeRecycledContext({ reason: options.reason ?? '' }, kNoTimeout);
+      const { firstNavigation } = await this._browser!._channel.closeRecycledContext({ reason: options.reason ?? '', slot: this._recycleSlot }, kNoTimeout);
       this._firstNavigation = firstNavigation;
     } else {
       await this._channel.close(options, kNoTimeout);

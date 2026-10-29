@@ -706,12 +706,14 @@ scheme.BrowserNewContextForRecycleParams = tObject({
     origins: tOptional(tArray(tType('SetOriginStorage'))),
     credentials: tOptional(tArray(tType('SetVirtualCredential'))),
   })),
+  slot: tOptional(tString),
 });
 scheme.BrowserNewContextForRecycleResult = tObject({
   context: tChannel(['BrowserContext']),
 });
 scheme.BrowserCloseRecycledContextParams = tObject({
   reason: tString,
+  slot: tOptional(tString),
 });
 scheme.BrowserCloseRecycledContextResult = tObject({
   firstNavigation: tOptional(tObject({
@@ -722,6 +724,7 @@ scheme.BrowserCloseRecycledContextResult = tObject({
 scheme.BrowserPreloadNextPageParams = tObject({
   path: tOptional(tString),
   expectedDuration: tOptional(tFloat),
+  slot: tOptional(tString),
 });
 scheme.BrowserPreloadNextPageResult = tOptional(tObject({}));
 scheme.BrowserNewBrowserCDPSessionParams = tOptional(tObject({}));

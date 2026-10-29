@@ -28,6 +28,7 @@ import { compressCallLog } from '../callLog';
 import { Progress, ProgressController } from '../progress';
 import { beforeClientCall } from '../pagePreload';
 
+import type { AsyncResource } from 'async_hooks';
 import type { CallMetadata } from '../instrumentation';
 import type { PlaywrightDispatcher } from './playwrightDispatcher';
 import type { RegisteredListener } from '@utils/eventsHelper';
@@ -220,21 +221,31 @@ export class DispatcherConnection {
   sendEvent(dispatcher: DispatcherScope, event: string, params: any) {
     const validator = findValidator(dispatcher._type, event, 'Event');
     params = validator(params, '', this._validatorToWireContext());
-    this.onmessage({ guid: dispatcher._guid, method: event, params });
+    this._send(dispatcher, { guid: dispatcher._guid, method: event, params });
   }
 
   sendCreate(parent: DispatcherScope, type: string, guid: string, initializer: any) {
     const validator = findValidator(type, '', 'Initializer');
     initializer = validator(initializer, '', this._validatorToWireContext());
-    this.onmessage({ guid: parent._guid, method: '__create__', params: { type, initializer, guid } });
+    this._send(parent, { guid: parent._guid, method: '__create__', params: { type, initializer, guid } });
   }
 
   sendAdopt(parent: DispatcherScope, dispatcher: DispatcherScope) {
-    this.onmessage({ guid: parent._guid, method: '__adopt__', params: { guid: dispatcher._guid } });
+    this._send(parent, { guid: parent._guid, method: '__adopt__', params: { guid: dispatcher._guid } });
   }
 
   sendDispose(dispatcher: DispatcherScope, reason?: 'gc') {
-    this.onmessage({ guid: dispatcher._guid, method: '__dispose__', params: { reason } });
+    this._send(dispatcher, { guid: dispatcher._guid, method: '__dispose__', params: { reason } });
+  }
+
+  // Flashwright: an in-process client gets what happens in a browser context in the async context
+  // that created the context or took it for reuse (see BrowserContext.asyncResource).
+  private _send(scope: DispatcherScope, message: object) {
+    const context = this._isInProcess ? scope._object?.attribution?.context as { asyncResource?: AsyncResource } | undefined : undefined;
+    if (context?.asyncResource)
+      context.asyncResource.runInAsyncScope(() => this.onmessage(message));
+    else
+      this.onmessage(message);
   }
 
   private _validatorToWireContext(): ValidatorContext {

@@ -97,6 +97,29 @@ test('the next run takes over the browser, reset', async ({ runInlineTest }) => 
   }
 });
 
+test('the next run takes over a browser that the workers of a process share', async ({ runInlineTest }) => {
+  const server = await startServer();
+  try {
+    const browsers: string[] = [];
+    for (const name of ['first', 'second', 'third']) {
+      const run = files(server.url, name);
+      const result = await runInlineTest({
+        'playwright.config.js': `module.exports = { workers: 2, workersPerProcess: 2, use: { baseURL: '${server.url}' } };`,
+        'a.spec.ts': run['a.spec.ts'],
+        'b.spec.ts': run['a.spec.ts'],
+      }, {}, env());
+      expect(result.exitCode).toBe(0);
+      expect(result.passed).toBe(2);
+      browsers.push(...result.outputLines.filter(line => line.startsWith('browser ')));
+    }
+    expect(browsers).toHaveLength(6);
+    // One browser, with a recycled context for each worker, reset between runs.
+    expect(new Set(browsers).size).toBe(1);
+  } finally {
+    server.close();
+  }
+});
+
 test('reports failures and output like a run without the session', async ({ runInlineTest }) => {
   const test = `
     import { test, expect } from '@playwright/test';

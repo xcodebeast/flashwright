@@ -1303,6 +1303,7 @@ export type BrowserNewContextForRecycleParams = {
     origins?: SetOriginStorage[],
     credentials?: SetVirtualCredential[],
   },
+  slot?: string,
 };
 export type BrowserNewContextForRecycleOptions = {
   noDefaultViewport?: boolean,
@@ -1383,15 +1384,17 @@ export type BrowserNewContextForRecycleOptions = {
     origins?: SetOriginStorage[],
     credentials?: SetVirtualCredential[],
   },
+  slot?: string,
 };
 export type BrowserNewContextForRecycleResult = {
   context: BrowserContextChannel,
 };
 export type BrowserCloseRecycledContextParams = {
   reason: string,
+  slot?: string,
 };
 export type BrowserCloseRecycledContextOptions = {
-
+  slot?: string,
 };
 export type BrowserCloseRecycledContextResult = {
   firstNavigation?: {
@@ -1402,10 +1405,12 @@ export type BrowserCloseRecycledContextResult = {
 export type BrowserPreloadNextPageParams = {
   path?: string,
   expectedDuration?: number,
+  slot?: string,
 };
 export type BrowserPreloadNextPageOptions = {
   path?: string,
   expectedDuration?: number,
+  slot?: string,
 };
 export type BrowserPreloadNextPageResult = void;
 export type BrowserNewBrowserCDPSessionParams = {};

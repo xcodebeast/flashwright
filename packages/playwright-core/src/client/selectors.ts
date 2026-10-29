@@ -40,6 +40,9 @@ export class Selectors implements api.Selectors {
   }
 
   setTestIdAttribute(attributeName: string) {
+    // Flashwright: the test runner sets it for every test; contexts already have it.
+    if (attributeName === this._testIdAttributeName)
+      return;
     this._testIdAttributeName = attributeName;
     setTestIdAttribute(attributeName);
     for (const context of this._contextsForSelectors) {

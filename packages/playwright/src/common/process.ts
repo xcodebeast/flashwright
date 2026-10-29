@@ -95,9 +95,6 @@ export function startProcessRunner(create: (params: any) => ProcessRunner) {
           adoptEnvironment(processParams.env);
         if (processParams.cwd && processParams.cwd !== process.cwd())
           process.chdir(processParams.cwd);
-        // Browsers started ahead of time for lanes that this process will not get.
-        if (processParams.lanes)
-          (globalThis as any)[Symbol.for('flashwright.keepLaneBrowsers')]?.(processParams.lanes);
       }
       if (message.lane === undefined) {
         processRunner = create(runnerParams);

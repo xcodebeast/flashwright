@@ -24,34 +24,17 @@ import path from 'path';
 import { isDeepStrictEqual } from 'util';
 
 import type { Browser, LaunchOptions } from 'playwright-core';
-import type * as globals from './globals';
 
 // The options the browser fixture uses for a default project whose contexts are recycled.
 const speculativeOptions = { handleSIGINT: false, headless: true, ...(process.env.FLASHWRIGHT_ISOLATION === 'strict' ? {} : { recycleContexts: true }) };
 // The fixtures and the worker entry are bundled separately; share the launch through a global.
 const speculativeKey = Symbol.for('flashwright.speculativeBrowser');
-const laneBrowsersKey = Symbol.for('flashwright.laneSpeculativeBrowsers');
-// The worker entry bundles this file with a copy of its imports: lanes come from the one module.
-const lanes = () => (globalThis as any)[Symbol.for('flashwright.lanes')] as typeof globals;
 
 export function launchSpeculativeBrowser(): Promise<Browser | undefined> {
-  // With workersPerProcess, each of the process's first lanes gets one, launched in that lane so
-  // that what its browser sends reaches the lane's test.
-  const laneCount = Math.max(1, Math.floor(Number(process.env.FLASHWRIGHT_SPECULATIVE_LANES) || 1));
-  // In a warm session, browsers of the previous run may be on their way; launching takes them over.
-  const offered = process.env.FLASHWRIGHT_SESSION_OFFER ? receiveSessionBrowsers(laneCount) : Promise.resolve();
-  const launchOne = (): Promise<Browser | undefined> => require('playwright-core').chromium.launch(speculativeOptions).catch(() => undefined);
-  const launchIn = (lane: number) => laneCount === 1 ? launchOne() : lanes().runInLane(lanes().laneById(lane), launchOne);
-  const launch = offered.then(() => launchIn(0)).catch(() => undefined);
+  // In a warm session, a browser of the previous run may be on its way; launching takes it over.
+  const offered = process.env.FLASHWRIGHT_SESSION_OFFER ? receiveSessionBrowser() : Promise.resolve();
+  const launch = offered.then(() => require('playwright-core').chromium.launch(speculativeOptions)).catch(() => undefined);
   (globalThis as any)[speculativeKey] = launch;
-  const laneBrowsers = Array.from({ length: laneCount }, (_, lane) => lane ? offered.then(() => launchIn(lane)).catch(() => undefined) : undefined);
-  (globalThis as any)[laneBrowsersKey] = laneBrowsers;
-  (globalThis as any)[Symbol.for('flashwright.keepLaneBrowsers')] = (count: number) => {
-    for (let lane = count; lane < laneBrowsers.length; lane++) {
-      void laneBrowsers[lane]?.then(browser => browser?.close()).catch(() => {});
-      laneBrowsers[lane] = undefined;
-    }
-  };
   return launch;
 }
 
@@ -69,53 +52,42 @@ let offeredLastUsed = 0;
 // wait for it for long, and a browser that arrives after that goes back.
 const kOfferTimeoutAfterInit = 500;
 
-// A process that runs several workers (see workersPerProcess) asks for a browser for each, and
-// leaves them all for playwright-core's BrowserType to take.
-function receiveSessionBrowsers(count: number): Promise<void> {
-  const offers: any[] = [];
-  if (count > 1)
-    (globalThis as any)[offerKey] = offers;
+function receiveSessionBrowser(): Promise<void> {
   return new Promise(resolve => {
     let answered = false;
-    let answers = 0;
     let timer: NodeJS.Timeout | undefined;
     const answer = () => {
       answered = true;
       clearTimeout(timer);
       resolve();
     };
-    const partsById = new Map<string, any>();
+    const parts: any = {};
     const onMessage = (message: any, handle: any) => {
       if (message?.method === '__init__' && !answered)
         timer = setTimeout(answer, kOfferTimeoutAfterInit);
       if (message?.method !== kBrowserMessage || message.params.sent)
         return;
-      if (!message.params.none) {
-        const parts = partsById.get(message.params.id) ?? {};
-        partsById.set(message.params.id, parts);
-        parts[message.params.part] = handle;
-        parts.metadata ??= message.params.metadata;
-        if (!parts.write || !parts.read || !parts.metadata)
-          return;
-        partsById.delete(message.params.id);
-        if (answered) {
-          void sendToRunner(parts);
-        } else {
-          if (count > 1)
-            offers.push(parts);
-          else
-            (globalThis as any)[offerKey] = parts;
-          offeredLastUsed = Math.max(offeredLastUsed, parts.metadata.lastUsed ?? 0);
-          // A browser that nothing took over goes with this process.
-          process.once('exit', () => {
-            if ((globalThis as any)[offerKey] === parts || offers.includes(parts))
-              killHandedOverBrowser(parts.metadata);
-          });
-        }
+      if (message.params.none) {
+        process.off('message', onMessage);
+        answer();
+        return;
       }
-      if (++answers < count)
+      parts[message.params.part] = handle;
+      parts.metadata ??= message.params.metadata;
+      if (!parts.write || !parts.read || !parts.metadata)
         return;
       process.off('message', onMessage);
+      if (answered) {
+        void sendToRunner(parts);
+        return;
+      }
+      (globalThis as any)[offerKey] = parts;
+      offeredLastUsed = parts.metadata.lastUsed ?? 0;
+      // A browser that nothing took over goes with this process.
+      process.once('exit', () => {
+        if ((globalThis as any)[offerKey] === parts)
+          killHandedOverBrowser(parts.metadata);
+      });
       answer();
     };
     process.on('message', onMessage);
@@ -129,10 +101,7 @@ export async function handBrowsersToSession(browser: Browser | undefined, ranTes
   if (!process.env.FLASHWRIGHT_SESSION_HANDOFF || !process.send)
     return false;
   const offer = (globalThis as any)[offerKey];
-  if (Array.isArray(offer)) {
-    for (const parts of offer.splice(0))
-      await sendToRunner(parts);
-  } else if (offer) {
+  if (offer) {
     delete (globalThis as any)[offerKey];
     await sendToRunner(offer);
   }
@@ -270,15 +239,10 @@ export async function returnSpeculativeBrowser() {
 }
 
 export async function takeSpeculativeBrowser(browserName: string, options: LaunchOptions): Promise<Browser | undefined> {
-  const lane = lanes()?.currentLane()?.id ?? 0;
-  const laneBrowsers = (globalThis as any)[laneBrowsersKey] as (Promise<Browser | undefined> | undefined)[] | undefined;
-  const launch = (lane ? laneBrowsers?.[lane] : (globalThis as any)[speculativeKey]) as Promise<Browser | undefined> | undefined;
+  const launch = (globalThis as any)[speculativeKey] as Promise<Browser | undefined> | undefined;
   if (!launch)
     return;
-  if (lane)
-    laneBrowsers![lane] = undefined;
-  else
-    delete (globalThis as any)[speculativeKey];
+  delete (globalThis as any)[speculativeKey];
   const { tracesDir, artifactsDir, ...rest } = options as LaunchOptions & { tracesDir?: string, artifactsDir?: string };
   const browser = await launch;
   if (!browser)
@@ -292,8 +256,6 @@ export async function takeSpeculativeBrowser(browserName: string, options: Launc
   // The browser was launched before the worker knew its output folders, and so was the context it
   // may have prepared for the first test.
   await serverBrowser.setOutputDirs(artifactsDir, tracesDir || artifactsDir);
-  if (lanes()?.currentLane())
-    serverBrowser.bindToCurrentAsyncContext();
   (browser as any)._connectToBrowserType(browser.browserType(), options, undefined);
   return browser;
 }

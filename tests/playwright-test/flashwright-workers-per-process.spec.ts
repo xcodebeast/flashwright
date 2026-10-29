@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-// Flashwright: the workersPerProcess option runs several workers in one worker process.
+// Flashwright: the workersPerProcess option runs several workers in one worker process, which share
+// its browser.
+
+import fs from 'fs';
+import os from 'os';
 
 import { test, expect } from './playwright-test-fixtures';
 
@@ -138,6 +142,110 @@ test('should keep each worker\'s action timeout when the other worker\'s test en
   });
   expect(result.exitCode).toBe(0);
   expect(result.passed).toBe(2);
+});
+
+test('should share the browser and show each worker its own contexts', async ({ runInlineTest }) => {
+  const result = await runInlineTest({
+    'playwright.config.ts': `export default { workers: 2, workersPerProcess: 2, fullyParallel: true };`,
+    'a.spec.ts': `
+      import { test as base, expect } from '@playwright/test';
+      const test = base.extend({
+        workerContext: [async ({ browser }, use) => {
+          const context = await browser.newContext();
+          await use(context);
+          await context.close();
+        }, { scope: 'worker' }],
+      });
+      for (const name of ['one', 'two']) {
+        test(name, async ({ browser, context, workerContext }) => {
+          ${together}
+          const other = await browser.newContext();
+          expect(new Set(browser.contexts())).toEqual(new Set([workerContext, context, other]));
+          console.log('%%' + browser._guid);
+          globalThis.closed = (globalThis.closed ?? 0) + 1;
+          await expect.poll(() => globalThis.closed).toBe(2);
+          await other.close();
+        });
+      }
+    `,
+  });
+  expect(result.exitCode).toBe(0);
+  expect(result.passed).toBe(2);
+  expect(result.outputLines).toHaveLength(2);
+  expect(result.outputLines[0]).toBe(result.outputLines[1]);
+});
+
+test('should keep downloads of a worker after the worker that launched the browser stopped', async ({ runInlineTest }) => {
+  const result = await runInlineTest({
+    'playwright.config.ts': `export default { workers: 2, workersPerProcess: 2 };`,
+    'a.spec.ts': `
+      import { test, expect } from '@playwright/test';
+      test('fails', async ({ page }) => {
+        ${together}
+        // Its worker stops: the next test of this file would get a new one.
+        throw new Error('failing');
+      });
+    `,
+    'b.spec.ts': `
+      import fs from 'fs';
+      import { test, expect } from '@playwright/test';
+      // The other worker launches the browser.
+      test.beforeAll(() => new Promise(f => setTimeout(f, 500)));
+      test('downloads', async ({ page }) => {
+        ${together}
+        await new Promise(f => setTimeout(f, 1000));
+        await page.route('**/file', route => route.fulfill({ body: 'downloaded', headers: { 'Content-Disposition': 'attachment' } }));
+        await page.setContent('<a href="http://localhost/file">file</a>');
+        const [download] = await Promise.all([page.waitForEvent('download'), page.click('a')]);
+        expect(fs.readFileSync(await download.path(), 'utf8')).toBe('downloaded');
+      });
+    `,
+  });
+  expect(result.exitCode).toBe(1);
+  expect(result.failed).toBe(1);
+  expect(result.passed).toBe(1);
+});
+
+test('should preload pages for each worker of the process', async ({ runInlineTest }) => {
+  test.skip(os.availableParallelism() <= 4, 'preloadPages takes effect with workers fewer than half the CPU cores');
+  const tmpdir = test.info().outputPath('tmp');
+  fs.mkdirSync(tmpdir, { recursive: true });
+  const spec = (name: string) => `
+    import { test, expect } from '@playwright/test';
+    import { listening, origin } from './server';
+    test.beforeAll(() => listening);
+    test('${name} first', async ({ page }) => {
+      await page.goto(origin + '/${name}');
+      await page.waitForTimeout(300);
+    });
+    test('${name} preloaded', async ({ page }) => {
+      const gotoTime = Date.now();
+      const response = await page.goto(origin + '/${name}');
+      expect(response.request().timing().startTime).toBeLessThan(gotoTime - 50);
+      await expect(page.locator('p')).toHaveText('/${name}');
+    });
+  `;
+  const result = await runInlineTest({
+    'playwright.config.ts': `export default { workers: 2, workersPerProcess: 2, use: { preloadPages: true } };`,
+    'server.ts': `
+      import http from 'http';
+      export let origin;
+      const server = http.createServer((req, res) => {
+        res.setHeader('Content-Type', 'text/html');
+        res.end('<p>' + req.url + '</p>');
+      });
+      // Both workers of the process use the module: it never closes, and does not keep the process alive.
+      server.unref();
+      export const listening = new Promise(f => server.listen(0, () => {
+        origin = 'http://127.0.0.1:' + server.address().port;
+        f();
+      }));
+    `,
+    'a.spec.ts': spec('a'),
+    'b.spec.ts': spec('b'),
+  }, {}, { TMPDIR: tmpdir });
+  expect(result.exitCode).toBe(0);
+  expect(result.passed).toBe(4);
 });
 
 test('should take workersPerProcess from the command line', async ({ runInlineTest }) => {

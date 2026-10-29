@@ -71,6 +71,10 @@ class DummyChannelOwner extends ChannelOwner {
 
 export type ChannelOwnerFactory = (parent: ChannelOwner, type: string, guid: string, initializer: any) => ChannelOwner;
 
+// Flashwright: starting and stopping a trace is not part of any trace, also while another one runs,
+// like a trace of another test when the test runner's workers share a process.
+const kTracingLifecycle = new Set(['tracingStart', 'tracingStartChunk', 'tracingStopChunk', 'tracingStop']);
+
 export class Connection extends EventEmitter {
   readonly _objects = new Map<string, ChannelOwner>();
   onmessage = (message: object): void => {};
@@ -200,7 +204,7 @@ export class Connection extends EventEmitter {
     }
     const location = options.frames?.[0] ? { file: options.frames[0].file, line: options.frames[0].line, column: options.frames[0].column } : undefined;
     const metadata: channels.Metadata = { title: options.title, location, internal: options.internal, timeout: options.timeout };
-    if (this._tracingCount && options.frames && type !== 'LocalUtils')
+    if (this._tracingCount && options.frames && type !== 'LocalUtils' && !(type === 'Tracing' && kTracingLifecycle.has(method)))
       this._localUtils?.addStackToTracingNoReply({ callData: { stack: options.frames ?? [], id } }).catch(() => {});
     // We need to exit zones before calling into the server, otherwise
     // when we receive events from the server, we would be in an API zone.

@@ -39,7 +39,16 @@ export type StackSession = {
   tmpDir: string | undefined;
   callStacks: channels.ClientSideCallMetadata[];
   live?: boolean;
+  // Flashwright: see callerLane.
+  lane?: unknown;
 };
+
+// Flashwright: the test runner's workers that share a process (see its workersPerProcess) each run
+// in a lane of their own, where an in-process client's calls arrive; a trace records the calls of
+// the lane that started it.
+function callerLane(): unknown {
+  return (globalThis as any)[Symbol.for('flashwright.lanes')]?.currentLane();
+}
 
 export async function zip(progress: Progress, stackSessions: Map<string, StackSession>, params: channels.LocalUtilsZipParams): Promise<void> {
   const promise = new ManualPromise<void>();
@@ -220,7 +229,7 @@ export async function tracingStarted(progress: Progress, stackSessions: Map<stri
   // Ensure the directory exists before addStackToTracingNoReply races ahead of
   // the tracing recorder's own (separately queued) mkdir.
   await progress.race(fs.promises.mkdir(path.dirname(traceStacksFile), { recursive: true }));
-  stackSessions.set(traceStacksFile, { callStacks: [], file: traceStacksFile, writer: Promise.resolve(), tmpDir, live: params.live });
+  stackSessions.set(traceStacksFile, { callStacks: [], file: traceStacksFile, writer: Promise.resolve(), tmpDir, live: params.live, lane: callerLane() });
   return { stacksId: traceStacksFile };
 }
 
@@ -229,7 +238,10 @@ export async function traceDiscarded(progress: Progress, stackSessions: Map<stri
 }
 
 export function addStackToTracingNoReply(stackSessions: Map<string, StackSession>, params: channels.LocalUtilsAddStackToTracingNoReplyParams) {
+  const lane = callerLane();
   for (const session of stackSessions.values()) {
+    if (session.lane && session.lane !== lane)
+      continue;
     session.callStacks.push(params.callData);
     if (session.live) {
       session.writer = session.writer.then(() => {
