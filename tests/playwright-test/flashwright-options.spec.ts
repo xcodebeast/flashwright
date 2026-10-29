@@ -50,6 +50,44 @@ test('should apply blockResources from test.use', async ({ runInlineTest }) => {
   expect(result.passed).toBe(2);
 });
 
+test('should apply locatorPolicy from the config and test.use', async ({ runInlineTest }) => {
+  const result = await runInlineTest({
+    'playwright.config.ts': `
+      export default { use: { locatorPolicy: 'test-id' } };
+    `,
+    'a.spec.ts': `
+      import { test, expect } from '@playwright/test';
+
+      test.beforeEach(async ({ page }) => {
+        await page.setContent('<button data-testid="save">Save</button>');
+      });
+
+      test('finds elements by test id', async ({ page }) => {
+        await page.getByTestId('save').click();
+      });
+
+      test('rejects other locators', async ({ page }) => {
+        const error = await page.getByRole('button', { name: 'Save' }).click().catch(e => e);
+        expect(error.message).toContain("locatorPolicy 'test-id' only allows getByTestId() locators");
+      });
+
+      test.describe(() => {
+        test.use({ locatorPolicy: 'any' });
+        test('allows any locator', async ({ page }) => {
+          await page.getByRole('button', { name: 'Save' }).click();
+        });
+      });
+
+      test('rejects them again', async ({ page }) => {
+        const error = await page.locator('button').click().catch(e => e);
+        expect(error.message).toContain("locatorPolicy 'test-id' only allows getByTestId() locators");
+      });
+    `,
+  }, { workers: 1 });
+  expect(result.exitCode).toBe(0);
+  expect(result.passed).toBe(4);
+});
+
 const crossOriginFetchTest = (expected: string, options = '') => `
   import { test, expect } from '@playwright/test';
   import http from 'http';

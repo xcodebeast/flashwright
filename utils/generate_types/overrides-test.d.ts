@@ -301,6 +301,7 @@ export interface PlaywrightTestOptions {
   instantAnimations: boolean;
   failFastWhenIdle: boolean;
   blockResources: Array<'image' | 'media' | 'font' | 'stylesheet' | 'script'> | undefined;
+  locatorPolicy: 'any' | 'test-id';
   locale: string | undefined;
   offline: boolean;
   permissions: string[] | undefined;

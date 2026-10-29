@@ -1652,7 +1652,7 @@ export class Frame extends SdkObject<FrameEventMap> {
     let missingReceived = false;
 
     // Non-array expectations are strict (callOnSelector throws on multiple); array ones are not.
-    const resolved = await progress.race(this.selectors.callOnSelector({ selector: effectiveSelector, strict: !isArray, mainWorld, markTargets: 'all' }, async ({ injected, elements, frameVisible }, options) => {
+    const resolved = await progress.race(this.selectors.callOnSelector({ selector: effectiveSelector, strict: !isArray, mainWorld, markTargets: 'all', internal: selector === undefined }, async ({ injected, elements, frameVisible }, options) => {
       const isArray = options.expression === 'to.have.count' || options.expression.endsWith('.array');
       const log = isArray
         ? `  locator resolved to ${elements.length} element${elements.length === 1 ? '' : 's'}`

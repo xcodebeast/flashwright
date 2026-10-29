@@ -11548,6 +11548,27 @@ export interface Browser {
     locale?: string;
 
     /**
+     * Which locators may select elements. With `'test-id'`, only locators made with
+     * [page.getByTestId(testId)](https://playwright.dev/docs/api/class-page#page-get-by-test-id) do: they find elements
+     * with one attribute lookup, while role, label and text locators work out the role and the text of the page's
+     * elements, which takes longer the larger the page. Chaining test id locators,
+     * [locator.first()](https://playwright.dev/docs/api/class-locator#locator-first),
+     * [locator.last()](https://playwright.dev/docs/api/class-locator#locator-last),
+     * [locator.nth(index)](https://playwright.dev/docs/api/class-locator#locator-nth),
+     * [locator.and(locator)](https://playwright.dev/docs/api/class-locator#locator-and),
+     * [locator.or(locator)](https://playwright.dev/docs/api/class-locator#locator-or),
+     * [locator.contentFrame()](https://playwright.dev/docs/api/class-locator#locator-content-frame) and
+     * [locator.filter([options])](https://playwright.dev/docs/api/class-locator#locator-filter) with `has`, `hasNot` and
+     * `visible` are allowed. Any other locator or selector, including CSS and XPath selectors, the `hasText` and
+     * `hasNotText` filters and
+     * [page.frameLocator([selector])](https://playwright.dev/docs/api/class-page#page-frame-locator), fails right away.
+     * Assertions about the elements a locator selects, like
+     * [expect(locator).toHaveText(expected[, options])](https://playwright.dev/docs/api/class-locatorassertions#locator-assertions-to-have-text),
+     * are not affected. Defaults to `'any'`.
+     */
+    locatorPolicy?: "any"|"test-id";
+
+    /**
      * Logger sink for Playwright logging.
      * @deprecated The logs received by the logger are incomplete. Please use tracing instead.
      */
@@ -17996,6 +18017,27 @@ export interface BrowserType<Unused = {}> {
      * locale. Learn more about emulation in our [emulation guide](https://playwright.dev/docs/emulation#locale--timezone).
      */
     locale?: string;
+
+    /**
+     * Which locators may select elements. With `'test-id'`, only locators made with
+     * [page.getByTestId(testId)](https://playwright.dev/docs/api/class-page#page-get-by-test-id) do: they find elements
+     * with one attribute lookup, while role, label and text locators work out the role and the text of the page's
+     * elements, which takes longer the larger the page. Chaining test id locators,
+     * [locator.first()](https://playwright.dev/docs/api/class-locator#locator-first),
+     * [locator.last()](https://playwright.dev/docs/api/class-locator#locator-last),
+     * [locator.nth(index)](https://playwright.dev/docs/api/class-locator#locator-nth),
+     * [locator.and(locator)](https://playwright.dev/docs/api/class-locator#locator-and),
+     * [locator.or(locator)](https://playwright.dev/docs/api/class-locator#locator-or),
+     * [locator.contentFrame()](https://playwright.dev/docs/api/class-locator#locator-content-frame) and
+     * [locator.filter([options])](https://playwright.dev/docs/api/class-locator#locator-filter) with `has`, `hasNot` and
+     * `visible` are allowed. Any other locator or selector, including CSS and XPath selectors, the `hasText` and
+     * `hasNotText` filters and
+     * [page.frameLocator([selector])](https://playwright.dev/docs/api/class-page#page-frame-locator), fails right away.
+     * Assertions about the elements a locator selects, like
+     * [expect(locator).toHaveText(expected[, options])](https://playwright.dev/docs/api/class-locatorassertions#locator-assertions-to-have-text),
+     * are not affected. Defaults to `'any'`.
+     */
+    locatorPolicy?: "any"|"test-id";
 
     /**
      * Logger sink for Playwright logging.
@@ -25261,6 +25303,27 @@ export interface AndroidDevice {
     locale?: string;
 
     /**
+     * Which locators may select elements. With `'test-id'`, only locators made with
+     * [page.getByTestId(testId)](https://playwright.dev/docs/api/class-page#page-get-by-test-id) do: they find elements
+     * with one attribute lookup, while role, label and text locators work out the role and the text of the page's
+     * elements, which takes longer the larger the page. Chaining test id locators,
+     * [locator.first()](https://playwright.dev/docs/api/class-locator#locator-first),
+     * [locator.last()](https://playwright.dev/docs/api/class-locator#locator-last),
+     * [locator.nth(index)](https://playwright.dev/docs/api/class-locator#locator-nth),
+     * [locator.and(locator)](https://playwright.dev/docs/api/class-locator#locator-and),
+     * [locator.or(locator)](https://playwright.dev/docs/api/class-locator#locator-or),
+     * [locator.contentFrame()](https://playwright.dev/docs/api/class-locator#locator-content-frame) and
+     * [locator.filter([options])](https://playwright.dev/docs/api/class-locator#locator-filter) with `has`, `hasNot` and
+     * `visible` are allowed. Any other locator or selector, including CSS and XPath selectors, the `hasText` and
+     * `hasNotText` filters and
+     * [page.frameLocator([selector])](https://playwright.dev/docs/api/class-page#page-frame-locator), fails right away.
+     * Assertions about the elements a locator selects, like
+     * [expect(locator).toHaveText(expected[, options])](https://playwright.dev/docs/api/class-locatorassertions#locator-assertions-to-have-text),
+     * are not affected. Defaults to `'any'`.
+     */
+    locatorPolicy?: "any"|"test-id";
+
+    /**
      * Logger sink for Playwright logging.
      * @deprecated The logs received by the logger are incomplete. Please use tracing instead.
      */
@@ -26540,6 +26603,27 @@ export interface BrowserContextOptions {
    * locale. Learn more about emulation in our [emulation guide](https://playwright.dev/docs/emulation#locale--timezone).
    */
   locale?: string;
+
+  /**
+   * Which locators may select elements. With `'test-id'`, only locators made with
+   * [page.getByTestId(testId)](https://playwright.dev/docs/api/class-page#page-get-by-test-id) do: they find elements
+   * with one attribute lookup, while role, label and text locators work out the role and the text of the page's
+   * elements, which takes longer the larger the page. Chaining test id locators,
+   * [locator.first()](https://playwright.dev/docs/api/class-locator#locator-first),
+   * [locator.last()](https://playwright.dev/docs/api/class-locator#locator-last),
+   * [locator.nth(index)](https://playwright.dev/docs/api/class-locator#locator-nth),
+   * [locator.and(locator)](https://playwright.dev/docs/api/class-locator#locator-and),
+   * [locator.or(locator)](https://playwright.dev/docs/api/class-locator#locator-or),
+   * [locator.contentFrame()](https://playwright.dev/docs/api/class-locator#locator-content-frame) and
+   * [locator.filter([options])](https://playwright.dev/docs/api/class-locator#locator-filter) with `has`, `hasNot` and
+   * `visible` are allowed. Any other locator or selector, including CSS and XPath selectors, the `hasText` and
+   * `hasNotText` filters and
+   * [page.frameLocator([selector])](https://playwright.dev/docs/api/class-page#page-frame-locator), fails right away.
+   * Assertions about the elements a locator selects, like
+   * [expect(locator).toHaveText(expected[, options])](https://playwright.dev/docs/api/class-locatorassertions#locator-assertions-to-have-text),
+   * are not affected. Defaults to `'any'`.
+   */
+  locatorPolicy?: "any"|"test-id";
 
   /**
    * Logger sink for Playwright logging.

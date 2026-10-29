@@ -7331,8 +7331,8 @@ export interface PlaywrightWorkerOptions {
    * - The option is ignored when
    *   [testOptions.video](https://playwright.dev/docs/api/class-testoptions#test-options-video) recording is enabled.
    * - Only a few context options may differ between consecutive tests: `colorScheme`, `forcedColors`,
-   *   `reducedMotion`, `contrast`, `screen`, `userAgent`, `viewport`, `testIdAttribute`, `waitForAnimations` and
-   *   `baseURL`. Changing any other option in
+   *   `reducedMotion`, `contrast`, `screen`, `userAgent`, `viewport`, `testIdAttribute`, `waitForAnimations`,
+   *   `baseURL`, `failFastWhenIdle` and `locatorPolicy`. Changing any other option in
    *   [test.use(options)](https://playwright.dev/docs/api/class-test#test-use), for example `locale` or
    *   `storageState`, silently forces a fresh context and negates the speedup.
    * - Do not combine with
@@ -7892,6 +7892,41 @@ export interface PlaywrightTestOptions {
    *
    */
   blockResources: Array<'image' | 'media' | 'font' | 'stylesheet' | 'script'> | undefined;
+  /**
+   * Which locators may select elements. With `'test-id'`, only locators made with
+   * [page.getByTestId(testId)](https://playwright.dev/docs/api/class-page#page-get-by-test-id) do: they find elements
+   * with one attribute lookup, while role, label and text locators work out the role and the text of the page's
+   * elements, which takes longer the larger the page. Chaining test id locators,
+   * [locator.first()](https://playwright.dev/docs/api/class-locator#locator-first),
+   * [locator.last()](https://playwright.dev/docs/api/class-locator#locator-last),
+   * [locator.nth(index)](https://playwright.dev/docs/api/class-locator#locator-nth),
+   * [locator.and(locator)](https://playwright.dev/docs/api/class-locator#locator-and),
+   * [locator.or(locator)](https://playwright.dev/docs/api/class-locator#locator-or),
+   * [locator.contentFrame()](https://playwright.dev/docs/api/class-locator#locator-content-frame) and
+   * [locator.filter([options])](https://playwright.dev/docs/api/class-locator#locator-filter) with `has`, `hasNot` and
+   * `visible` are allowed. Any other locator or selector, including CSS and XPath selectors, the `hasText` and
+   * `hasNotText` filters and
+   * [page.frameLocator([selector])](https://playwright.dev/docs/api/class-page#page-frame-locator), fails right away.
+   * Assertions about the elements a locator selects, like
+   * [expect(locator).toHaveText(expected[, options])](https://playwright.dev/docs/api/class-locatorassertions#locator-assertions-to-have-text),
+   * are not affected. Defaults to `'any'`.
+   *
+   * **Usage**
+   *
+   * ```js
+   * // playwright.config.ts
+   * import { defineConfig } from '@playwright/test';
+   *
+   * export default defineConfig({
+   *   use: {
+   *     // Every test finds elements by their test id.
+   *     locatorPolicy: 'test-id',
+   *   },
+   * });
+   * ```
+   *
+   */
+  locatorPolicy: 'any' | 'test-id';
   /**
    * Specify user locale, for example `en-GB`, `de-DE`, etc. Locale will affect `navigator.language` value,
    * `Accept-Language` request header value as well as number and date formatting rules. Defaults to `en-US`. Learn more

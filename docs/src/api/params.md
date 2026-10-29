@@ -747,6 +747,12 @@ Whether an assertion that does not pass yet fails as soon as nothing can change 
 
 Resource types that the context does not load: their requests fail, as if a route aborted them with `blockedbyclient`, before any route sees them. A test that does not need them saves loading, decoding and rendering them. On Chromium, other requests are not paused and the cache stays on, so blocking costs nothing when the context has no routes. Inline styles and scripts are not affected; set `javaScriptEnabled` to `false` to turn off JavaScript. Defaults to none.
 
+## context-option-locatorpolicy
+* langs: js
+- `locatorPolicy` <[LocatorPolicy]<"any"|"test-id">>
+
+Which locators may select elements. With `'test-id'`, only locators made with [`method: Page.getByTestId`] do: they find elements with one attribute lookup, while role, label and text locators work out the role and the text of the page's elements, which takes longer the larger the page. Chaining test id locators, [`method: Locator.first`], [`method: Locator.last`], [`method: Locator.nth`], [`method: Locator.and`], [`method: Locator.or`], [`method: Locator.contentFrame`] and [`method: Locator.filter`] with `has`, `hasNot` and `visible` are allowed. Any other locator or selector, including CSS and XPath selectors, the `hasText` and `hasNotText` filters and [`method: Page.frameLocator`], fails right away. Assertions about the elements a locator selects, like [`method: LocatorAssertions.toHaveText`], are not affected. Defaults to `'any'`.
+
 ## context-option-timezoneid
 - `timezoneId` <[string]>
 
@@ -1179,6 +1185,7 @@ between the same pixel in compared images, between zero (strict) and one (lax), 
 - %%-context-option-instantanimations-%%
 - %%-context-option-failfastwhenidle-%%
 - %%-context-option-blockresources-%%
+- %%-context-option-locatorpolicy-%%
 - %%-context-option-timezoneid-%%
 - %%-context-option-geolocation-%%
 - %%-context-option-locale-%%

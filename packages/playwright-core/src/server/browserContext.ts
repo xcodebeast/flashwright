@@ -1347,6 +1347,8 @@ const paramsThatAllowContextReuse: (keyof channels.BrowserNewContextForReusePara
   // Flashwright: read on every navigation and API request, so it can change between tests.
   'baseURL',
   'failFastWhenIdle',
+  // Flashwright: read whenever a selector is resolved.
+  'locatorPolicy',
 ];
 
 const defaultNewContextParamValues: channels.BrowserNewContextForReuseParams = {

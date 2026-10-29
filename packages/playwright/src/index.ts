@@ -325,6 +325,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   instantAnimations: [({ contextOptions }, use) => use(contextOptions.instantAnimations ?? false), { option: true, box: true }],
   failFastWhenIdle: [({ contextOptions }, use) => use(contextOptions.failFastWhenIdle ?? true), { option: true, box: true }],
   blockResources: [({ contextOptions }, use) => use(contextOptions.blockResources), { option: true, box: true }],
+  locatorPolicy: [({ contextOptions }, use) => use(contextOptions.locatorPolicy ?? 'any'), { option: true, box: true }],
   locale: [({ contextOptions }, use) => use(contextOptions.locale ?? 'en-US'), { option: true, box: true }],
   offline: [({ contextOptions }, use) => use(contextOptions.offline ?? false), { option: true, box: true }],
   permissions: [({ contextOptions }, use) => use(contextOptions.permissions), { option: true, box: true }],
@@ -362,6 +363,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     instantAnimations,
     failFastWhenIdle,
     blockResources,
+    locatorPolicy,
     locale,
     offline,
     permissions,
@@ -411,6 +413,8 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       options.failFastWhenIdle = failFastWhenIdle;
     if (blockResources !== undefined)
       options.blockResources = blockResources;
+    if (locatorPolicy !== undefined)
+      options.locatorPolicy = locatorPolicy;
     if (locale !== undefined)
       options.locale = locale;
     if (offline !== undefined)

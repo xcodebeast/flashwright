@@ -25,6 +25,8 @@ export type SelectorTarget = {
   selector: string,
   strict?: boolean,
   scope?: ElementHandle,
+  // Flashwright: a selector that Playwright made itself, which the context's locatorPolicy allows.
+  internal?: boolean,
 };
 
 export type WaitForElementOptions = { state?: 'attached' | 'detached' | 'visible' | 'hidden', omitReturnValue?: boolean };

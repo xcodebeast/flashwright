@@ -43,6 +43,9 @@ type SelectorInFrame = {
 
 type MatchedElementsCallback<Arg, R> = (data: { injected: InjectedScript, elements: Element[], info: SelectorInfo, frameVisible: boolean }, arg: Unboxed<Arg>) => R | Promise<R>;
 
+// Flashwright: what a locator made with getByTestId() and the methods that combine locators can contain.
+const kTestIdOnlyParts = new Set(['internal:testid', 'nth', 'visible', 'internal:describe', 'internal:has', 'internal:has-not', 'internal:and', 'internal:or', 'internal:chain']);
+
 export class FrameSelectors {
   readonly frame: Frame;
 
@@ -106,6 +109,11 @@ export class FrameSelectors {
     return Promise.all(elementHandles.map(handle => adoptIfNeeded(handle, targetContext)));
   }
 
+  private _locatorPolicyError(selector: string) {
+    const locator = asLocator(this.frame._page.browserContext._browser.sdkLanguage(), selector);
+    return new InvalidSelectorError(`locatorPolicy 'test-id' only allows getByTestId() locators, while querying "${locator}"`);
+  }
+
   private _jumpToAriaRefFrameIfNeeded(selector: string, info: SelectorInfo, frame: Frame): Frame {
     if (info.parsed.parts[0].name !== 'aria-ref')
       return frame;
@@ -123,8 +131,14 @@ export class FrameSelectors {
   async resolveFramesForSelector(target: types.SelectorTarget & { anyFrame?: boolean }): Promise<SelectorInFrame[]> {
     const { selector, scope } = target;
     const { anyFrame, chunks } = splitSelectorByFrame(selector);
+    // Flashwright: see the locatorPolicy context option.
+    const testIdOnly = !target.internal && this.frame._page.browserContext._options.locatorPolicy === 'test-id';
+    if (testIdOnly && anyFrame)
+      throw this._locatorPolicyError(selector);
     for (const chunk of chunks) {
       visitAllSelectorParts(chunk, (part, nested) => {
+        if (testIdOnly && !kTestIdOnlyParts.has(part.name) && !(part.name === 'internal:control' && part.body === 'enter-frame'))
+          throw this._locatorPolicyError(selector);
         if (nested && part.name === 'internal:control' && part.body === 'enter-frame') {
           const locator = asLocator(this.frame._page.browserContext._browser.sdkLanguage(), selector);
           throw new InvalidSelectorError(`Frame locators are not allowed inside composite locators, while querying "${locator}"`);

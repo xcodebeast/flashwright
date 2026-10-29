@@ -499,6 +499,22 @@ export default defineConfig({
 });
 ```
 
+## property: TestOptions.locatorPolicy = %%-context-option-locatorpolicy-%%
+* since: v1.64
+
+**Usage**
+
+```js title="playwright.config.ts"
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  use: {
+    // Every test finds elements by their test id.
+    locatorPolicy: 'test-id',
+  },
+});
+```
+
 ## property: TestOptions.navigationTimeout
 * since: v1.10
 - type: <[int]>
@@ -645,7 +661,7 @@ This reset is best-effort, not a guarantee of isolation. State that is **not** r
 
 Additional restrictions:
 * The option is ignored when [`property: TestOptions.video`] recording is enabled.
-* Only a few context options may differ between consecutive tests: `colorScheme`, `forcedColors`, `reducedMotion`, `contrast`, `screen`, `userAgent`, `viewport`, `testIdAttribute`, `waitForAnimations` and `baseURL`. Changing any other option in [`method: Test.use`], for example `locale` or `storageState`, silently forces a fresh context and negates the speedup.
+* Only a few context options may differ between consecutive tests: `colorScheme`, `forcedColors`, `reducedMotion`, `contrast`, `screen`, `userAgent`, `viewport`, `testIdAttribute`, `waitForAnimations`, `baseURL`, `failFastWhenIdle` and `locatorPolicy`. Changing any other option in [`method: Test.use`], for example `locale` or `storageState`, silently forces a fresh context and negates the speedup.
 * Do not combine with [`property: TestOptions.connectOptions`] pointing multiple workers at a shared browser - workers would compete for the single reusable context.
 * `recordHar` in [`property: TestOptions.contextOptions`] is not supported and produces no HAR file.
 
