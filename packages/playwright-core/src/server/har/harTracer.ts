@@ -371,8 +371,11 @@ export class HarTracer {
     if (compressionCalculationBarrier)
       this._addBarrier(page || request.serviceWorker(), compressionCalculationBarrier.barrier);
 
-    const promise = response.internalBody().then(buffer => {
-      if (this._options.omitScripts && request.resourceType() === 'script') {
+    // Flashwright: a script body that is left out is not fetched either. Asking the browser for it
+    // while the page loads held up the load, and what happened after it, by milliseconds.
+    const omitBody = this._options.omitScripts && request.resourceType() === 'script';
+    const promise = (omitBody ? Promise.resolve(undefined) : response.internalBody()).then(buffer => {
+      if (!buffer) {
         compressionCalculationBarrier?.setDecodedBodySize(0);
         return;
       }
