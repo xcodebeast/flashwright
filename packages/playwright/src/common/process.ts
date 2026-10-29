@@ -21,6 +21,7 @@ import { setTimeOrigin } from '@isomorphic/time';
 import { setBoxedStackPrefixes } from '@utils/stackTrace';
 
 import { forgetLane, laneById, runInLane } from '../globals';
+import { installLaneEnv } from './laneEnv';
 import { packageRoot } from '../package';
 import { serializeError } from '../util';
 
@@ -100,6 +101,7 @@ export function startProcessRunner(create: (params: any) => ProcessRunner) {
         processRunner = create(runnerParams);
         return;
       }
+      installLaneEnv();
       const lane = laneById(message.lane);
       const runner = runInLane(lane, () => create(runnerParams));
       runner.lane = message.lane;
@@ -108,7 +110,7 @@ export function startProcessRunner(create: (params: any) => ProcessRunner) {
     }
     if (message.method === '__stop__' && message.lane !== undefined) {
       const entry = laneRunners.get(message.lane);
-      sendMessageToParent({ method: '__env_produced__', params: producedEnv(), lane: message.lane });
+      sendMessageToParent({ method: '__env_produced__', params: runInLane(laneById(message.lane), producedEnv), lane: message.lane });
       // Flashwright: see WorkerMain.canDetachTeardown.
       if (entry?.runner.canDetachTeardown()) {
         sendMessageToParent({ method: '__teardown_detached__', lane: message.lane });

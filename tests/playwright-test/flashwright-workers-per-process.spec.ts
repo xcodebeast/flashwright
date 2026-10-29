@@ -175,6 +175,39 @@ test('should share the browser and show each worker its own contexts', async ({ 
   expect(result.outputLines[0]).toBe(result.outputLines[1]);
 });
 
+test('should give each worker its own process.env', async ({ runInlineTest }) => {
+  const result = await runInlineTest({
+    'playwright.config.ts': `export default { workers: 2, workersPerProcess: 2, fullyParallel: true };`,
+    'a.spec.ts': `
+      import { execFileSync } from 'child_process';
+      import { test, expect } from '@playwright/test';
+      for (const name of ['one', 'two']) {
+        test(name, async ({}, testInfo) => {
+          ${together}
+          expect(process.env.TEST_WORKER_INDEX).toBe(String(testInfo.workerIndex));
+          expect(process.env.TEST_PARALLEL_INDEX).toBe(String(testInfo.parallelIndex));
+          process.env.SET_BY = name;
+          if (name === 'one')
+            delete process.env.FROM_RUNNER;
+          else
+            process.env = { ...process.env, REPLACED_BY: name };
+          globalThis.changed = (globalThis.changed ?? 0) + 1;
+          await expect.poll(() => globalThis.changed).toBe(2);
+          expect(process.env.SET_BY).toBe(name);
+          expect(process.env.FROM_RUNNER).toBe(name === 'one' ? undefined : 'yes');
+          expect('FROM_RUNNER' in process.env).toBe(name !== 'one');
+          expect(process.env.REPLACED_BY).toBe(name === 'one' ? undefined : name);
+          expect({ ...process.env }.SET_BY).toBe(name);
+          const child = execFileSync(process.execPath, ['-e', 'console.log(process.env.SET_BY + " " + process.env.FROM_RUNNER)']).toString().trim();
+          expect(child).toBe(name + ' ' + (name === 'one' ? 'undefined' : 'yes'));
+        });
+      }
+    `,
+  }, {}, { FROM_RUNNER: 'yes' });
+  expect(result.exitCode).toBe(0);
+  expect(result.passed).toBe(2);
+});
+
 test('should keep downloads of a worker after the worker that launched the browser stopped', async ({ runInlineTest }) => {
   const result = await runInlineTest({
     'playwright.config.ts': `export default { workers: 2, workersPerProcess: 2 };`,

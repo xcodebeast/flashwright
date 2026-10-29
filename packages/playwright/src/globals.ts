@@ -21,7 +21,8 @@ import type { TestInfoImpl } from './worker/testInfo';
 
 // Flashwright: with config.workersPerProcess, a worker process runs several workers at once, each in a
 // lane of its own. Code that runs for a lane sees that lane's current test.
-export type Lane = { id: number, testInfo: TestInfoImpl | null, expectConfig?: unknown, worker?: unknown, playwrightOptions?: Record<string, unknown> };
+export type LaneEnv = { values: Map<string, string>, deleted: Set<string> };
+export type Lane = { id: number, testInfo: TestInfoImpl | null, expectConfig?: unknown, worker?: unknown, playwrightOptions?: Record<string, unknown>, env?: LaneEnv };
 const laneStorage = new AsyncLocalStorage<Lane>();
 
 const lanes = new Map<number, Lane>();

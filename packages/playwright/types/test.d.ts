@@ -2108,11 +2108,12 @@ interface TestConfig<TestArgs = {}, WorkerArgs = {}> {
    * [testOptions.reuseContext](https://playwright.dev/docs/api/class-testoptions#test-options-reuse-context)) get a
    * browser of their own.
    *
+   * Each worker sees a `process.env` of its own: what its tests set, delete or replace there, and its
+   * `TEST_WORKER_INDEX` and `TEST_PARALLEL_INDEX`, stay the worker's, also for the processes its tests start. What the
+   * environment changes outside JavaScript is not separate: a time zone set in `process.env.TZ` applies to all the
+   * workers of the process, and native modules that read the environment themselves do not see what a test sets.
+   *
    * A test shares these with the tests that the other workers of its process run at the same time:
-   * - `process.env`. `TEST_WORKER_INDEX` and `TEST_PARALLEL_INDEX` hold the indexes of one of the workers: use
-   *   [testInfo.workerIndex](https://playwright.dev/docs/api/class-testinfo#test-info-worker-index) and
-   *   [testInfo.parallelIndex](https://playwright.dev/docs/api/class-testinfo#test-info-parallel-index) instead. A
-   *   variable that a test sets is seen by the others.
    * - Global variables, and the variables of test files and of the modules they import. Fake timers that a test
    *   installs on Node.js's globals also apply to the other tests.
    * - The process. A test that calls `process.exit()` or crashes the process ends the other workers' tests too.
