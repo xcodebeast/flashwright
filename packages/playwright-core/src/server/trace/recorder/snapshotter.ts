@@ -109,13 +109,22 @@ export class Snapshotter {
     (frame as any)[kNeedsResetSymbol] = false;
     const reset = needsHistoryReset ? 'history' : (resetTargets ? 'targets' : undefined);
     const expression = `window["${this._snapshotStreamer}"].captureSnapshot(${JSON.stringify(reset)})`;
+    // Flashwright: the tracer may send a frame's next snapshot before the previous one answers.
+    const failures = (frame as any)[kFailuresSymbol] ?? 0;
     try {
-      return await frame.nonStallingRawEvaluateInExistingMainContext(expression);
+      const data = await frame.nonStallingRawEvaluateInExistingMainContext(expression);
+      // A snapshot sent before an earlier one failed may refer to the nodes of the failed one.
+      if (((frame as any)[kFailuresSymbol] ?? 0) !== failures) {
+        (frame as any)[kNeedsResetSymbol] = true;
+        return;
+      }
+      return data;
     } catch (e) {
       // If we fail to capture snapshot in this frame, we cannot rely on the snapshot index
       // being the same here and in snapshotter injected script.
       // Therefore, next time force a reset to avoid using node references.
       (frame as any)[kNeedsResetSymbol] = true;
+      (frame as any)[kFailuresSymbol] = failures + 1;
       debugLogger.log('error', e);
     }
   }
@@ -180,3 +189,4 @@ export class Snapshotter {
 }
 
 const kNeedsResetSymbol = Symbol('kNeedsReset');
+const kFailuresSymbol = Symbol('kFailures');

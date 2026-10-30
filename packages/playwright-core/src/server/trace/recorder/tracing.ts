@@ -91,6 +91,8 @@ export class Tracing extends SdkObject implements InstrumentationListener, Snaps
   private _harTracer: HarTracer;
   private _screencastListeners: RegisteredListener[] = [];
   private _pageTracingRecorders = new Map<Page, ScreencastTracingRecorder>();
+  // Flashwright: DOM snapshots that the calls did not wait for, by page (see _captureSnapshot).
+  private _pendingSnapshots = new Map<Page, Set<Promise<void>>>();
   private _eventListeners: RegisteredListener[] = [];
   private _context: BrowserContext | APIRequestContext;
   // Note: state should only be touched inside API methods, but not inside trace operations.
@@ -421,6 +423,7 @@ export class Tracing extends SdkObject implements InstrumentationListener, Snaps
       throw new Error(`Tracing is already stopping`);
     this._isStopping = true;
     try {
+      await progress.race(this._flushPendingSnapshots());
       let coverageFile: string | undefined;
       let coverageError: Error | undefined;
       try {
@@ -511,13 +514,58 @@ export class Tracing extends SdkObject implements InstrumentationListener, Snaps
     return { entries, zipFileName };
   }
 
-  private async _captureSnapshot(progress: Progress, sdkObject: SdkObject, phase: trace.ActionPhase): Promise<void> {
+  // Flashwright: the DOM snapshots before and after a call are sent to the page before what comes
+  // next, which the page runs in order: they show the same document without the call waiting for
+  // them. The snapshot before input and the ones around a navigation or closing the page are waited
+  // for, and so is everything when the trace also records screenshots, aria snapshots or coverage,
+  // on a page with frames (a frame can go away before its snapshot is taken), while tracing stops,
+  // and once a page has kMaxPendingSnapshots that have not answered.
+  private _captureSnapshot(progress: Progress, sdkObject: SdkObject, phase: trace.ActionPhase): Promise<void> {
     const page = sdkObject.attribution.page;
-    if (!page)
-      return;
-    if (!this._shouldCaptureAtPhase(progress.metadata, phase))
-      return;
+    // Closing the context closes its pages without closing them one by one.
+    if (!page && phase === 'before' && kWaitForSnapshotsMethods.has(progress.metadata.method))
+      return this._flushPendingSnapshots();
+    if (!page || !this._shouldCaptureAtPhase(progress.metadata, phase))
+      return Promise.resolve();
+    const options = this._state?.options;
+    const domOnly = !options?.snapshotScreen && !options?.snapshotAria && !this._coverageRecorder;
+    const waits = !domOnly || phase === 'action' || this._isStopping || page.frames().length > 1 || (this._pendingSnapshots.get(page)?.size ?? 0) >= kMaxPendingSnapshots ||
+        (phase === 'before' && kWaitForSnapshotsMethods.has(progress.metadata.method));
+    if (waits || !this._snapshotter?.started()) {
+      // The page runs the snapshots in the order they were sent: the earlier ones end first.
+      return Promise.all([progress.race(this._flushPendingSnapshots(page)).catch(() => {}), this._captureSnapshotNow(progress, page, phase)]).then(() => {});
+    }
+    const resetTargets = phase === 'before';
+    const snapshot = this._snapshotter.captureSnapshot(page, progress.metadata.id, phase, resetTargets).catch(() => {});
+    let pending = this._pendingSnapshots.get(page);
+    if (!pending)
+      this._pendingSnapshots.set(page, pending = new Set());
+    pending.add(snapshot);
+    void snapshot.then(() => {
+      pending.delete(snapshot);
+      if (!pending.size && this._pendingSnapshots.get(page) === pending)
+        this._pendingSnapshots.delete(page);
+    });
+    return Promise.resolve();
+  }
 
+  // Snapshots are best-effort: one that a frame running a script without end never answers is not
+  // waited for longer than a call waits for its own (see kFlushTimeout).
+  private async _flushPendingSnapshots(page?: Page) {
+    const deadline = monotonicTime() + kFlushTimeout;
+    // Calls still running may add snapshots while the earlier ones are waited for.
+    while (true) {
+      const pending = page ? [...this._pendingSnapshots.get(page) ?? []] : [...this._pendingSnapshots.values()].flatMap(set => [...set]);
+      const timeout = deadline - monotonicTime();
+      if (!pending.length || timeout <= 0)
+        return;
+      let timer: NodeJS.Timeout | undefined;
+      await Promise.race([Promise.all(pending), new Promise(resolve => timer = setTimeout(resolve, timeout))]);
+      clearTimeout(timer);
+    }
+  }
+
+  private async _captureSnapshotNow(progress: Progress, page: Page, phase: trace.ActionPhase): Promise<void> {
     if (this._snapshotter?.started()) {
       // Node references are only reset by the first snapshot of the action.
       const resetTargets = phase === 'before';
@@ -631,6 +679,7 @@ export class Tracing extends SdkObject implements InstrumentationListener, Snaps
   }
 
   async onPageWillClose(page: Page) {
+    await this._flushPendingSnapshots(page);
     await this._coverageRecorder?.collectFromPage(page).catch(() => {});
   }
 
@@ -880,6 +929,12 @@ function createAfterActionTraceEvent(metadata: CallMetadata): trace.AfterActionT
     result: metadata.result,
   };
 }
+
+// Flashwright: calls that navigate or close the page, which wait for the snapshots before them (see _captureSnapshot).
+const kWaitForSnapshotsMethods = new Set(['goto', 'reload', 'goBack', 'goForward', 'setContent', 'close', 'waitForNavigation', 'waitForURL']);
+// The time a call waits for its tracing before and after it, see DispatcherConnection.dispatch.
+const kFlushTimeout = 3000;
+const kMaxPendingSnapshots = 20;
 
 const throttledRate = 200;
 const unthrottleDuration = 500;

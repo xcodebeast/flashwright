@@ -1366,11 +1366,16 @@ test('should not nest top level expect into unfinished api calls ', {
     'a.spec.ts': `
       import { test, expect } from '@playwright/test';
       test('pass', async ({ page }) => {
+        // Flashwright: the expect starts while the fetch is unfinished, however fast the calls are.
+        let fetchStarted;
+        const fetching = new Promise(f => fetchStarted = f);
         await page.route('**/api', async route => {
-          const response = await route.fetch({ url: '${server.PREFIX}/hang' });
-          await route.fulfill({ response });
+          const response = route.fetch({ url: '${server.PREFIX}/hang' });
+          fetchStarted();
+          await route.fulfill({ response: await response });
         });
         await page.goto('${server.PREFIX}/index');
+        await fetching;
         await expect(page.getByText('Hello!')).toBeVisible();
         await page.unrouteAll({ behavior: 'ignoreErrors' });
       });

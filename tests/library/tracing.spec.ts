@@ -22,6 +22,8 @@ import { parseTraceRaw } from '../config/utils';
 import type { StackFrame, ActionTraceEvent } from '../../packages/isomorphic/trace/trace';
 import { artifactsFolderName } from '../../packages/playwright/src/isomorphic/folders';
 import { rafraf } from '../page/pageTest';
+import { SnapshotRenderer } from '../../packages/isomorphic/trace/snapshotRenderer';
+import { LRUCache } from '../../packages/isomorphic/lruCache';
 
 test.skip(({ trace }) => trace === 'on');
 
@@ -189,6 +191,66 @@ test('should not include buffers in the trace', async ({ context, page, server }
   expect(screenshotEvent.result).toEqual({
     'binary': '<Buffer>',
   });
+});
+
+test('should record the snapshots that calls do not wait for', async ({ context, page, server }, testInfo) => {
+  await context.tracing.start({ snapshots: true });
+  await page.goto(server.EMPTY_PAGE);
+  await page.setContent(`<button onclick="this.textContent = 'Clicked'">Click</button><input>`);
+  await page.locator('button').click();
+  await page.locator('input').fill('text');
+  await expect(page.locator('button')).toHaveText('Clicked');
+  await page.evaluate(() => document.body.append('Changed'));
+  await page.goto(server.PREFIX + '/empty.html');
+  await page.locator('body').textContent();
+  await page.close();
+  await context.tracing.stop({ path: testInfo.outputPath('trace.zip') });
+
+  const { events, actionObjects } = await parseTraceRaw(testInfo.outputPath('trace.zip'));
+  // Snapshots refer to the nodes of the ones before them in the same frame, in the order they were taken.
+  const frameSnapshots = events.filter(e => e.type === 'frame-snapshot').map(e => e.snapshot);
+  const snapshots = (method: string) => {
+    const action = actionObjects.find(a => a.method === method)!;
+    const result: Record<string, string> = {};
+    frameSnapshots.forEach((snapshot, index) => {
+      if (snapshot.callId !== action.callId)
+        return;
+      const sameFrame = frameSnapshots.filter(s => s.frameId === snapshot.frameId);
+      result[snapshot.phase] = new SnapshotRenderer(new LRUCache(1_000_000), [], sameFrame, [], sameFrame.indexOf(snapshot)).render().html;
+    });
+    return result;
+  };
+  for (const method of ['goto', 'setContent', 'click', 'fill', 'expect', 'evaluateExpression', 'textContent'])
+    expect(Object.keys(snapshots(method)), method).toContain('after');
+  expect(snapshots('click').before).toContain('Click');
+  expect(snapshots('click').before).not.toContain('Clicked');
+  expect(snapshots('click').after).toContain('Clicked');
+  expect(snapshots('evaluateExpression').before).not.toContain('Changed');
+  expect(snapshots('evaluateExpression').after).toContain('Changed');
+});
+
+test('should record whole snapshots after one fails while the next is on its way', async ({ context, page }, testInfo) => {
+  await page.setContent('<p>Keep this text</p><input>');
+  await context.tracing.start({ snapshots: true });
+  // The page throws while the first snapshot after this call reads the input.
+  await page.evaluate(() => {
+    let thrown = false;
+    Object.defineProperty(document.querySelector('input'), 'value', { get() {
+      if (thrown)
+        return 'value';
+      thrown = true;
+      throw new Error('Once');
+    } });
+  });
+  for (let i = 0; i < 5; i++)
+    await page.evaluate(() => 1);
+  await context.tracing.stop({ path: testInfo.outputPath('trace.zip') });
+
+  const { events } = await parseTraceRaw(testInfo.outputPath('trace.zip'));
+  const frameSnapshots = events.filter(e => e.type === 'frame-snapshot').map(e => e.snapshot);
+  expect(frameSnapshots.length).toBeGreaterThan(5);
+  for (let i = 0; i < frameSnapshots.length; i++)
+    expect(new SnapshotRenderer(new LRUCache(1_000_000), [], frameSnapshots, [], i).render().html).toContain('Keep this text');
 });
 
 test('should exclude internal pages', async ({ browserName, context, page, server }, testInfo) => {
