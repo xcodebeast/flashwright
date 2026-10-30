@@ -2,6 +2,8 @@
 
 **Scope:** suites with many API calls, assertions, hooks or explicit test.step calls. **Effort:** large. **Priority:** promising for very short, step-dense tests.
 
+**Measured 2026-10-30:** not sending step events to the runner at all would make TodoMVC 2.5% faster with 1 worker and 3.7% with 4 (510 steps per run, 392-byte begin and 116-byte end messages, 260 KB). A compact encoding would remove only part of that; not pursued.
+
 Research proposal, 2026-10-29. No measurements. [Incremental reports](20-incremental-test-report-generation.md) optimize report consumers and final assembly. This targets the earlier worker-to-runner IPC path, even when no HTML/blob report is requested.
 
 ## Evidence

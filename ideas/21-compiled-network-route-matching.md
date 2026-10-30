@@ -2,6 +2,8 @@
 
 **Scope:** heavily mocked applications with many ordinary JavaScript routes. **Effort:** medium for compilation, large for indexing. **Priority:** high for route-heavy suites.
 
+**Status:** compilation implemented (`ae8dc648`): globs are turned into regular expressions once per base URL and glob, on the client and in the server's request interception; 60 requests against 10 globs take 0.035 ms instead of 0.42 ms. Indexing handlers is not done.
+
 Research proposal, 2026-10-29, based on `1aebba9e` plus the active worktree. No benchmarks or implementation. Unlike [browser-local HAR routing](06-browser-local-har-routing.md), this optimizes selection of ordinary user callbacks in Node; it needs no HAR or browser patch.
 
 ## Evidence

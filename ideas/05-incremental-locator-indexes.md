@@ -2,6 +2,8 @@
 
 **Priority:** high for large applications · **Scope:** role/text locators and repeated assertions · **Effort:** large; reliable broad invalidation may require Blink hooks.
 
+**Status:** partly implemented without indexes (`0caa96cc`): role queries only compute the roles of elements whose tag or role attribute can give the role, and a document's labels are listed once per query instead of once per control. Text queries remain: `getByText` takes ~9.5 ms on the 8,500-element inventory page (CSS: ~2 ms), mostly building every element's text (`elementText` 31%, the `<head>` check 12%, whitespace normalization 11%).
+
 Research proposal, 2026-10-29. No new measurements. Flashwright's existing reactive waits reduce sleeping; they still have to reevaluate selectors when they wake.
 
 ## Remaining cost

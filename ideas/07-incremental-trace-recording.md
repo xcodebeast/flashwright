@@ -4,6 +4,8 @@
 
 **Status:** partly implemented, differently. On ordinary pages the largest trace cost was not snapshot traversal: traces fetched every script body from the browser and then threw it away, which held up each page load. `d1ef099a` stopped that, making traced runs 1.43× faster on TodoMVC with one worker; live traces (UI mode), which keep scripts, now fetch each script body once per URL and validators and compress resources at the fastest level (1.38× on TodoMVC with one worker). Not done: dirty-subtree capture. On small pages most of what remains is the round trip of each snapshot, about 0.3 ms, not the size of the DOM.
 
+**Also done (`80c16cae`):** traced calls no longer wait for the DOM snapshots before and after them (the snapshot before input, navigation and close stay barriers): TodoMVC with `retain-on-failure`, 1 worker, 1434 -> 1300 ms.
+
 Research proposal, 2026-10-29. No new performance measurements. Trace-off runs should incur no new observer or processing work.
 
 ## Remaining cost

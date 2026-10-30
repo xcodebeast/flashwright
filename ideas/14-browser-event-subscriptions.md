@@ -2,6 +2,8 @@
 
 **Scope:** applications with many requests, console messages or WebSocket frames. **Effort:** very large for full browser integration. **Priority:** promising for event-heavy workloads.
 
+**Measured 2026-10-30:** a TodoMVC test receives ~85 protocol events; their Node cost does not show among the worker's top functions. Not pursued for typical suites.
+
 Research proposal, 2026-10-29. No benchmarks. This removes unnecessary diagnostic transport; it does not block application resources or disable browser capabilities.
 
 ## Evidence and opportunity

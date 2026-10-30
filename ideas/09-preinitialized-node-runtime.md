@@ -2,6 +2,8 @@
 
 **Priority:** exploratory, strongest for cold/short runs · **Scope:** CLI/worker initialization and failure restarts · **Effort:** very large for reliable packaging.
 
+**Measured 2026-10-30:** module initializers of the bundles take ~25 ms of a worker's startup CPU; the rest is code-cache loading (~24 ms), file reads and GC. The ceiling of a snapshot for initialization alone is small.
+
 Research proposal, 2026-10-29. No new benchmarks. This preserves fresh runner/worker processes; it does not extend application-global reuse.
 
 ## Remaining cost

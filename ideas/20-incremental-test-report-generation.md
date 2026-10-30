@@ -2,6 +2,8 @@
 
 **Scope:** large suites, step-heavy tests, blob reports and HTML reports. **Effort:** medium to large. **Priority:** strong candidate for reducing end-of-run latency and memory together.
 
+**Measured 2026-10-30:** the HTML reporter adds 26 ms (2.6%) to the 25-test TodoMVC run. Not pursued.
+
 Research proposal, 2026-10-29. No measurements. This targets runner reporting, independently of [browser trace capture](07-incremental-trace-recording.md). Trace-off suites can still generate expensive reports.
 
 ## Evidence and opportunity

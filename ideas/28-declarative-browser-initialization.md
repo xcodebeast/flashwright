@@ -2,6 +2,8 @@
 
 **Scope:** frequent new pages, popups, frame-process changes and strict contexts. **Effort:** very large, requiring browser integration. **Priority:** broad architectural opportunity.
 
+**Measured 2026-10-30:** on Chromium, creating and closing a test's page costs ~1.8 ms Node and ~2.5 ms browser CPU, so the ceiling is small. On Firefox a new page costs ~90 ms inside Firefox even in a warm context (TodoMVC on Firefox: 6.5 s, Chromium: 1.0 s); prelaunching content processes and process reuse did not change it, preparing the next test's context and page in the background gained 4% (Firefox's parent process is busy either way), and `reuseContext: true` (one page for all tests) runs 1.72× faster.
+
 Research proposal, 2026-10-29. No experiments. [Browser-native actions](01-browser-native-actions.md) move click/fill state machines; this proposal removes repeated target-initialization work before those actions can start. It preserves fresh pages and all browser capabilities.
 
 ## Evidence

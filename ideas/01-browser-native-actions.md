@@ -4,6 +4,8 @@
 
 **Status:** partly implemented. Done, without a browser change: fewer dependent browser exchanges per action, two round trips fewer per pointer action (`f19b5bb7`) and more batching in `501ec6ee`. Not done: one browser command per action, or moving the action into the browser.
 
+**Measured 2026-10-30:** a click now sends 14 browser commands in about six dependent round trips of ~0.2 ms; fill sends 5, press 7, an assertion 1. Each input ends with the `Page.enable` barrier that makes a navigation it started visible before the call returns. Fusing two of the click's round trips would save ~0.4 ms per click (under 2% of a TodoMVC test); not done.
+
 Research proposal, 2026-10-29. Source audit through `1aebba9e` plus the active worktree. No new measurements; proposed gains are hypotheses. The existing warm browser, context recycling, reactive waits, scroll/measurement pipelining and opt-in worker/browser sharing are the baseline.
 
 ## Remaining cost
