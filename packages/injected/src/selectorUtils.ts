@@ -65,35 +65,58 @@ export function shouldSkipForTextMatching(element: Element | ShadowRoot) {
 export type ElementText = { full: string, normalized: string, immediate: string[] };
 export type TextMatcher = (text: ElementText) => boolean;
 
+// Flashwright: the first time the text of an element is needed, the texts of all the elements below
+// it are built, while a query looks at the normalized text of only a few of them: the text is
+// normalized on first use. Whether an element is skipped follows from its parent, without looking
+// for each element in the document's head.
+class ElementTextData implements ElementText {
+  full = '';
+  immediate: string[] = [];
+  private _normalized: string | undefined;
+
+  get normalized(): string {
+    if (this._normalized === undefined)
+      this._normalized = this.full ? normalizeWhiteSpace(this.full) : '';
+    return this._normalized;
+  }
+}
+
+const kSkippedForTextMatching = new Set(['SCRIPT', 'NOSCRIPT', 'STYLE']);
+
 export function elementText(cache: Map<Element | ShadowRoot, ElementText>, root: Element | ShadowRoot): ElementText {
+  return computeElementText(cache, root, undefined);
+}
+
+function computeElementText(cache: Map<Element | ShadowRoot, ElementText>, root: Element | ShadowRoot, skipped: boolean | undefined): ElementText {
   let value = cache.get(root);
   if (value === undefined) {
-    value = { full: '', normalized: '', immediate: [] };
-    if (!shouldSkipForTextMatching(root)) {
+    const data = new ElementTextData();
+    value = data;
+    if (!(skipped ?? shouldSkipForTextMatching(root))) {
       let currentImmediate = '';
       if ((root instanceof HTMLInputElement) && (root.type === 'submit' || root.type === 'button' || root.type === 'reset')) {
         value = { full: root.value, normalized: normalizeWhiteSpace(root.value), immediate: [root.value] };
       } else {
+        // The root is not in the head: a child is when it is the head.
+        const head = root.ownerDocument.head;
         for (let child = root.firstChild; child; child = child.nextSibling) {
           if (child.nodeType === Node.TEXT_NODE) {
-            value.full += child.nodeValue || '';
+            data.full += child.nodeValue || '';
             currentImmediate += child.nodeValue || '';
           } else if (child.nodeType === Node.COMMENT_NODE) {
             continue;
           } else {
             if (currentImmediate)
-              value.immediate.push(currentImmediate);
+              data.immediate.push(currentImmediate);
             currentImmediate = '';
             if (child.nodeType === Node.ELEMENT_NODE)
-              value.full += elementText(cache, child as Element).full;
+              data.full += computeElementText(cache, child as Element, kSkippedForTextMatching.has(child.nodeName) || child === head).full;
           }
         }
         if (currentImmediate)
-          value.immediate.push(currentImmediate);
+          data.immediate.push(currentImmediate);
         if ((root as Element).shadowRoot)
-          value.full += elementText(cache, (root as Element).shadowRoot!).full;
-        if (value.full)
-          value.normalized = normalizeWhiteSpace(value.full);
+          data.full += computeElementText(cache, (root as Element).shadowRoot!, false).full;
       }
     }
     cache.set(root, value);
@@ -102,6 +125,7 @@ export function elementText(cache: Map<Element | ShadowRoot, ElementText>, root:
 }
 
 export function elementMatchesText(cache: Map<Element | ShadowRoot, ElementText>, element: Element, matcher: TextMatcher): 'none' | 'self' | 'selfAndChildren' {
+  // A custom engine may have moved the element since its text was cached.
   if (shouldSkipForTextMatching(element))
     return 'none';
   if (!matcher(elementText(cache, element)))
