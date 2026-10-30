@@ -88,6 +88,37 @@ test('should apply locatorPolicy from the config and test.use', async ({ runInli
   expect(result.passed).toBe(4);
 });
 
+test('should mount components with locatorPolicy test-id', async ({ runInlineTest }) => {
+  const result = await runInlineTest({
+    'a.spec.ts': `
+      import { test, expect } from '@playwright/test';
+
+      test.use({ baseURL: 'http://gallery.test/', locatorPolicy: 'test-id' });
+      test.beforeEach(async ({ page }) => {
+        await page.route('http://gallery.test/**', route => route.fulfill({ contentType: 'text/html', body: \`
+          <div id="root"></div>
+          <script>
+            window.mount = ({ props }) => {
+              document.getElementById('root').innerHTML = '<button data-testid="save">' + props.label + '</button>';
+              document.querySelector('[data-testid=save]').onclick = e => e.target.textContent = 'Saved';
+            };
+          </script>
+        \` }));
+      });
+
+      test('finds elements by test id in the component', async ({ mount }) => {
+        const component = await mount('Save', { label: 'Save' });
+        await component.getByTestId('save').click();
+        await expect(component.getByTestId('save')).toHaveText('Saved');
+        const error = await component.getByRole('button').click().catch(e => e);
+        expect(error.message).toContain("locatorPolicy 'test-id' only allows getByTestId() locators");
+      });
+    `,
+  }, { workers: 1 });
+  expect(result.exitCode).toBe(0);
+  expect(result.passed).toBe(1);
+});
+
 const crossOriginFetchTest = (expected: string, options = '') => `
   import { test, expect } from '@playwright/test';
   import http from 'http';

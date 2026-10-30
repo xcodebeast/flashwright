@@ -603,7 +603,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     await use(page);
   },
 
-  mount: async ({ page, baseURL }, use) => {
+  mount: async ({ page, baseURL, locatorPolicy }, use) => {
     // exposeFunctions turns any callbacks in props into real, browser-callable
     // functions that dispatch back to the test.
     const callMount = (params: { story: string, props?: Record<string, any> }) =>
@@ -620,7 +620,8 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       await page.goto(baseURL);
       await callMount({ story: storyId, props });
       // Points at the gallery root, scope the queries: component.getByRole(...).
-      return Object.assign(page.locator('#root'), {
+      // Flashwright: locatorPolicy 'test-id' only allows the root as an internal locator.
+      return Object.assign(page.locator(locatorPolicy === 'test-id' ? 'internal:control=mount-root' : '#root'), {
         // update() re-renders the same story with new props without navigating; if the gallery
         // reuses its root/instance, the framework reconciles and component state is preserved.
         update: (newProps?: any) => callMount({ story: storyId, props: newProps }),

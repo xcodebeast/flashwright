@@ -137,7 +137,7 @@ export class FrameSelectors {
       throw this._locatorPolicyError(selector);
     for (const chunk of chunks) {
       visitAllSelectorParts(chunk, (part, nested) => {
-        if (testIdOnly && !kTestIdOnlyParts.has(part.name) && !(part.name === 'internal:control' && part.body === 'enter-frame'))
+        if (testIdOnly && !kTestIdOnlyParts.has(part.name) && !(part.name === 'internal:control' && (part.body === 'enter-frame' || part.body === 'mount-root')))
           throw this._locatorPolicyError(selector);
         if (nested && part.name === 'internal:control' && part.body === 'enter-frame') {
           const locator = asLocator(this.frame._page.browserContext._browser.sdkLanguage(), selector);

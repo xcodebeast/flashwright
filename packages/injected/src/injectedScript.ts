@@ -591,6 +591,10 @@ export class InjectedScript {
           return [];
         if (body === 'return-empty')
           return [];
+        // Flashwright: the root element a component gallery renders stories into, for the mount
+        // fixture under the locatorPolicy 'test-id', which does not allow '#root'.
+        if (body === 'mount-root')
+          return [...(root as Document | Element).querySelectorAll('#root')];
         if (body === 'component') {
           if (root.nodeType !== 1 /* Node.ELEMENT_NODE */)
             return [];
