@@ -72,9 +72,11 @@ test('should fire context event on newContext', async ({ browser }) => {
 });
 
 test('newContext should not leave a context upon failure', async ({ browser, toImpl }) => {
+  // Flashwright: the worker's browser keeps the recycled context of the tests that ran before.
+  const contexts = toImpl(browser).contexts().length;
   const error = await browser.newContext({
     __testHookBeforeSetStorageState: () => Promise.reject(new Error('Oh my')),
   } as any).catch(e => e);
   expect(error.message).toContain('Oh my');
-  await expect.poll(() => toImpl(browser).contexts().length).toBe(0);
+  await expect.poll(() => toImpl(browser).contexts().length).toBe(contexts);
 });

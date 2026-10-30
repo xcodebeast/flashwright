@@ -22,6 +22,11 @@ import { playwrightTest, expect } from '../config/browserTest';
 // Otherwise, a browser launched for other tests in this worker will affect the expectations.
 const it = playwrightTest.extend<{}, { expectScopeState: (object: any, golden: any) => void }>({
   expectScopeState: [async ({ toImplInWorkerScope }, use) => {
+    // Flashwright: a worker started ahead of time keeps the browser it launched for a test of this
+    // file to take (see speculativeBrowser.ts); it would show in the trees.
+    const speculativeBrowser = (globalThis as any)[Symbol.for('flashwright.speculativeBrowser')];
+    delete (globalThis as any)[Symbol.for('flashwright.speculativeBrowser')];
+    await (await speculativeBrowser)?.close();
     await use((object, golden) => {
       golden = trimGuids(golden);
       const remoteRoot = toImplInWorkerScope();
@@ -33,6 +38,10 @@ const it = playwrightTest.extend<{}, { expectScopeState: (object: any, golden: a
     });
   }, { scope: 'worker' }],
 });
+
+// Flashwright: the tests that check the trees run before the ones that launch the worker's browser,
+// in file order, even when the run is fully parallel and starts the longest tests first.
+it.describe.configure({ mode: 'default' });
 
 it.skip(({ mode }) => mode !== 'default');
 it.skip(({ video }) => video === 'on', 'Extra video artifacts in the objects list');

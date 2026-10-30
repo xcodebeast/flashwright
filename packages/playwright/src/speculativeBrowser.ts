@@ -228,6 +228,25 @@ function isPlainJSON(value: unknown): boolean {
   return typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype && Object.values(value as object).every(isPlainJSON);
 }
 
+// Called when none of the tests a worker got can use the browser it started ahead of time: an idle
+// browser holds a few hundred megabytes until the worker exits. In a warm session, it goes back to
+// the session instead. A browser that has started closes before the first test, which takes little
+// time; one still starting closes in the background, so that the test does not wait for it.
+export async function discardSpeculativeBrowser() {
+  const launch = (globalThis as any)[speculativeKey] as Promise<Browser | undefined> | undefined;
+  if (!launch)
+    return;
+  delete (globalThis as any)[speculativeKey];
+  const discard = launch.then(async browser => {
+    if (!browser || await handBrowsersToSession(browser, false))
+      return;
+    await (browser as any)._wrapApiCall(() => browser.close(), { internal: true });
+  }).catch(() => {});
+  const pending = Symbol('pending');
+  if (await Promise.race([launch, pending]) !== pending)
+    await discard;
+}
+
 // Called when the runner of a warm session exits without having used this worker: the browser
 // it started or was offered goes back to the session (see the runner's session.ts).
 export async function returnSpeculativeBrowser() {

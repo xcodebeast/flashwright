@@ -25,6 +25,7 @@ import { filteredStackTrace } from '@utils/stackTrace';
 import { configLoader, fixtures, ipc, originalProcessExit, poolBuilder, ProcessRunner, suiteUtils, testLoader } from '../common';
 import * as globals from '../globals';
 import { packageRoot } from '../package';
+import { discardSpeculativeBrowser } from '../speculativeBrowser';
 import { setExpectConfig } from '../matchers/expect';
 import { debugTest, relativeFilePath } from '../util';
 import { FixtureRunner } from './fixtureRunner';
@@ -280,6 +281,9 @@ export class WorkerMain extends ProcessRunner {
       }
 
       this._poolBuilder.buildPools(suite);
+      // Flashwright: a worker started ahead of time launched a browser (see speculativeBrowser.ts).
+      if (!tests.some(test => mayUseBrowser(test)))
+        await discardSpeculativeBrowser();
       this._activeSuites = new Map();
       this._didRunFullCleanup = false;
       for (let i = 0; i < tests.length; i++) {
@@ -712,6 +716,44 @@ function getSuites(test: testNs.TestCase | undefined): testNs.Suite[] {
     suites.push(suite);
   suites.reverse();  // Put root suite first.
   return suites;
+}
+
+// Flashwright: whether the test, its hooks, its modifiers or the automatic fixtures can need the
+// `browser` fixture, directly or through the fixtures they use.
+function mayUseBrowser(test: testNs.TestCase): boolean {
+  const pool = test._pool!;
+  const pending = [...pool.autoFixtures()];
+  const functions = [{ fn: test.fn, location: test.location }];
+  for (const suite of getSuites(test))
+    functions.push(...suite._hooks, ...suite._modifiers);
+  try {
+    for (const { fn, location } of functions) {
+      for (const name of fixtures.fixtureParameterNames(fn, location, () => {})) {
+        const registration = pool.resolve(name);
+        if (!registration)
+          return true;
+        pending.push(registration);
+      }
+    }
+  } catch {
+    return true;
+  }
+  const visited = new Set<fixtures.FixtureRegistration>();
+  while (pending.length) {
+    const registration = pending.pop()!;
+    if (visited.has(registration))
+      continue;
+    visited.add(registration);
+    if (registration.name === 'browser')
+      return true;
+    for (const name of registration.deps) {
+      const dependency = pool.resolve(name, registration);
+      if (!dependency)
+        return true;
+      pending.push(dependency);
+    }
+  }
+  return false;
 }
 
 function formatTestTitle(test: testNs.TestCase, projectName: string) {
