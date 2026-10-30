@@ -181,7 +181,7 @@ export function urlMatches(baseURL: string | undefined, urlString: string, match
   if (match === undefined || match === '')
     return true;
   if (isString(match))
-    match = new RegExp(resolveGlobToRegexPattern(baseURL, match, webSocketUrl));
+    match = globRegex(baseURL, match, webSocketUrl);
   if (isRegExp(match)) {
     match.lastIndex = 0;
     return match.test(urlString);
@@ -194,6 +194,23 @@ export function urlMatches(baseURL: string | undefined, urlString: string, match
   if (typeof match !== 'function')
     throw new Error('url parameter should be string, RegExp, URLPattern or function');
   return match(url);
+}
+
+// Flashwright: a route's glob was turned into a regular expression again for every request it was
+// matched against. The expressions have no flags, so they keep no state between matches.
+const globRegexCache = new Map<string, RegExp>();
+const kGlobRegexCacheSize = 1000;
+
+function globRegex(baseURL: string | undefined, glob: string, webSocketUrl?: boolean): RegExp {
+  const key = `${webSocketUrl ? 'ws' : ''}\n${baseURL === undefined ? '\u0000' : baseURL}\n${glob}`;
+  let regex = globRegexCache.get(key);
+  if (!regex) {
+    if (globRegexCache.size >= kGlobRegexCacheSize)
+      globRegexCache.clear();
+    regex = new RegExp(resolveGlobToRegexPattern(baseURL, glob, webSocketUrl));
+    globRegexCache.set(key, regex);
+  }
+  return regex;
 }
 
 export function resolveGlobToRegexPattern(baseURL: string | undefined, glob: string, webSocketUrl?: boolean): string {
