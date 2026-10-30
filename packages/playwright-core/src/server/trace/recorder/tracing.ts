@@ -516,10 +516,11 @@ export class Tracing extends SdkObject implements InstrumentationListener, Snaps
 
   // Flashwright: the DOM snapshots before and after a call are sent to the page before what comes
   // next, which the page runs in order: they show the same document without the call waiting for
-  // them. The snapshot before input and the ones around a navigation or closing the page are waited
-  // for, and so is everything when the trace also records screenshots, aria snapshots or coverage,
-  // on a page with frames (a frame can go away before its snapshot is taken), while tracing stops,
-  // and once a page has kMaxPendingSnapshots that have not answered.
+  // them. The call waits for the snapshot before input, the ones around a navigation or closing the
+  // page and the one after page scripts (see kEvaluateMethods). It waits for all of them when the
+  // trace also records screenshots, aria snapshots or coverage, on a page with frames (a frame can go
+  // away before its snapshot is taken), while tracing stops, and once a page has
+  // kMaxPendingSnapshots that have not answered.
   private _captureSnapshot(progress: Progress, sdkObject: SdkObject, phase: trace.ActionPhase): Promise<void> {
     const page = sdkObject.attribution.page;
     // Closing the context closes its pages without closing them one by one.
@@ -530,7 +531,8 @@ export class Tracing extends SdkObject implements InstrumentationListener, Snaps
     const options = this._state?.options;
     const domOnly = !options?.snapshotScreen && !options?.snapshotAria && !this._coverageRecorder;
     const waits = !domOnly || phase === 'action' || this._isStopping || page.frames().length > 1 || (this._pendingSnapshots.get(page)?.size ?? 0) >= kMaxPendingSnapshots ||
-        (phase === 'before' && kWaitForSnapshotsMethods.has(progress.metadata.method));
+        (phase === 'before' && kWaitForSnapshotsMethods.has(progress.metadata.method)) ||
+        (phase === 'after' && kEvaluateMethods.has(progress.metadata.method));
     if (waits || !this._snapshotter?.started()) {
       // The page runs the snapshots in the order they were sent: the earlier ones end first.
       return Promise.all([progress.race(this._flushPendingSnapshots(page)).catch(() => {}), this._captureSnapshotNow(progress, page, phase)]).then(() => {});
@@ -933,6 +935,9 @@ function createAfterActionTraceEvent(metadata: CallMetadata): trace.AfterActionT
 // Flashwright: calls that navigate or close the page, which wait for the snapshots before them (see _captureSnapshot).
 const kWaitForSnapshotsMethods = new Set(['goto', 'reload', 'goBack', 'goForward', 'setContent', 'close', 'waitForNavigation', 'waitForURL']);
 // The time a call waits for its tracing before and after it, see DispatcherConnection.dispatch.
+// Calls that run page scripts, which wait for the snapshot after them: it answers after the console
+// messages and other events the scripts caused, which then come before what the test does next.
+const kEvaluateMethods = new Set(['evaluateExpression', 'evaluateExpressionHandle', 'evalOnSelector', 'evalOnSelectorAll']);
 const kFlushTimeout = 3000;
 const kMaxPendingSnapshots = 20;
 
