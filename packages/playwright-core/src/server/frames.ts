@@ -765,7 +765,7 @@ export class Frame extends SdkObject<FrameEventMap> {
     return response;
   }
 
-  async gotoImpl(progress: Progress, url: string, options: types.GotoOptions, logged = false): Promise<network.Response | null> {
+  async gotoImpl(progress: Progress, url: string, options: types.GotoOptions & { forStorageState?: boolean }, logged = false): Promise<network.Response | null> {
     const waitUntil = verifyLifecycle('waitUntil', options.waitUntil === undefined ? 'load' : options.waitUntil);
     if (!logged)
       progress.log(`navigating to "${url}", waiting until "${waitUntil}"`);
@@ -819,8 +819,9 @@ export class Frame extends SdkObject<FrameEventMap> {
     }
 
     // Flashwright: the new document's injected script is created while the document loads, not by
-    // the first action or assertion after the navigation.
-    if (event.newDocument && url !== 'about:blank')
+    // the first action or assertion after the navigation. Documents that only save or restore
+    // storage state never use it.
+    if (event.newDocument && url !== 'about:blank' && !options.forStorageState)
       this.utilityContext().then(context => context.injectedScript()).catch(() => {});
 
     if (!this._firedLifecycleEvents.has(waitUntil))

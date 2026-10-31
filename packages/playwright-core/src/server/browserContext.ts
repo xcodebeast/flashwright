@@ -1129,7 +1129,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
       }, 'prepend');
       for (const origin of origins) {
         const frame = page.mainFrame();
-        await frame.gotoImpl(progress, origin, {});
+        await frame.gotoImpl(progress, origin, { forStorageState: true });
         await progress.race(callback(frame, origin));
       }
     } finally {
@@ -1207,7 +1207,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
 
         for (const origin of allOrigins) {
           const frame = page.mainFrame();
-          await frame.gotoImpl(progress, origin, {});
+          await frame.gotoImpl(progress, origin, { forStorageState: true });
           const restoreScript = `(() => {
             const module = {};
             ${rawStorageSource.source}
