@@ -30,12 +30,93 @@ const speculativeOptions = { handleSIGINT: false, headless: true, ...(process.en
 // The fixtures and the worker entry are bundled separately; share the launch through a global.
 const speculativeKey = Symbol.for('flashwright.speculativeBrowser');
 
+// The browser launched ahead of time: the one that every test of the config's last run launched,
+// which the runner passes on (see the runner's workerStandby.ts), and the one a default project
+// launches otherwise. Shared through a global like the launch.
+type SpeculativeLaunch = { browserName: 'chromium' | 'firefox' | 'webkit', options: LaunchOptions & { recycleContexts?: boolean } };
+const speculativeLaunchKey = Symbol.for('flashwright.speculativeLaunch');
+// The environment the browser was launched with. A worker started ahead of time receives the run's
+// environment later (a config or global setup may change it, for example TZ or LANG); a browser
+// launched before that is only adopted when nothing it inherits has changed.
+const speculativeEnvKey = Symbol.for('flashwright.speculativeEnv');
+
+// What the runner sets for each worker is not for the browser.
+function browserEnvironment(): string {
+  return JSON.stringify(Object.entries(process.env).filter(([key]) => !/^(TEST_|FLASHWRIGHT_)/.test(key)).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
+}
+
+function speculativeLaunch(): SpeculativeLaunch {
+  return (globalThis as any)[speculativeLaunchKey] ?? { browserName: 'chromium', options: speculativeOptions };
+}
+
+function remembered(): SpeculativeLaunch | undefined {
+  try {
+    const launch = JSON.parse(process.env.FLASHWRIGHT_SPECULATIVE_LAUNCH || '');
+    if (['chromium', 'firefox', 'webkit'].includes(launch?.browserName) && rememberableLaunchOptions(launch.options))
+      return launch;
+  } catch {
+  }
+}
+
 export function launchSpeculativeBrowser(): Promise<Browser | undefined> {
   // In a warm session, a browser of the previous run may be on its way; launching takes it over.
   const offered = process.env.FLASHWRIGHT_SESSION_OFFER ? receiveSessionBrowser() : Promise.resolve();
-  const launch = offered.then(() => require('playwright-core').chromium.launch(speculativeOptions)).catch(() => undefined);
+  const launch = offered.then(() => {
+    const launch = remembered();
+    // A browser that the session offers is one that a default project launched.
+    if (launch && !(globalThis as any)[offerKey])
+      (globalThis as any)[speculativeLaunchKey] = launch;
+    (globalThis as any)[speculativeEnvKey] = browserEnvironment();
+    const { browserName, options } = speculativeLaunch();
+    return require('playwright-core')[browserName].launch(options);
+  }).catch(() => undefined);
   (globalThis as any)[speculativeKey] = launch;
   return launch;
+}
+
+// Called by the `browser` fixture for every browser it launches: the runner remembers the one
+// that all of a run's tests launched, for the next run (see the runner's workerStandby.ts).
+export function reportLaunch(browserName: string, options: LaunchOptions) {
+  process.send?.({ method: '__flashwright_launch__', params: { browserName, options: rememberableLaunchOptions(launchOptionsWithoutOutputDirs(options)) ?? null } });
+}
+
+function launchOptionsWithoutOutputDirs(options: LaunchOptions): Record<string, unknown> {
+  const rest: Record<string, unknown> = { ...options };
+  delete rest.tracesDir;
+  delete rest.artifactsDir;
+  return rest;
+}
+
+// Only options that cannot hold credentials are passed on and written to disk: no environment,
+// proxy or preferences, and arguments that are flags without a value or with a value only for
+// flags known to take a harmless one. Headed browsers are left out: a warm session would open
+// their window while it waits for the next run.
+const rememberableKeys = new Set(['handleSIGINT', 'handleSIGTERM', 'handleSIGHUP', 'headless', 'channel', 'args', 'ignoreDefaultArgs', 'executablePath', 'chromiumSandbox', 'devtools', 'slowMo', 'timeout', 'downloadsPath', 'recycleContexts']);
+const flagsWithValues = new Set(['--window-size', '--window-position', '--lang', '--force-device-scale-factor', '--force-color-profile', '--font-render-hinting', '--disable-features', '--enable-features', '--disable-blink-features', '--enable-blink-features', '--use-gl', '--use-angle', '--autoplay-policy']);
+const plainFlag = /^--?[A-Za-z0-9][A-Za-z0-9-]*(=[A-Za-z0-9_.,:/+-]*)?$/;
+const plainPath = /^[A-Za-z0-9_.,:/\\ +-]*$/;
+
+function rememberableLaunchOptions(options: any): SpeculativeLaunch['options'] | undefined {
+  if (!options || typeof options !== 'object' || !isPlainJSON(options) || options.headless !== true)
+    return;
+  for (const [key, value] of Object.entries(options)) {
+    if (value === undefined)
+      continue;
+    if (!rememberableKeys.has(key))
+      return;
+    if ((key === 'args' || key === 'ignoreDefaultArgs') && Array.isArray(value) && !value.every(isRememberableFlag))
+      return;
+    if (typeof value === 'string' && !plainPath.test(value))
+      return;
+  }
+  return JSON.parse(JSON.stringify(options));
+}
+
+function isRememberableFlag(arg: unknown) {
+  if (typeof arg !== 'string' || !plainFlag.test(arg))
+    return false;
+  const value = arg.indexOf('=');
+  return value === -1 || flagsWithValues.has(arg.substring(0, value));
 }
 
 // Flashwright: a warm session (see the runner's session.ts) moves browsers between the workers of
@@ -151,7 +232,8 @@ function killHandedOverBrowser(metadata: { pid: number, tempDirectories: string[
 // the context to be ready, so that its first test finds it.
 export function prepareSpeculativeContext() {
   const launch = (globalThis as any)[speculativeKey] as Promise<Browser | undefined> | undefined;
-  const hint = speculativeOptions.recycleContexts ? readContextHint() : undefined;
+  const { browserName, options } = speculativeLaunch();
+  const hint = browserName === 'chromium' && options.recycleContexts ? readContextHint() : undefined;
   if (!launch || !hint)
     return;
   (globalThis as any)[speculativeKey] = launch.then(async browser => {
@@ -262,19 +344,23 @@ export async function takeSpeculativeBrowser(browserName: string, options: Launc
   if (!launch)
     return;
   delete (globalThis as any)[speculativeKey];
-  const { tracesDir, artifactsDir, ...rest } = options as LaunchOptions & { tracesDir?: string, artifactsDir?: string };
+  const { tracesDir, artifactsDir } = options as LaunchOptions & { tracesDir?: string, artifactsDir?: string };
   const browser = await launch;
   if (!browser)
     return;
   const serverBrowser = (browser as any)._connection.toImpl?.(browser);
-  if (browserName !== 'chromium' || !isDeepStrictEqual(rest, speculativeOptions) || !serverBrowser || !artifactsDir) {
+  const launched = speculativeLaunch();
+  const rest = launchOptionsWithoutOutputDirs(options);
+  if (browserName !== launched.browserName || !isPlainJSON(rest) || !isDeepStrictEqual(JSON.parse(JSON.stringify(rest)), launched.options) || (globalThis as any)[speculativeEnvKey] !== browserEnvironment() || !serverBrowser || !artifactsDir) {
     // Not the browser this project needs: close it in the background, out of the test's steps.
     (browser as any)._wrapApiCall(() => browser.close(), { internal: true }).catch(() => {});
     return;
   }
   // The browser was launched before the worker knew its output folders, and so was the context it
   // may have prepared for the first test.
-  await serverBrowser.setOutputDirs(artifactsDir, tracesDir || artifactsDir);
+  // Launching resolves a relative downloads path against the current directory.
+  const downloadsPath = options.downloadsPath ? path.resolve(options.downloadsPath) : artifactsDir;
+  await serverBrowser.setOutputDirs(artifactsDir, tracesDir || artifactsDir, downloadsPath);
   (browser as any)._connectToBrowserType(browser.browserType(), options, undefined);
   return browser;
 }

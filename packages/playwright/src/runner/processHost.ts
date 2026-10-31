@@ -23,7 +23,7 @@ import { monotonicTime, timeOrigin } from '@isomorphic/time';
 import { raceAgainstDeadline } from '@isomorphic/timeoutRunner';
 import { ManualPromise } from '@isomorphic/manualPromise';
 import { killProcessTree } from '@utils/processLauncher';
-import { takeStandby } from './workerStandby';
+import { recordWorkerLaunch, takeStandby } from './workerStandby';
 import { receiveWorkerMessage, trackDetachedTeardown, trackSessionWorker } from './session';
 
 import type { ipc, processRunner } from '../common';
@@ -197,6 +197,8 @@ export class ProcessHost extends EventEmitter {
         void this._laneClosed();
       } else if (message.method === '__teardown_detached__') {
         this._teardownDetached.resolve(true);
+      } else if (message.method === '__flashwright_launch__') {
+        recordWorkerLaunch(message.params);
       } else if (message.method === '__env_produced__') {
         const producedEnv: ipc.EnvProducedPayload = message.params;
         this._producedEnv = Object.fromEntries(producedEnv.map(e => [e[0], e[1] ?? undefined]));

@@ -432,9 +432,9 @@ export abstract class Browser extends SdkObject {
   }
 
   // Flashwright: see BrowserContext.outputDirsChanged.
-  async setOutputDirs(artifactsDir: string, tracesDir: string) {
+  async setOutputDirs(artifactsDir: string, tracesDir: string, downloadsPath: string) {
     this.options.artifactsDir = artifactsDir;
-    this.options.downloadsPath = artifactsDir;
+    this.options.downloadsPath = downloadsPath;
     this.options.tracesDir = tracesDir;
     await Promise.all(this.contexts().map(context => context.outputDirsChanged()));
   }

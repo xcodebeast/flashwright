@@ -45,6 +45,11 @@ let restartCount = 0;
 let keepSpare = false;
 let cpus = 1;
 let hadHint = false;
+// The browser that the previous run's tests launched, which standbys launch ahead of time, and the
+// ones this run's tests launch (see the worker's speculativeBrowser.ts).
+type Launch = { browserName: string, options: object | null };
+let rememberedLaunch: Launch | undefined;
+const launches = new Map<string, Launch>();
 // Workers that share a worker process (config.workersPerProcess): the previous run's until the
 // config is loaded.
 let workersPerProcess = 1;
@@ -79,6 +84,7 @@ export function prespawnWorkerForTestCommand(argv: string[]) {
   cpus = os.availableParallelism?.() ?? os.cpus().length;
   const hint = readWorkerCountHints()[hintKey];
   hadHint = !!hint;
+  rememberedLaunch = hint?.launch;
   workersPerProcess = hint?.workersPerProcess ?? 1;
   // A runner that a warm session prepared also starts one for each browser the session holds: the
   // workers of a process share one.
@@ -97,7 +103,9 @@ function spawnStandby(waitsForNextPhase = false) {
   const entryScript = workerEntryScript();
   // The test runner marks its process tree with PLAYWRIGHT_TEST before starting workers. A standby
   // for the next phase of projects knows it will wait, and prepares right away.
-  const env = { ...workerEnv({}), PLAYWRIGHT_TEST: '1', FLASHWRIGHT_SPECULATIVE_BROWSER: waitsForNextPhase ? 'next-phase' : '1', ...sessionStandbyEnv() };
+  const env: NodeJS.ProcessEnv = { ...workerEnv({}), PLAYWRIGHT_TEST: '1', FLASHWRIGHT_SPECULATIVE_BROWSER: waitsForNextPhase ? 'next-phase' : '1', ...sessionStandbyEnv() };
+  if (rememberedLaunch)
+    env.FLASHWRIGHT_SPECULATIVE_LAUNCH = JSON.stringify(rememberedLaunch);
   const child = child_process.fork(entryScript, {
     detached: false,
     env,
@@ -160,6 +168,12 @@ export function recordWorkerCount(count: number) {
   workerCount = Math.max(workerCount, count);
 }
 
+// Called for every browser that a worker launches; its options are null when they cannot be
+// written down.
+export function recordWorkerLaunch(launch: Launch) {
+  launches.set(JSON.stringify(launch), launch);
+}
+
 export function discardStandbys() {
   for (const standby of standbys.splice(0))
     release(standby.child);
@@ -202,7 +216,7 @@ function workerCountHintKey(argv: string[]) {
   return crypto.createHash('sha1').update([process.cwd(), config, workers].join('\0')).digest('hex').slice(0, 16);
 }
 
-function readWorkerCountHints(): Record<string, { workers: number, restarts?: number, workersPerProcess?: number, usedAt: number }> {
+function readWorkerCountHints(): Record<string, { workers: number, restarts?: number, workersPerProcess?: number, launch?: Launch, usedAt: number }> {
   try {
     return JSON.parse(fs.readFileSync(hintFile, 'utf8'));
   } catch {
@@ -215,11 +229,16 @@ function writeWorkerCountHint() {
     return;
   try {
     const hints = readWorkerCountHints();
-    hints[hintKey] = { workers: workerCount, restarts: restartCount, workersPerProcess, usedAt: Date.now() };
+    // A run whose tests launched no browser keeps the one remembered; one whose tests launched
+    // different ones remembers none, and standbys launch the default.
+    const [launch, ...others] = launches.values();
+    const remembered = !launches.size ? hints[hintKey]?.launch : !others.length && launch.options ? launch : undefined;
+    hints[hintKey] = { workers: workerCount, restarts: restartCount, workersPerProcess, launch: remembered, usedAt: Date.now() };
     const recent = Object.entries(hints).sort((a, b) => b[1].usedAt - a[1].usedAt).slice(0, maxHints);
-    // Write a sibling file and rename it, so concurrent runs never read a partial file.
+    // Write a sibling file and rename it, so concurrent runs never read a partial file. Only this
+    // user may read it: it holds launch options.
     const temporary = `${hintFile}.${process.pid}`;
-    fs.writeFileSync(temporary, JSON.stringify(Object.fromEntries(recent)));
+    fs.writeFileSync(temporary, JSON.stringify(Object.fromEntries(recent)), { mode: 0o600 });
     fs.renameSync(temporary, hintFile);
   } catch {
   }

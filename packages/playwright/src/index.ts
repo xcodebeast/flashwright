@@ -28,7 +28,7 @@ import { buildErrorContext } from './errorContext';
 import { config, testType } from './common';
 import * as globals from './globals';
 import { createCustomMessageHandler, runDaemonForContext } from './mcp/test/browserBackend';
-import { handBrowsersToSession, rememberRecycledContext, returnSpeculativeBrowser, takeSpeculativeBrowser } from './speculativeBrowser';
+import { handBrowsersToSession, rememberRecycledContext, reportLaunch, returnSpeculativeBrowser, takeSpeculativeBrowser } from './speculativeBrowser';
 import { canPreloadPages, preloadNextPage, recordFirstNavigation } from './preloadHistory';
 
 import type { Fixtures, PlaywrightTestArgs, PlaywrightTestOptions, PlaywrightWorkerArgs, PlaywrightWorkerOptions, ScreenshotMode, TestInfo, TestType, VideoMode } from '../types/test';
@@ -281,6 +281,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
         reportAdoptedLaunch(_browserOptions);
       // Flashwright: lanes of a worker process (see config.workersPerProcess) share playwright's default launch options.
       const browser = speculativeBrowser ?? await playwright[browserName].launch({ ..._browserOptions, ...recycleOptions });
+      reportLaunch(browserName, { ..._browserOptions, ...recycleOptions });
       if (process.env.PLAYWRIGHT_DASHBOARD)
         await browser.bind(`worker-${workerInfo.parallelIndex}`);
       return browser as BrowserImpl;
