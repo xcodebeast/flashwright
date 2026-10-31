@@ -153,6 +153,19 @@ Browser:
       parameters:
         reason: string
         slot: string?
+        # Flashwright: the test's pages to screenshot into these files if the test turns out to
+        # have failed (screenshot: 'only-on-failure'); see settleRecycledScreenshots.
+        failureScreenshots:
+          type: object?
+          properties:
+            pages:
+              type: array
+              items: string
+            paths:
+              type: array
+              items: string
+            fullPage: boolean?
+            omitBackground: boolean?
       returns:
         # Flashwright: how the test's page was first navigated (see preloadNextPage).
         firstNavigation:
@@ -161,6 +174,14 @@ Browser:
             url: string
             # Nothing else was called between taking the context and that navigation.
             first: boolean
+
+    # Flashwright: the outcome of the test whose recycled context closed with failureScreenshots;
+    # the context is reset for the next test once it is known.
+    settleRecycledScreenshots:
+      internal: true
+      parameters:
+        slot: string?
+        failed: boolean
 
     # Flashwright: preloadPages. The tab the next test gets (in a second recycled context) loads
     # this path, relative to the URL of the last test's first navigation, while the current test

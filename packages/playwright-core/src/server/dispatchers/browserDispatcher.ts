@@ -104,22 +104,45 @@ export class BrowserDispatcher extends Dispatcher<Browser, channels.BrowserChann
   async closeRecycledContext(params: channels.BrowserCloseRecycledContextParams, progress: Progress): Promise<channels.BrowserCloseRecycledContextResult> {
     const context = this._object.contextForReuse(params.slot);
     const firstNavigation = context?.takeFirstNavigation();
+    const failureScreenshots = (hold: boolean) => {
+      if (!context || !params.failureScreenshots)
+        return;
+      const { pages: guids, paths, fullPage, omitBackground } = params.failureScreenshots;
+      const pages = context.possiblyUninitializedPages();
+      const shots = guids.map((guid, index) => ({ page: pages.find(page => page.guid === guid), path: paths[index] })).filter(shot => shot.page && shot.path);
+      return context.prepareFailureScreenshots(shots.map(shot => shot.page!), shots.map(shot => shot.path), { fullPage, omitBackground }, hold);
+    };
+    if (params.failureScreenshots)
+      context?.willPrepareFailureScreenshots();
+    try {
+      return await this._closeRecycledContext(progress, params, context, firstNavigation, failureScreenshots);
+    } finally {
+      context?.didPrepareFailureScreenshots();
+    }
+  }
+
+  private async _closeRecycledContext(progress: Progress, params: channels.BrowserCloseRecycledContextParams, context: BrowserContext | undefined, firstNavigation: channels.BrowserCloseRecycledContextResult['firstNavigation'], failureScreenshots: (hold: boolean) => Promise<void> | undefined): Promise<channels.BrowserCloseRecycledContextResult> {
     // A context that cannot be recycled again (e.g. it was paused for debugging) closes now, as it
     // would without recycling. Closing also settles any call that is still waiting on it.
     if (context && !context.canResetForReuse()) {
+      await progress.race(failureScreenshots(false) ?? Promise.resolve());
       // The context dispatcher disposes itself when the context closes.
       await context.close(progress, { reason: params.reason });
       return { firstNavigation };
     }
     const videos = [context?.endVideos()];
     const contextDispatcher = context ? this.connection.existingDispatcher<BrowserContextDispatcher>(context) : undefined;
+    // As the runner would have before closing the context: before the calls the test left in flight
+    // settle, which could still change the pages, and before the dispatcher goes, which can resume a
+    // paused clock or dismiss a dialog.
+    await progress.race(failureScreenshots(!contextDispatcher?.hasPendingOperations()) ?? Promise.resolve());
     if (contextDispatcher) {
       // Calls the test left in flight get a moment to settle before they are stopped. A popup they
       // open records until then.
       await progress.race(contextDispatcher.stopPendingOperations(new Error(params.reason), 50));
       videos.push(context?.endVideos());
-      contextDispatcher._dispose();
     }
+    contextDispatcher?._dispose();
     for (const video of videos)
       video?.catch(() => {});
     const recycled = context?.startRecycle();
@@ -128,6 +151,10 @@ export class BrowserDispatcher extends Dispatcher<Browser, channels.BrowserChann
     // Like closing a context, which reports a video that could not be recorded.
     await progress.race(Promise.all(videos));
     return { firstNavigation };
+  }
+
+  async settleRecycledScreenshots(params: channels.BrowserSettleRecycledScreenshotsParams, progress: Progress): Promise<void> {
+    await progress.race(this._object.contextForReuse(params.slot)?.settleFailureScreenshots(params.failed) ?? Promise.resolve());
   }
 
   async preloadNextPage(params: channels.BrowserPreloadNextPageParams, progress: Progress): Promise<void> {

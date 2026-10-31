@@ -125,6 +125,17 @@ export class Dispatcher<Type extends SdkObject, ChannelType, ParentScopeType ext
   }
 
   async stopPendingOperations(error: Error, settleTimeout = 0) {
+    const guids = this._subtreeGuids();
+    if (settleTimeout)
+      await this.connection.settleControllersForGuids(guids, settleTimeout);
+    await this.connection.abortControllersForGuids(guids, error);
+  }
+
+  hasPendingOperations(): boolean {
+    return this.connection.hasControllersForGuids(this._subtreeGuids());
+  }
+
+  private _subtreeGuids(): Set<string> {
     const guids = new Set<string>();
     const collect = (dispatcher: DispatcherScope) => {
       guids.add(dispatcher._guid);
@@ -132,9 +143,7 @@ export class Dispatcher<Type extends SdkObject, ChannelType, ParentScopeType ext
         collect(child);
     };
     collect(this);
-    if (settleTimeout)
-      await this.connection.settleControllersForGuids(guids, settleTimeout);
-    await this.connection.abortControllersForGuids(guids, error);
+    return guids;
   }
 
   private _disposeRecursively(error: Error) {
@@ -200,10 +209,13 @@ export class DispatcherConnection {
   // Flashwright: lets operations still running for these objects finish on their own for up to
   // `timeout` ms. Used before a recycled context aborts them at test end, so in-flight calls get
   // roughly the same chance to complete as they would while a context is being closed.
+  hasControllersForGuids(guids: Set<string>): boolean {
+    return [...this._activeProgressControllers.values()].some(entry => entry.controller?.metadata.objectId && guids.has(entry.controller.metadata.objectId));
+  }
+
   async settleControllersForGuids(guids: Set<string>, timeout: number) {
     const deadline = monotonicTime() + timeout;
-    const hasPending = () => [...this._activeProgressControllers.values()].some(entry => entry.controller?.metadata.objectId && guids.has(entry.controller.metadata.objectId));
-    while (hasPending() && monotonicTime() < deadline)
+    while (this.hasControllersForGuids(guids) && monotonicTime() < deadline)
       await new Promise(f => setTimeout(f, 2));
   }
 

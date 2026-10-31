@@ -847,6 +847,7 @@ export interface BrowserChannel extends BrowserEventTarget, Channel {
   disconnectFromReusedContext(params: BrowserDisconnectFromReusedContextParams, options: TimeoutOptions): Promise<BrowserDisconnectFromReusedContextResult>;
   newContextForRecycle(params: BrowserNewContextForRecycleParams, options: TimeoutOptions): Promise<BrowserNewContextForRecycleResult>;
   closeRecycledContext(params: BrowserCloseRecycledContextParams, options: TimeoutOptions): Promise<BrowserCloseRecycledContextResult>;
+  settleRecycledScreenshots(params: BrowserSettleRecycledScreenshotsParams, options: TimeoutOptions): Promise<BrowserSettleRecycledScreenshotsResult>;
   preloadNextPage(params: BrowserPreloadNextPageParams, options: TimeoutOptions): Promise<BrowserPreloadNextPageResult>;
   newBrowserCDPSession(params: BrowserNewBrowserCDPSessionParams, options: TimeoutOptions): Promise<BrowserNewBrowserCDPSessionResult>;
   startTracing(params: BrowserStartTracingParams, options: TimeoutOptions): Promise<BrowserStartTracingResult>;
@@ -1400,9 +1401,21 @@ export type BrowserNewContextForRecycleResult = {
 export type BrowserCloseRecycledContextParams = {
   reason: string,
   slot?: string,
+  failureScreenshots?: {
+    pages: string[],
+    paths: string[],
+    fullPage?: boolean,
+    omitBackground?: boolean,
+  },
 };
 export type BrowserCloseRecycledContextOptions = {
   slot?: string,
+  failureScreenshots?: {
+    pages: string[],
+    paths: string[],
+    fullPage?: boolean,
+    omitBackground?: boolean,
+  },
 };
 export type BrowserCloseRecycledContextResult = {
   firstNavigation?: {
@@ -1410,6 +1423,14 @@ export type BrowserCloseRecycledContextResult = {
     first: boolean,
   },
 };
+export type BrowserSettleRecycledScreenshotsParams = {
+  slot?: string,
+  failed: boolean,
+};
+export type BrowserSettleRecycledScreenshotsOptions = {
+  slot?: string,
+};
+export type BrowserSettleRecycledScreenshotsResult = void;
 export type BrowserPreloadNextPageParams = {
   path?: string,
   expectedDuration?: number,

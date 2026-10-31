@@ -77,6 +77,7 @@ export const methodMetainfo = new Map<string, MethodMetainfo>([
   ['Browser.disconnectFromReusedContext', { internal: true, }],
   ['Browser.newContextForRecycle', { title: 'Create context', }],
   ['Browser.closeRecycledContext', { title: 'Close context', }],
+  ['Browser.settleRecycledScreenshots', { internal: true, }],
   ['Browser.preloadNextPage', { internal: true, }],
   ['Browser.newBrowserCDPSession', { title: 'Create CDP session', group: 'configuration', }],
   ['Browser.startTracing', { title: 'Start browser tracing', group: 'configuration', }],

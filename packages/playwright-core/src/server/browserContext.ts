@@ -17,9 +17,11 @@
 
 import { AsyncResource } from 'async_hooks';
 import fs from 'fs';
+import path from 'path';
 
 import { rewriteErrorMessage } from '@utils/stackTrace';
 import { monotonicTime } from '@isomorphic/time';
+import { ManualPromise } from '@isomorphic/manualPromise';
 import { debugMode, isUnderTest } from '@utils/debug';
 import { Clock } from './clock';
 import { Credentials } from './credentials';
@@ -36,7 +38,7 @@ import { RecorderApp } from './recorder/recorderApp';
 import { Selectors } from './selectors';
 import { Tracing } from './trace/recorder/tracing';
 import * as rawStorageSource from '../generated/storageScriptSource';
-import { nullProgress } from './progress';
+import { nullProgress, ProgressController } from './progress';
 import { PagePreload, unwatchFirstNavigation } from './pagePreload';
 
 import type { Browser, BrowserOptions } from './browser';
@@ -108,6 +110,9 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   readonly _browserContextId: string | undefined;
   private _selectors: Selectors;
   private _origins = new Set<string>();
+  private _failureScreenshots: HeldFailureScreenshots | undefined;
+  private _failureScreenshotsPrepared: ManualPromise<void> | undefined;
+  private _hadSharedWorker = false;
   readonly tracing: Tracing;
   readonly fetchRequest: BrowserContextAPIRequestContext;
   private _customCloseHandler?: () => Promise<any>;
@@ -269,7 +274,9 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     this._clearPreloadTimer();
     unwatchFirstNavigation(this);
     this._recycling = true;
-    this._pendingRecycle = this._recycle(nullProgress);
+    // The pages waiting for the test's outcome (see prepareFailureScreenshots) stay as they are until then.
+    const outcome = this._failureScreenshots?.settled;
+    this._pendingRecycle = outcome ? outcome.then(() => this._recycle(nullProgress)) : this._recycle(nullProgress);
     this._pendingRecycle.then(recycled => {
       this._recycling = false;
       if (recycled)
@@ -431,6 +438,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
       return;
     if (this._clientCertificatesProxy || this.tracing.harRecorders.size || params.recordVideo)
       return;
+    await this.settleFailureScreenshots(false);
     const pending = this._pendingRecycle;
     this._pendingRecycle = undefined;
     if (!await (pending ?? this._recycle(nullProgress)))
@@ -470,6 +478,8 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   }
 
   async resetForReuse(progress: Progress, params: channels.BrowserNewContextForReuseParams | null): Promise<boolean> {
+    // A runner that never told the previous test's outcome no longer needs its pages.
+    await progress.race(this.settleFailureScreenshots(false));
     // A recycle started when the previous test ended must finish before this test's options apply.
     const recycling = this._recycleMode && this.supportsRecycling();
     const pendingRecycle = recycling ? this._pendingRecycle : undefined;
@@ -697,6 +707,117 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   // Stops the pages' scripts and replaces their documents, calling onScriptsStopped in between.
   protected async doStopPages(pages: Page[], onScriptsStopped: () => void): Promise<void> {
     onScriptsStopped();
+  }
+
+  // Stops (or, with frozen false, resumes) the pages' scripts and CSS animations; returns whether
+  // it could.
+  protected async doFreezePages(pages: Page[], frozen: boolean): Promise<boolean> {
+    return false;
+  }
+
+  // Flashwright: screenshot: 'only-on-failure' screenshots a test's pages when its context closes,
+  // in case the test still fails afterwards, in the teardown of a fixture that outlives the
+  // context. A recycled context's pages instead stand still at that point and wait for the test's
+  // outcome (settleFailureScreenshots), which starts the recycle: they are captured only when the
+  // test has failed, or once they waited kFailureScreenshotHoldTimeout. Pages that could still
+  // change, through a call or a request in flight, an open WebSocket, a worker, a dialog or the
+  // content of kChangesOnItsOwnExpression, are captured right away as before.
+  async prepareFailureScreenshots(pages: Page[], paths: string[], options: FailureScreenshotOptions, hold: boolean) {
+    try {
+      // Every page of the context waits, not only those to capture. Whether they can is checked
+      // before they stop, so that a page that cannot wait is captured as it is, and again after,
+      // for what a script started meanwhile.
+      const allPages = this.possiblyUninitializedPages().filter(page => !page.isClosedOrClosingOrCrashed());
+      if (!hold || !await this._canWaitForOutcome(allPages)) {
+        await this._takeFailureScreenshots(pages, paths, options);
+        return;
+      }
+      if (!await raceWithTimeout(this.doFreezePages(allPages, true), kFailureScreenshotStopTimeout, false) || !await this._canWaitForOutcome(allPages)) {
+        // As they were, but for the moment they stood still.
+        await raceWithTimeout(this.doFreezePages(allPages, false), kFailureScreenshotStopTimeout, false);
+        await this._takeFailureScreenshots(pages, paths, options);
+        return;
+      }
+      const request: HeldFailureScreenshots = { pages, paths, options, settled: new ManualPromise() };
+      // What could still move while they wait, unseen (a closed shadow root, a scroll in progress),
+      // moves no further than in the time a screenshot takes to start.
+      request.timer = setTimeout(() => request.capture = this._takeFailureScreenshots(pages, paths, options), kFailureScreenshotHoldTimeout);
+      this._failureScreenshots = request;
+    } finally {
+      this.didPrepareFailureScreenshots();
+    }
+  }
+
+  // The browser closing while the context decides whether its pages wait (closeRecycledContext)
+  // captures them after that.
+  willPrepareFailureScreenshots() {
+    this._failureScreenshotsPrepared = new ManualPromise();
+  }
+
+  didPrepareFailureScreenshots() {
+    const prepared = this._failureScreenshotsPrepared;
+    this._failureScreenshotsPrepared = undefined;
+    prepared?.resolve();
+  }
+
+  // Every caller waits until the pages are captured, also one that comes while another settles.
+  async settleFailureScreenshots(failed: boolean) {
+    await this._failureScreenshotsPrepared;
+    const request = this._failureScreenshots;
+    if (!request)
+      return;
+    if (request.settling) {
+      await request.settled;
+      return;
+    }
+    request.settling = true;
+    clearTimeout(request.timer);
+    try {
+      if (request.capture)
+        await request.capture;
+      else if (failed)
+        await this._takeFailureScreenshots(request.pages, request.paths, request.options);
+    } finally {
+      this._failureScreenshots = undefined;
+      request.settled.resolve();
+    }
+  }
+
+  private async _canWaitForOutcome(pages: Page[]): Promise<boolean> {
+    if (this._hadSharedWorker || this.hasServiceWorkers())
+      return false;
+    // A dialog left open goes with the context's dispatcher, and the script that opened it carries on.
+    if (pages.some(page => this.dialogManager.hasOpenDialogsForPage(page) || page.hasWorkers() || page.frameManager.hasOpenWebSockets() || page.frames().some(frame => frame.hasPendingNetworkOrNavigation())))
+      return false;
+    const changing = Promise.all(pages.flatMap(page => page.frames().map(async frame => {
+      const result: true | string[] = await frame.evaluateExpression(nullProgress, kChangesOnItsOwnExpression, { world: 'utility' }).catch(() => true);
+      if (result === true || !result.length)
+        return result === true;
+      const texts = await this.doReadStyleSheets(frame, result);
+      return !texts || await frame.evaluateExpression(nullProgress, kStyleSheetTextsChangeExpression, { isFunction: true, world: 'utility' }, texts).catch(() => true);
+    })));
+    return !(await raceWithTimeout(changing, kFailureScreenshotStopTimeout, [true])).some(Boolean);
+  }
+
+  // The text of style sheets the frame loaded, as it got them.
+  protected async doReadStyleSheets(frame: frames.Frame, urls: string[]): Promise<string[] | undefined> {
+    return undefined;
+  }
+
+  noteSharedWorker() {
+    this._hadSharedWorker = true;
+  }
+
+  // Like the test runner's own screenshots: each failure is ignored.
+  private async _takeFailureScreenshots(pages: Page[], paths: string[], options: FailureScreenshotOptions) {
+    await Promise.all(pages.map(async (page, index) => {
+      try {
+        const buffer = await new ProgressController().run(progress => page.screenshot(progress, { ...options, type: 'png', caret: 'initial' }), kFailureScreenshotTimeout);
+        await fs.promises.mkdir(path.dirname(paths[index]), { recursive: true });
+        await fs.promises.writeFile(paths[index], buffer);
+      } catch {
+      }
+    }));
   }
 
   // Clears the caches as clearCache() does, through one page while the others may be closing.
@@ -998,6 +1119,9 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
 
   async close(progress: Progress, options: { reason?: string }) {
     let flushError: Error | undefined;
+    // Pages waiting for their test's outcome are captured before they close, as the test runner
+    // would have before closing the context.
+    await progress.race(this.settleFailureScreenshots(true));
     if (this._closedStatus === 'open') {
       if (options.reason)
         this._closeReason = options.reason;
@@ -1358,6 +1482,118 @@ const kRecycledPageTimeout = 500;
 // Flashwright: how long a reused context's page may take to navigate away from the previous test.
 const kReusedPageNavigationTimeout = 2000;
 const kRecycleTimeout = 1500;
+// Flashwright: see prepareFailureScreenshots. The runner gives each of its screenshots 5 seconds.
+// A test's outcome comes well within a millisecond of its context closing, unless a fixture that
+// outlives the context takes time to tear down.
+const kFailureScreenshotStopTimeout = 500;
+const kFailureScreenshotTimeout = 5000;
+const kFailureScreenshotHoldTimeout = 20;
+const kMaxElementsToLookThrough = 50000;
+
+type FailureScreenshotOptions = { fullPage?: boolean, omitBackground?: boolean };
+type HeldFailureScreenshots = {
+  pages: Page[],
+  paths: string[],
+  options: FailureScreenshotOptions,
+  settled: ManualPromise<void>,
+  timer?: NodeJS.Timeout,
+  capture?: Promise<void>,
+  settling?: boolean,
+};
+
+// A function of the list it adds the style sheets it cannot read to, which tells whether a style
+// sheet has styles for the scripting media feature.
+const kScriptingStylesSource = `unreadable => {
+  const forScripting = media => !!media && /scripting/i.test(media.mediaText);
+  const rulesChange = rules => [...rules].some(rule => forScripting(rule.media) ||
+      (rule instanceof CSSImportRule ? !rule.styleSheet || sheetChanges(rule.styleSheet) : !!rule.cssRules && rulesChange(rule.cssRules)));
+  const sheetChanges = sheet => {
+    if (forScripting(sheet.media))
+      return true;
+    let rules;
+    try {
+      rules = sheet.cssRules;
+    } catch {
+      if (!sheet.href)
+        return true;
+      unreadable.push(sheet.href);
+      return false;
+    }
+    return rulesChange(rules);
+  };
+  return sheetChanges;
+}`;
+
+// Whether a document can still change once its scripts and CSS animations have stopped, other than
+// the way content that moves by itself does (a blinking caret, an animated image, a smooth scroll):
+// an image or font still loading, a scheduled refresh, or styles for the scripting media feature,
+// which stopping the scripts flips. Also playing media and SMIL animations, which are rare enough
+// to capture right away. Closed shadow roots are out of reach, as they are for locators, including
+// styles of theirs for the scripting media feature, a pairing too rare to look for at the cost of a
+// snapshot of the whole document. A document too large to look through counts as changing. Gives
+// the style sheets it could not read, those of other origins, for the server to read
+// (doReadStyleSheets).
+const kChangesOnItsOwnExpression = `(() => {
+  const unreadable = [];
+  const sheetChanges = (${kScriptingStylesSource})(unreadable);
+  const roots = [document];
+  let count = 0;
+  for (let i = 0; i < roots.length; i++) {
+    const root = roots[i];
+    if ([...root.styleSheets, ...root.adoptedStyleSheets].some(sheetChanges))
+      return true;
+    for (const element of root.querySelectorAll('*')) {
+      if (++count > ${kMaxElementsToLookThrough})
+        return true;
+      if (element.shadowRoot)
+        roots.push(element.shadowRoot);
+      if (/scripting/i.test((element.getAttribute('media') || '') + (element.getAttribute('sizes') || '')))
+        return true;
+      switch (element.localName) {
+        case 'video':
+        case 'audio':
+          if (!element.paused)
+            return true;
+          break;
+        case 'img':
+          if (!element.complete)
+            return true;
+          break;
+        case 'progress':
+          if (element.position === -1)
+            return true;
+          break;
+        case 'meta':
+          if (element.httpEquiv.toLowerCase() === 'refresh')
+            return true;
+          break;
+        case 'object':
+        case 'embed':
+        case 'marquee':
+        case 'animate':
+        case 'animateMotion':
+        case 'animateTransform':
+        case 'set':
+        case 'discard':
+          return true;
+      }
+    }
+  }
+  return document.fonts.status !== 'loaded' || unreadable;
+})()`;
+
+// The style sheets of other origins, read as they are, are parsed in a document of their own, which
+// loads none of the style sheets they import.
+const kStyleSheetTextsChangeExpression = `texts => {
+  const sheetChanges = (${kScriptingStylesSource})([]);
+  const document = window.document.implementation.createHTMLDocument('');
+  return texts.some(text => {
+    const style = document.createElement('style');
+    style.textContent = text;
+    document.head.append(style);
+    return !style.sheet || sheetChanges(style.sheet);
+  });
+}`;
 
 function openedBy(page: Page, opener: Page): boolean {
   for (let p = page.opener(); p; p = p.opener()) {

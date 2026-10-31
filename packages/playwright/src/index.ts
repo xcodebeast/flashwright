@@ -796,6 +796,8 @@ type SnapshotRecorderMode = 'on' | 'off' | 'only-on-failure' | 'on-first-failure
 class SnapshotRecorder {
   private _ordinal = 0;
   private _temporary: string[] = [];
+  // Flashwright: recycled contexts whose pages wait for the test's outcome (see captureTemporary).
+  private _awaitingOutcome: { browser: BrowserImpl, slot: string | undefined }[] = [];
 
   constructor(
     private _artifactsRecorder: ArtifactsRecorder,
@@ -803,7 +805,8 @@ class SnapshotRecorder {
     private _name: string,
     private _contentType: string,
     private _extension: string,
-    private _doSnapshot: (page: PageImpl, path: string) => Promise<void>) {
+    private _doSnapshot: (page: PageImpl, path: string) => Promise<void>,
+    private _failureScreenshotOptions?: { fullPage?: boolean, omitBackground?: boolean }) {
   }
 
   fixOrdinal() {
@@ -826,9 +829,14 @@ class SnapshotRecorder {
   }
 
   async persistTemporary() {
-    if (this.shouldCaptureUponFinish()) {
+    const capture = this.shouldCaptureUponFinish();
+    await Promise.all(this._awaitingOutcome.splice(0).map(({ browser, slot }) => browser._settleRecycledScreenshots(slot, capture).catch(() => {})));
+    if (capture) {
       await Promise.all(this._temporary.map(async file => {
         try {
+          // A page that could not be captured left no file.
+          if (!fs.existsSync(file))
+            return;
           const path = this._createAttachmentPath();
           await fs.promises.rename(file, path);
           this._attach(path);
@@ -839,8 +847,24 @@ class SnapshotRecorder {
   }
 
   async captureTemporary(context: BrowserContextImpl) {
-    if (this._mode === 'on' || this._mode === 'only-on-failure' || (this._mode === 'on-first-failure' && this.testInfo.retry === 0))
-      await Promise.all(context.pages().map(page => this._snapshotPage(page, true)));
+    if (!(this._mode === 'on' || this._mode === 'only-on-failure' || (this._mode === 'on-first-failure' && this.testInfo.retry === 0)))
+      return;
+    // Flashwright: these screenshots are kept only when the test fails after its context closed.
+    // The pages of a recycled context stop and wait for the test's outcome instead: they are
+    // captured into the same files only if the test failed (see the server's prepareFailureScreenshots).
+    if (this._failureScreenshotOptions && this._mode !== 'on' && context._closesForRecycle && !this.testInfo._isFailure()) {
+      const pages = context.pages().filter(page => !(page as any)[this.testInfo._uniqueSymbol]);
+      if (!pages.length)
+        return;
+      const paths = pages.map(() => this._createTemporaryArtifact(createGuid() + this._extension));
+      for (const page of pages)
+        (page as any)[this.testInfo._uniqueSymbol] = true;
+      this._temporary.push(...paths);
+      context._failureScreenshots = { pages: pages.map(page => page._guid), paths, ...this._failureScreenshotOptions };
+      this._awaitingOutcome.push({ browser: context._browser as BrowserImpl, slot: context._recycleSlot });
+      return;
+    }
+    await Promise.all(context.pages().map(page => this._snapshotPage(page, true)));
   }
 
   private _attach(screenshotPath: string) {
@@ -902,7 +926,7 @@ class ArtifactsRecorder {
       await page._wrapApiCall(async () => {
         await page.screenshot({ ...screenshotOptions, timeout: 5000, path, caret: 'initial' });
       }, { internal: true });
-    });
+    }, { fullPage: screenshotOptions?.fullPage, omitBackground: screenshotOptions?.omitBackground });
   }
 
   async willStartTest(testInfo: TestInfoImpl) {

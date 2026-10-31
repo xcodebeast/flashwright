@@ -76,6 +76,10 @@ export class BrowserContext extends ChannelOwner<channels.BrowserContextChannel>
   _forReuse = false;
   // Flashwright: the slot of the recycled context's worker (see Browser.newContext).
   _recycleSlot: string | undefined;
+  // Flashwright: set while a recycled context closes for its test, and what the test runner asks it
+  // to screenshot if the test turns out to have failed (see the server's prepareFailureScreenshots).
+  _closesForRecycle = false;
+  _failureScreenshots: channels.BrowserCloseRecycledContextParams['failureScreenshots'];
   // Flashwright: see Browser._contextOwner.
   _owner: unknown;
   // Flashwright: how the test using this recycled context first navigated, known once it closed.
@@ -527,15 +531,20 @@ export class BrowserContext extends ChannelOwner<channels.BrowserContextChannel>
       return;
     this._closeReason = options.reason;
     this._closingStatus = 'closing';
+    this._closesForRecycle = this._forReuse && !!(options as any)[kRecycleContext];
     await this.request.dispose(options);
     await this._instrumentation.runBeforeCloseBrowserContext(this);
     const harError = await this.tracing._exportAllHars().catch(e => e);
-    if (this._forReuse && (options as any)[kRecycleContext]) {
+    if (this._closesForRecycle) {
       // Flashwright: a recycled context closes for this test while the browser keeps it for the next.
+      // The call goes before the close events, whose listeners may close the browser.
+      const failureScreenshots = this._failureScreenshots;
+      this._failureScreenshots = undefined;
+      const closed = this._browser!._channel.closeRecycledContext({ reason: options.reason ?? '', slot: this._recycleSlot, failureScreenshots }, kNoTimeout);
       for (const page of this.pages())
         page._onClose();
       this._onClose();
-      const { firstNavigation } = await this._browser!._channel.closeRecycledContext({ reason: options.reason ?? '', slot: this._recycleSlot }, kNoTimeout);
+      const { firstNavigation } = await closed;
       this._firstNavigation = firstNavigation;
     } else {
       await this._channel.close(options, kNoTimeout);

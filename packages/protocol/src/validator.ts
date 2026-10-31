@@ -718,6 +718,12 @@ scheme.BrowserNewContextForRecycleResult = tObject({
 scheme.BrowserCloseRecycledContextParams = tObject({
   reason: tString,
   slot: tOptional(tString),
+  failureScreenshots: tOptional(tObject({
+    pages: tArray(tString),
+    paths: tArray(tString),
+    fullPage: tOptional(tBoolean),
+    omitBackground: tOptional(tBoolean),
+  })),
 });
 scheme.BrowserCloseRecycledContextResult = tObject({
   firstNavigation: tOptional(tObject({
@@ -725,6 +731,11 @@ scheme.BrowserCloseRecycledContextResult = tObject({
     first: tBoolean,
   })),
 });
+scheme.BrowserSettleRecycledScreenshotsParams = tObject({
+  slot: tOptional(tString),
+  failed: tBoolean,
+});
+scheme.BrowserSettleRecycledScreenshotsResult = tOptional(tObject({}));
 scheme.BrowserPreloadNextPageParams = tObject({
   path: tOptional(tString),
   expectedDuration: tOptional(tFloat),

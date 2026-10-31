@@ -488,6 +488,8 @@ export abstract class Browser extends SdkObject {
       if (options.reason)
         this._closeReason = options.reason;
       this._startedClosing = true;
+      // Flashwright: see BrowserContext.prepareFailureScreenshots.
+      await Promise.all(this.contexts().map(context => context.settleFailureScreenshots(true).catch(() => {})));
       await this.options.browserProcess.close();
     }
     if (this.isConnected())

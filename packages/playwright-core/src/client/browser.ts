@@ -87,6 +87,11 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
   }
 
   // Flashwright: the test runner's preloadPages option (see the server's pagePreload.ts).
+  // Flashwright: see BrowserContext._failureScreenshots.
+  async _settleRecycledScreenshots(slot: string | undefined, failed: boolean) {
+    await this._channel.settleRecycledScreenshots({ slot, failed }, kNoTimeout);
+  }
+
   async _preloadNextPage(params: channels.BrowserPreloadNextPageParams) {
     await this._channel.preloadNextPage(params, kNoTimeout);
   }

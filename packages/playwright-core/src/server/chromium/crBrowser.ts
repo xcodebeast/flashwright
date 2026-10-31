@@ -27,7 +27,7 @@ import * as network from '../network';
 import { Page, Worker } from '../page';
 import { PipeTransport } from '../pipeTransport';
 import { CRConnection, ConnectionEvents } from './crConnection';
-import { CRPage } from './crPage';
+import { CRPage, kInstantAnimationsPlaybackRate } from './crPage';
 import { saveProtocolStream } from './crProtocolHelper';
 import { CRServiceWorker } from './crServiceWorker';
 
@@ -253,6 +253,11 @@ export class CRBrowser extends Browser {
       context.emit(CRBrowserContext.CREvents.ServiceWorker, serviceWorker);
       return;
     }
+
+    // Flashwright: a shared worker keeps running while the pages that use it wait for their test's
+    // outcome (see BrowserContext.prepareFailureScreenshots).
+    if (targetInfo.type === 'shared_worker')
+      context.noteSharedWorker();
 
     // Detach from any targets we are not interested in, to avoid side-effects.
     //
@@ -659,6 +664,31 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
       onScriptsStopped();
     }
     await Promise.all(crPages.map(replaceDocument));
+  }
+
+  protected override async doFreezePages(pages: Page[], frozen: boolean): Promise<boolean> {
+    // CSS animations and transitions stand still as they would in a screenshot taken now. The
+    // evaluation is answered once the script that was running, if any, has finished.
+    const scriptsDisabled = frozen || this._options.javaScriptEnabled === false;
+    const playbackRate = frozen ? 0 : this._options.instantAnimations ? kInstantAnimationsPlaybackRate : 1;
+    await Promise.all(pages.flatMap(page => [...(page.delegate as CRPage)._sessions.values()].map(frameSession => Promise.all([
+      frameSession._client.send('Emulation.setScriptExecutionDisabled', { value: scriptsDisabled }),
+      frameSession._client.send('Animation.setPlaybackRate', { playbackRate }),
+      frameSession._client.send('Runtime.evaluate', { expression: '0' }),
+    ]).catch(() => {}))));
+    return true;
+  }
+
+  protected override async doReadStyleSheets(frame: Frame, urls: string[]): Promise<string[] | undefined> {
+    const session = (frame._page.delegate as CRPage)._sessionForFrame(frame);
+    try {
+      return await Promise.all(urls.map(async url => {
+        const { content, base64Encoded } = await session._client.send('Page.getResourceContent', { frameId: frame._id, url });
+        return base64Encoded ? Buffer.from(content, 'base64').toString() : content;
+      }));
+    } catch {
+      return undefined;
+    }
   }
 
   protected override async doResetPreloadedPage(page: Page): Promise<void> {

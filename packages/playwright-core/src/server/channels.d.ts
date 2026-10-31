@@ -848,6 +848,7 @@ export interface BrowserChannel extends BrowserEventTarget, Channel {
   disconnectFromReusedContext(params: BrowserDisconnectFromReusedContextParams, progress: Progress): Promise<BrowserDisconnectFromReusedContextResult>;
   newContextForRecycle(params: BrowserNewContextForRecycleParams, progress: Progress): Promise<BrowserNewContextForRecycleResult>;
   closeRecycledContext(params: BrowserCloseRecycledContextParams, progress: Progress): Promise<BrowserCloseRecycledContextResult>;
+  settleRecycledScreenshots(params: BrowserSettleRecycledScreenshotsParams, progress: Progress): Promise<BrowserSettleRecycledScreenshotsResult>;
   preloadNextPage(params: BrowserPreloadNextPageParams, progress: Progress): Promise<BrowserPreloadNextPageResult>;
   newBrowserCDPSession(params: BrowserNewBrowserCDPSessionParams, progress: Progress): Promise<BrowserNewBrowserCDPSessionResult>;
   startTracing(params: BrowserStartTracingParams, progress: Progress): Promise<BrowserStartTracingResult>;
@@ -1401,9 +1402,21 @@ export type BrowserNewContextForRecycleResult = {
 export type BrowserCloseRecycledContextParams = {
   reason: string,
   slot?: string,
+  failureScreenshots?: {
+    pages: string[],
+    paths: string[],
+    fullPage?: boolean,
+    omitBackground?: boolean,
+  },
 };
 export type BrowserCloseRecycledContextOptions = {
   slot?: string,
+  failureScreenshots?: {
+    pages: string[],
+    paths: string[],
+    fullPage?: boolean,
+    omitBackground?: boolean,
+  },
 };
 export type BrowserCloseRecycledContextResult = {
   firstNavigation?: {
@@ -1411,6 +1424,14 @@ export type BrowserCloseRecycledContextResult = {
     first: boolean,
   },
 };
+export type BrowserSettleRecycledScreenshotsParams = {
+  slot?: string,
+  failed: boolean,
+};
+export type BrowserSettleRecycledScreenshotsOptions = {
+  slot?: string,
+};
+export type BrowserSettleRecycledScreenshotsResult = void;
 export type BrowserPreloadNextPageParams = {
   path?: string,
   expectedDuration?: number,

@@ -59,7 +59,7 @@ const kCrashingWebUIHosts = {
 
 // Flashwright: instantAnimations runs the document timelines this much faster, so that even
 // a ten-second animation ends within a frame.
-const kInstantAnimationsPlaybackRate = 1000;
+export const kInstantAnimationsPlaybackRate = 1000;
 
 // Chromium canonicalizes WebUI urls as standard ones, so "VIEW-SOURCE:Chrome:Settings" ends up
 // being "chrome://settings/".
