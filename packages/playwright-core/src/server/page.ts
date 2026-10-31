@@ -18,7 +18,7 @@
 import { isInvalidSelectorError } from '@isomorphic/selectorParser';
 import { ManualPromise } from '@isomorphic/manualPromise';
 import { kBindingsControllerProperty, parseEvaluationResultValue } from '@isomorphic/utilityScriptSerializers';
-import { getComparator } from '@utils/comparators';
+import { decodeForComparison, getComparator } from '@utils/comparators';
 import { debugLogger } from '@utils/debugLogger';
 import { LongStandingScope } from '@isomorphic/manualPromise';
 import { assert } from '@isomorphic/assert';
@@ -81,7 +81,7 @@ export interface PageDelegate {
   bringToFront(): Promise<void>;
 
   setBackgroundColor(color?: { r: number; g: number; b: number; a: number; }): Promise<void>;
-  takeScreenshot(progress: Progress, format: string, documentRect: types.Rect | undefined, viewportRect: types.Rect | undefined, quality: number | undefined, fitsViewport: boolean, scale: 'css' | 'device', optimizeForSpeed?: boolean): Promise<Buffer>;
+  takeScreenshot(progress: Progress, format: string, documentRect: types.Rect | undefined, viewportRect: types.Rect | undefined, quality: number | undefined, fitsViewport: boolean, scale: 'css' | 'device', optimizeForSpeed?: boolean, whileCapturing?: () => void): Promise<Buffer>;
 
   adoptElementHandle<T extends Node>(handle: dom.ElementHandle<T>, to: dom.FrameExecutionContext): Promise<dom.ElementHandle<T>>;
   getContentFrame(handle: dom.ElementHandle): Promise<frames.Frame | null>;  // Only called for frame owner elements.
@@ -794,12 +794,12 @@ export class Page extends SdkObject<PageEventMap> {
     const locator = options.locator;
     // Only the first capture checked against an existing baseline is encoded for speed; every
     // capture that can be returned as the actual image keeps the default encoding.
-    const rafrafScreenshot = locator ? async (progress: Progress, timeout: number, defaultEncoding: boolean) => {
-      return await locator.frame.rafrafTimeoutScreenshotElementWithProgress(progress, locator.selector, timeout, { ...options, defaultEncoding });
-    } : async (progress: Progress, timeout: number, defaultEncoding: boolean) => {
+    const rafrafScreenshot = locator ? async (progress: Progress, timeout: number, defaultEncoding: boolean, whileCapturing?: () => void) => {
+      return await locator.frame.rafrafTimeoutScreenshotElementWithProgress(progress, locator.selector, timeout, { ...options, defaultEncoding, whileCapturing });
+    } : async (progress: Progress, timeout: number, defaultEncoding: boolean, whileCapturing?: () => void) => {
       await this.performActionPreChecks(progress);
       await this.mainFrame().rafrafTimeout(progress, timeout);
-      return await this.screenshotter.screenshotPage(progress, { ...options, defaultEncoding });
+      return await this.screenshotter.screenshotPage(progress, { ...options, defaultEncoding, whileCapturing });
     };
 
     let intermediateResult: {
@@ -813,7 +813,11 @@ export class Page extends SdkObject<PageEventMap> {
       if (!options.expected && options.isNot)
         throw new Error('"not" matcher requires expected result');
       const format = validateScreenshotOptions(options || {});
-      const comparator = getComparator(`image/${format}`);
+      // Flashwright: each capture and the baseline are decoded once, the baseline while the
+      // browser takes the first capture.
+      const decodedImages = new Map();
+      const comparator = getComparator(`image/${format}`, decodedImages);
+      const decodeExpected = options.expected ? () => decodeForComparison(`image/${format}`, options.expected!, decodedImages) : undefined;
       const areEqualScreenshots = (actual: Buffer | undefined, expected: Buffer | undefined, previous: Buffer | undefined) => {
         const comparatorResult = actual && expected ? comparator(actual, expected, options) : undefined;
         if (comparatorResult !== undefined && !!comparatorResult === !!options.isNot)
@@ -837,7 +841,7 @@ export class Page extends SdkObject<PageEventMap> {
         if (screenshotTimeout)
           progress.log(`waiting ${screenshotTimeout}ms before taking screenshot`);
         previous = actual;
-        actual = await rafrafScreenshot(progress, screenshotTimeout, !(options.expected && isFirstIteration)).catch(e => {
+        actual = await rafrafScreenshot(progress, screenshotTimeout, !(options.expected && isFirstIteration), isFirstIteration ? decodeExpected : undefined).catch(e => {
           if (this.mainFrame().isNonRetriableError(e))
             throw e;
           progress.log(`failed to take screenshot - ` + e.message);

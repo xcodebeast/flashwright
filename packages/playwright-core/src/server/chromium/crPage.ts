@@ -276,7 +276,7 @@ export class CRPage implements PageDelegate {
     await this._mainFrameSession._client.send('Emulation.setDefaultBackgroundColorOverride', { color });
   }
 
-  async takeScreenshot(progress: Progress, format: 'png' | 'jpeg' | 'webp', documentRect: types.Rect | undefined, viewportRect: types.Rect | undefined, quality: number | undefined, fitsViewport: boolean, scale: 'css' | 'device', optimizeForSpeed?: boolean): Promise<Buffer> {
+  async takeScreenshot(progress: Progress, format: 'png' | 'jpeg' | 'webp', documentRect: types.Rect | undefined, viewportRect: types.Rect | undefined, quality: number | undefined, fitsViewport: boolean, scale: 'css' | 'device', optimizeForSpeed?: boolean, whileCapturing?: () => void): Promise<Buffer> {
     const { visualViewport, contentSize, cssContentSize } = await progress.race(this._mainFrameSession._client.send('Page.getLayoutMetrics'));
     if (!documentRect) {
       documentRect = {
@@ -301,7 +301,10 @@ export class CRPage implements PageDelegate {
     // verified against; keep Playwright's default there.
     if (this._browserContext._browser.options.name === 'electron')
       optimizeForSpeed = undefined;
-    const result = await progress.race(this._mainFrameSession._client.send('Page.captureScreenshot', { format, quality, clip, captureBeyondViewport: !fitsViewport, optimizeForSpeed }));
+    const captured = progress.race(this._mainFrameSession._client.send('Page.captureScreenshot', { format, quality, clip, captureBeyondViewport: !fitsViewport, optimizeForSpeed }));
+    // Flashwright: the capture takes a frame or more, during which this thread is free.
+    whileCapturing?.();
+    const result = await captured;
     if (!fitsViewport && this._browserContext._options.hasTouch) {
       // Capturing beyond viewport resets touch emulation in Chromium, so we re-apply it.
       // See https://issues.chromium.org/issues/558509412 and https://github.com/microsoft/playwright/issues/42607.

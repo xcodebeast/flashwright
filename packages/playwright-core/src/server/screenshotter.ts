@@ -47,6 +47,8 @@ export type ScreenshotOptions = {
   // Flashwright: screenshots are PNG-encoded for speed (same pixels, larger files). Captures
   // that may become baselines keep the browser's default encoding, byte-identical to upstream.
   defaultEncoding?: boolean;
+  // Flashwright: work to do while the browser captures, such as decoding a baseline.
+  whileCapturing?: () => void;
 };
 
 function inPagePrepareForScreenshots(screenshotStyle: string, hideCaret: boolean, disableAnimations: boolean, syncAnimations: boolean) {
@@ -303,7 +305,7 @@ export class Screenshotter {
 
     try {
       const quality = format === 'jpeg' ? options.quality ?? 80 : format === 'webp' ? options.quality ?? 100 : undefined;
-      const buffer = await this._page.delegate.takeScreenshot(progress, format, documentRect, viewportRect, quality, fitsViewport, options.scale || 'device', !options.defaultEncoding);
+      const buffer = await this._page.delegate.takeScreenshot(progress, format, documentRect, viewportRect, quality, fitsViewport, options.scale || 'device', !options.defaultEncoding, options.whileCapturing);
       await progress.race(cleanupHighlight());
       if (shouldSetDefaultBackground)
         await progress.race(this._page.delegate.setBackgroundColor());

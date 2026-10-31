@@ -32,13 +32,13 @@ export type ImageComparatorOptions = { threshold?: number, maxDiffPixels?: numbe
 export type ComparatorResult = { diff?: Buffer; errorMessage: string; } | null;
 export type Comparator = (actualBuffer: Buffer | string, expectedBuffer: Buffer, options?: any) => ComparatorResult;
 
-export function getComparator(mimeType: string): Comparator {
-  if (mimeType === 'image/png')
-    return compareImages.bind(null, 'image/png');
-  if (mimeType === 'image/jpeg')
-    return compareImages.bind(null, 'image/jpeg');
-  if (mimeType === 'image/webp')
-    return compareImages.bind(null, 'image/webp');
+// Flashwright: images decoded by one sequence of comparisons over buffers that do not change, such
+// as a screenshot assertion's captures and baseline: each buffer is decoded once.
+export type DecodedImages = Map<Buffer, ImageData>;
+
+export function getComparator(mimeType: string, decodedImages?: DecodedImages): Comparator {
+  if (mimeType === 'image/png' || mimeType === 'image/jpeg' || mimeType === 'image/webp')
+    return (actual, expected, options) => compareImages(mimeType, actual, expected, options, decodedImages);
   if (mimeType === 'text/plain')
     return compareText;
   return compareBuffersOrStrings;
@@ -56,7 +56,31 @@ export function compareBuffersOrStrings(actualBuffer: Buffer | string, expectedB
   return null;
 }
 
-function compareImages(mimeType: string, actualBuffer: Buffer | string, expectedBuffer: Buffer, options: ImageComparatorOptions = {}): ComparatorResult {
+// Decodes an image ahead of a comparison that will need it.
+export function decodeForComparison(mimeType: string, buffer: Buffer, decodedImages: DecodedImages) {
+  try {
+    validateBuffer(buffer, mimeType);
+    decodedImage(mimeType, buffer, decodedImages);
+  } catch {
+    // The comparison reports it.
+  }
+}
+
+function decodedImage(mimeType: string, buffer: Buffer, decodedImages: DecodedImages | undefined): ImageData {
+  let image = decodedImages?.get(buffer);
+  if (!image) {
+    if (mimeType === 'image/png')
+      image = decodeSimplePng(buffer) ?? PNG.sync.read(buffer);
+    else if (mimeType === 'image/webp')
+      image = decodeWebp(buffer);
+    else
+      image = jpegjs.decode(buffer, { maxMemoryUsageInMB: JPEG_JS_MAX_BUFFER_SIZE_IN_MB });
+    decodedImages?.set(buffer, image!);
+  }
+  return image!;
+}
+
+function compareImages(mimeType: string, actualBuffer: Buffer | string, expectedBuffer: Buffer, options: ImageComparatorOptions = {}, decodedImages?: DecodedImages): ComparatorResult {
   if (!actualBuffer || !(actualBuffer instanceof Buffer))
     return { errorMessage: 'Actual result should be a Buffer.' };
   validateBuffer(expectedBuffer, mimeType);
@@ -65,15 +89,8 @@ function compareImages(mimeType: string, actualBuffer: Buffer | string, expected
   if (actualBuffer.equals(expectedBuffer))
     return null;
 
-  const decode = (buffer: Buffer): ImageData => {
-    if (mimeType === 'image/png')
-      return decodeSimplePng(buffer) ?? PNG.sync.read(buffer);
-    if (mimeType === 'image/webp')
-      return decodeWebp(buffer);
-    return jpegjs.decode(buffer, { maxMemoryUsageInMB: JPEG_JS_MAX_BUFFER_SIZE_IN_MB });
-  };
-  let actual: ImageData = decode(actualBuffer);
-  let expected: ImageData = decode(expectedBuffer);
+  let actual: ImageData = decodedImage(mimeType, actualBuffer, decodedImages);
+  let expected: ImageData = decodedImage(mimeType, expectedBuffer, decodedImages);
   // Same pixels in different encodings: nothing to diff.
   if (actual.width === expected.width && actual.height === expected.height && !Buffer.compare(actual.data, expected.data))
     return null;
