@@ -11406,7 +11406,8 @@ interface TestConfigWebServer {
   /**
    * With `reuseExistingServer`, the warm session that runs outside CI keeps a server that a run started running for the
    * next runs, which reuse it, and stops it when the session ends, or when a run needs one started with a different
-   * command, working directory or environment. `false` stops the server when each run ends. Defaults to `true`.
+   * command, working directory or environment. `false` stops the server when each run ends, as do `wait` and
+   * `gracefulShutdown`. Defaults to `true`.
    */
   keepInSession?: boolean;
 

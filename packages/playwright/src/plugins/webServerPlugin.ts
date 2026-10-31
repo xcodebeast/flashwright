@@ -101,8 +101,12 @@ export class WebServerPlugin implements TestRunnerPlugin {
   // Flashwright: with reuseExistingServer, the next run would reuse a server that is already running
   // at the URL: the warm session keeps the one this run started instead of it stopping, and stops
   // it when the session ends, or when a run asks for one started differently.
+  // A server that a run waits for in its output, which can set environment variables, or that has
+  // to be shut down with a signal, stops with its run as before.
   private _sessionKey(): string | undefined {
     if (!this._options.reuseExistingServer || this._options.keepInSession === false || !this._options.url || !sessionKeepsWebServers())
+      return;
+    if (this._options.wait?.stdout || this._options.wait?.stderr || this._options.gracefulShutdown)
       return;
     return webServerKey(this._options.command, path.resolve(this._options.cwd ?? process.cwd()), this._options.env);
   }

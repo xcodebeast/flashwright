@@ -291,7 +291,7 @@ const webServerFiles = (port: number, webServer: string, mark: string) => ({
     require('http').createServer((req, res) => {
       res.setHeader('Content-Type', 'text/html');
       res.end('<title>app ' + process.env.MARK + '</title>');
-    }).listen(${port}, '127.0.0.1');
+    }).listen(${port}, '127.0.0.1', () => console.log('listening'));
   `,
   'playwright.config.js': `module.exports = {
     workers: 1,
@@ -346,8 +346,8 @@ test('starts a new web server for a run that needs one started differently', asy
   expect(starts()).toBe(2);
 });
 
-test('stops the web server at the end of each run without reuseExistingServer or with keepInSession: false', async ({ runInlineTest }) => {
-  for (const webServer of [`reuseExistingServer: false`, `reuseExistingServer: true, keepInSession: false`]) {
+test('stops the web server at the end of each run unless the session can keep it', async ({ runInlineTest }) => {
+  for (const webServer of [`reuseExistingServer: false`, `reuseExistingServer: true, keepInSession: false`, `reuseExistingServer: true, wait: { stdout: /listening/ }`, `reuseExistingServer: true, gracefulShutdown: { signal: 'SIGTERM', timeout: 500 }`]) {
     const port = await freePort();
     fs.rmSync(test.info().outputPath('starts.txt'), { force: true });
     for (let run = 0; run < 2; run++) {
