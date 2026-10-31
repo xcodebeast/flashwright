@@ -168,6 +168,12 @@ const inlineCSSPlugin = {
       if (!minified.startsWith('(()=>{') || !minified.endsWith('})();\n'))
         throw new Error(`Unexpected minified form of ${baseName}`);
       content = minified.slice('(()=>{'.length, -'})();\n'.length);
+      // One character above U+00FF anywhere in a source makes the browser keep all of it at two
+      // bytes per character, which doubles what evaluating the injected script costs each document
+      // (2 ms more). esbuild escapes strings, not regular expression literals.
+      const wide = /[^\x00-\x7f]/.exec(content);
+      if (wide)
+        throw new Error(`${baseName} has U+${wide[0].codePointAt(0).toString(16).padStart(4, '0')} in "${content.slice(wide.index - 30, wide.index + 30)}": write it as an escape`);
     }
     const newContent = `export const source = ${JSON.stringify(content)};`;
     await fs.promises.writeFile(path.join(generatedFolder, baseName.replace('.ts', 'Source.ts')), newContent);

@@ -728,7 +728,7 @@ export function accessibleNameCannotContain(element: Element, needle: NameNeedle
 
 // What normalizeWhiteSpace() and asFlatString() collapse, trim or remove.
 function stripWhiteSpace(text: string): string {
-  return text.replace(/[\s​­]+/g, '');
+  return text.replace(/[\s\u200b\u00ad]+/g, '');
 }
 
 // The string a regular expression without special characters matches.
