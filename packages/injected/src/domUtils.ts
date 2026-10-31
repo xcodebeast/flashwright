@@ -82,11 +82,22 @@ export function closestCrossShadow(element: Element | undefined, css: string, sc
 
 export function getElementComputedStyle(element: Element, pseudo?: string): CSSStyleDeclaration | undefined {
   const cache = pseudo === '::before' ? cacheStyleBefore : pseudo === '::after' ? cacheStyleAfter : cacheStyle;
-  if (cache && cache.has(element))
-    return cache.get(element);
+  const cached = cache?.get(element);
+  if (cached !== undefined || cache?.has(element))
+    return cached;
   const style = element.ownerDocument && element.ownerDocument.defaultView ? element.ownerDocument.defaultView.getComputedStyle(element, pseudo) : undefined;
   cache?.set(element, style);
   return style;
+}
+
+// Flashwright: an accessible name reads the display of each element it visits several times (for
+// whether it is hidden, and for the spaces around its text), and each read computes it again.
+export function getElementComputedDisplay(element: Element): string | undefined {
+  if (cacheStyleDisplay?.has(element))
+    return cacheStyleDisplay.get(element);
+  const display = getElementComputedStyle(element)?.display;
+  cacheStyleDisplay?.set(element, display);
+  return display;
 }
 
 export function isElementStyleVisibilityVisible(element: Element, style?: CSSStyleDeclaration): boolean {
@@ -226,6 +237,7 @@ let cacheStyle: Map<Element, CSSStyleDeclaration | undefined> | undefined;
 let cacheStyleBefore: Map<Element, CSSStyleDeclaration | undefined> | undefined;
 let cacheStyleAfter: Map<Element, CSSStyleDeclaration | undefined> | undefined;
 let cacheStyleVisibility: Map<Element, boolean> | undefined;
+let cacheStyleDisplay: Map<Element, string | undefined> | undefined;
 let cacheLabels: Map<Document, Map<Element, HTMLLabelElement[]>> | undefined;
 let cachesCounter = 0;
 
@@ -235,6 +247,7 @@ export function beginDOMCaches() {
   cacheStyleBefore ??= new Map();
   cacheStyleAfter ??= new Map();
   cacheStyleVisibility ??= new Map();
+  cacheStyleDisplay ??= new Map();
   cacheLabels ??= new Map();
 }
 
@@ -244,6 +257,7 @@ export function endDOMCaches() {
     cacheStyleBefore = undefined;
     cacheStyleAfter = undefined;
     cacheStyleVisibility = undefined;
+    cacheStyleDisplay = undefined;
     cacheLabels = undefined;
   }
 }

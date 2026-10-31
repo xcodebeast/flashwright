@@ -35,18 +35,22 @@ type Matcher = { all: true } | { all: false, ids: Set<string>, classes: Set<stri
 
 let cacheMatchers: Map<Document | ShadowRoot, Matcher> | undefined;
 let cacheAnimatedPseudoElements: Map<Document | ShadowRoot, Set<Element>> | undefined;
+// An accessible name asks about an element's ::before and its ::after: the answer is the same.
+let cacheMayHavePseudoContent: Map<Element, boolean> | undefined;
 let cachesCounter = 0;
 
 export function beginPseudoContentCaches() {
   ++cachesCounter;
   cacheMatchers ??= new Map();
   cacheAnimatedPseudoElements ??= new Map();
+  cacheMayHavePseudoContent ??= new Map();
 }
 
 export function endPseudoContentCaches() {
   if (!--cachesCounter) {
     cacheMatchers = undefined;
     cacheAnimatedPseudoElements = undefined;
+    cacheMayHavePseudoContent = undefined;
   }
 }
 
@@ -62,6 +66,15 @@ export function mayHavePseudoContent(element: Element): boolean {
   const options = getGlobalOptions();
   if (options.browserNameForWorkarounds !== 'chromium' || !options.isUtilityWorld || !options.noExtensionStyles || !cacheMatchers)
     return true;
+  let result = cacheMayHavePseudoContent!.get(element);
+  if (result === undefined) {
+    result = computeMayHavePseudoContent(element);
+    cacheMayHavePseudoContent!.set(element, result);
+  }
+  return result;
+}
+
+function computeMayHavePseudoContent(element: Element): boolean {
   if (element.localName === 'q')
     return true;
   const parent = element.parentElement;

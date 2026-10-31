@@ -16,7 +16,7 @@
 
 import * as css from '@isomorphic/cssTokenizer';
 
-import { beginDOMCaches, closestCrossShadow, elementSafeTagName, enclosingShadowRootOrDocument, endDOMCaches, getElementComputedStyle, getElementLabelElements, isElementStyleVisibilityVisible, isListBoxSelect, isVisibleTextNode, parentElementOrShadowHost } from './domUtils';
+import { beginDOMCaches, closestCrossShadow, elementSafeTagName, enclosingShadowRootOrDocument, endDOMCaches, getElementComputedDisplay, getElementComputedStyle, getElementLabelElements, isElementStyleVisibilityVisible, isListBoxSelect, isVisibleTextNode, parentElementOrShadowHost } from './domUtils';
 import { beginPseudoContentCaches, endPseudoContentCaches, mayHavePseudoContent } from './pseudoContent';
 
 import type { AriaRole } from '@isomorphic/ariaSnapshot';
@@ -335,18 +335,27 @@ function getImplicitAriaRole(element: Element): AriaRole | null {
     return null;
   // Inherit presentation role when required.
   // https://www.w3.org/TR/wai-aria-1.2/#conflict_resolution_presentation_none
-  let ancestor: Element | null = element;
-  while (ancestor) {
-    const parent = parentElementOrShadowHost(ancestor);
-    const parents = kPresentationInheritanceParents[elementSafeTagName(ancestor)];
-    if (!parents || !parent || !parents.includes(elementSafeTagName(parent)))
-      break;
+  return inheritedPresentationRole(element) ?? implicitRole;
+}
+
+// Flashwright: the presentation role an element inherits through the chain of its ancestors, or
+// null. The cells of a row, the rows of a table, the items of a list share the rest of the chain.
+function inheritedPresentationRole(ancestor: Element): AriaRole | null {
+  const cached = cacheInheritedPresentationRole?.get(ancestor);
+  if (cached !== undefined)
+    return cached;
+  let role: AriaRole | null = null;
+  const parent = parentElementOrShadowHost(ancestor);
+  const parents = kPresentationInheritanceParents[elementSafeTagName(ancestor)];
+  if (parents && parent && parents.includes(elementSafeTagName(parent))) {
     const parentExplicitRole = getExplicitAriaRole(parent);
     if ((parentExplicitRole === 'none' || parentExplicitRole === 'presentation') && !hasPresentationConflictResolution(parent, parentExplicitRole))
-      return parentExplicitRole;
-    ancestor = parent;
+      role = parentExplicitRole;
+    else
+      role = inheritedPresentationRole(parent);
   }
-  return implicitRole;
+  cacheInheritedPresentationRole?.set(ancestor, role);
+  return role;
 }
 
 const validRoles: AriaRole[] = ['alert', 'alertdialog', 'application', 'article', 'banner', 'blockquote', 'button', 'caption', 'cell', 'checkbox', 'code', 'columnheader', 'combobox',
@@ -423,7 +432,7 @@ export function isElementHiddenForAria(element: Element): boolean {
     return true;
   const style = getElementComputedStyle(element);
   const isSlot = element.nodeName === 'SLOT';
-  if (style?.display === 'contents' && !isSlot) {
+  if (getElementComputedDisplay(element) === 'contents' && !isSlot) {
     // display:contents is not rendered itself, but its child nodes are.
     for (let child = element.firstChild; child; child = child.nextSibling) {
       if (child.nodeType === 1 /* Node.ELEMENT_NODE */ && !isElementHiddenForAria(child as Element))
@@ -455,7 +464,7 @@ function belongsToDisplayNoneOrAriaHiddenOrNonSlotted(element: Element): boolean
     // display:none and aria-hidden=true are considered hidden for aria.
     if (!hidden) {
       const style = getElementComputedStyle(element);
-      hidden = !style || style.display === 'none' || getAriaBoolean(element.getAttribute('aria-hidden')) === true;
+      hidden = !style || getElementComputedDisplay(element) === 'none' || getAriaBoolean(element.getAttribute('aria-hidden')) === true;
     }
 
     // Check recursively.
@@ -1138,7 +1147,7 @@ function innerAccumulatedElementText(element: Element, options: AccessibleNameOp
     if (skipSlotted && (node as Element | Text).assignedSlot)
       return;
     if (node.nodeType === 1 /* Node.ELEMENT_NODE */) {
-      const display = getElementComputedStyle(node as Element)?.display || 'inline';
+      const display = getElementComputedDisplay(node as Element) || 'inline';
       const childComposite = getTextAlternativeInternal(node as Element, options);
       let token = childComposite.text;
       for (const contributor of childComposite.elements || [])
@@ -1390,6 +1399,7 @@ let cacheAccessibleNameTextHidden: Map<Element, string> | undefined;
 let cacheAccessibleDescription: Map<Element, AccessibleDescription> | undefined;
 let cacheAccessibleDescriptionHidden: Map<Element, AccessibleDescription> | undefined;
 let cacheAccessibleErrorMessage: Map<Element, string> | undefined;
+let cacheInheritedPresentationRole: Map<Element, AriaRole | null> | undefined;
 let cacheIsHidden: Map<Element, boolean> | undefined;
 let cachePseudoContent: Map<Element, string | undefined> | undefined;
 let cachePseudoContentBefore: Map<Element, string | undefined> | undefined;
@@ -1415,6 +1425,7 @@ export function beginAriaCaches() {
   cacheAccessibleDescriptionHidden ??= new Map();
   cacheAccessibleErrorMessage ??= new Map();
   cacheIsHidden ??= new Map();
+  cacheInheritedPresentationRole ??= new Map();
   cachePseudoContent ??= new Map();
   cachePseudoContentBefore ??= new Map();
   cachePseudoContentAfter ??= new Map();
@@ -1431,6 +1442,7 @@ export function endAriaCaches() {
     cacheAccessibleDescriptionHidden = undefined;
     cacheAccessibleErrorMessage = undefined;
     cacheIsHidden = undefined;
+    cacheInheritedPresentationRole = undefined;
     cachePseudoContent = undefined;
     cachePseudoContentBefore = undefined;
     cachePseudoContentAfter = undefined;
