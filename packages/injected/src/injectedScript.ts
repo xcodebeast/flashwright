@@ -2065,7 +2065,7 @@ function deepEquals(a: any, b: any): boolean {
 }
 
 // Flashwright: Uint8Array.from(atob(...), mapFn) called a function for every byte of the file.
-function decodeBase64(base64: string): Uint8Array {
+function decodeBase64(base64: string): Uint8Array<ArrayBuffer> {
   const fromBase64 = (Uint8Array as any).fromBase64;
   if (typeof fromBase64 === 'function')
     return fromBase64.call(Uint8Array, base64);
