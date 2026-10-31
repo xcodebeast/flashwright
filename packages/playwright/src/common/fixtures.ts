@@ -290,11 +290,10 @@ export function inheritFixtureNames(from: Function, to: Function) {
 }
 
 function innerFixtureParameterNames(fn: Function, location: Location, onError: LoadErrorSink): string[] {
-  const text = filterOutComments(fn.toString());
-  const match = text.match(/(?:async)?(?:\s+function)?[^(]*\(([^)]*)/);
-  if (!match)
+  const params = firstParameterList(fn.toString());
+  if (params === undefined)
     return [];
-  const trimmedParams = match[1].trim();
+  const trimmedParams = params.trim();
   if (!trimmedParams)
     return [];
   const [firstParam] = splitByComma(trimmedParams);
@@ -314,9 +313,12 @@ function innerFixtureParameterNames(fn: Function, location: Location, onError: L
   return props;
 }
 
-function filterOutComments(s: string): string {
-  const result: string[] = [];
+// Flashwright: the text between the first "(" and the next ")" once // and /* */ comments are left
+// out, scanning only as far as that: comments used to be filtered out of a test's whole body first.
+function firstParameterList(s: string): string | undefined {
   let commentState: 'none'|'singleline'|'multiline' = 'none';
+  let start = -1;
+  let result = '';
   for (let i = 0; i < s.length; ++i) {
     if (commentState === 'singleline') {
       if (s[i] === '\n')
@@ -324,18 +326,21 @@ function filterOutComments(s: string): string {
     } else if (commentState === 'multiline') {
       if (s[i - 1] === '*' && s[i] === '/')
         commentState = 'none';
-    } else if (commentState === 'none') {
-      if (s[i] === '/' && s[i + 1] === '/') {
-        commentState = 'singleline';
-      } else if (s[i] === '/' && s[i + 1] === '*') {
-        commentState = 'multiline';
-        i += 2;
-      } else {
-        result.push(s[i]);
-      }
+    } else if (s[i] === '/' && s[i + 1] === '/') {
+      commentState = 'singleline';
+    } else if (s[i] === '/' && s[i + 1] === '*') {
+      commentState = 'multiline';
+      i += 2;
+    } else if (start === -1) {
+      if (s[i] === '(')
+        start = i;
+    } else if (s[i] === ')') {
+      return result;
+    } else {
+      result += s[i];
     }
   }
-  return result.join('');
+  return start === -1 ? undefined : result;
 }
 
 function splitByComma(s: string) {
