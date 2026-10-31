@@ -19,7 +19,7 @@ import { normalizeWhiteSpace } from '@isomorphic/stringUtils';
 
 import { isElementVisible, parentElementOrShadowHost } from './domUtils';
 import { layoutSelectorScore } from './layoutSelectorUtils';
-import { elementMatchesText, elementText, shouldSkipForTextMatching } from './selectorUtils';
+import { elementMatchesText, elementText, lowerNormalizedText, shouldSkipForTextMatching } from './selectorUtils';
 
 import type { CSSComplexSelector, CSSComplexSelectorList, CSSFunctionArgument, CSSSimpleSelector } from '@isomorphic/cssParser';
 import type { LayoutSelectorName } from './layoutSelectorUtils';
@@ -464,7 +464,7 @@ const textEngine: SelectorEngine = {
     if (args.length !== 1 || typeof args[0] !== 'string')
       throw new Error(`"text" engine expects a single string`);
     const text = normalizeWhiteSpace(args[0]).toLowerCase();
-    const matcher = (elementText: ElementText) => elementText.normalized.toLowerCase().includes(text);
+    const matcher = (elementText: ElementText) => lowerNormalizedText(elementText).includes(text);
     return elementMatchesText((evaluator as SelectorEvaluatorImpl)._cacheText, element, matcher) === 'self';
   },
 };
@@ -503,7 +503,7 @@ const hasTextEngine: SelectorEngine = {
     if (shouldSkipForTextMatching(element))
       return false;
     const text = normalizeWhiteSpace(args[0]).toLowerCase();
-    const matcher = (elementText: ElementText) => elementText.normalized.toLowerCase().includes(text);
+    const matcher = (elementText: ElementText) => lowerNormalizedText(elementText).includes(text);
     return matcher(elementText((evaluator as SelectorEvaluatorImpl)._cacheText, element));
   },
 };

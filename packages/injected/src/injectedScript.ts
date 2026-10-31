@@ -29,7 +29,7 @@ import { createRoleEngine } from './roleSelectorEngine';
 import { beginAriaCaches, endAriaCaches, getAriaDisabled, getAriaRole, getCheckedAllowMixed, getCheckedWithoutMixed, getElementAccessibleDescription, getElementAccessibleErrorMessage, getElementAccessibleNameText, getReadonly } from './roleUtils';
 import { SelectorEvaluatorImpl, sortInDOMOrder } from './selectorEvaluator';
 import { generateSelector } from './selectorGenerator';
-import { elementMatchesText, elementText, getElementLabels } from './selectorUtils';
+import { elementMatchesText, elementText, getElementLabels, lowerNormalizedText, mayNormalizeTo } from './selectorUtils';
 import { XPathEngine } from './xpathSelectorEngine';
 import { ConsoleAPI } from './consoleApi';
 import { UtilityScript } from './utilityScript';
@@ -1946,7 +1946,7 @@ function createTextMatcher(selector: string, internal: boolean): { matcher: Text
   selector = normalizeWhiteSpace(selector);
   if (strict) {
     if (internal)
-      return { kind: 'strict', matcher: (elementText: ElementText) => elementText.normalized === selector };
+      return { kind: 'strict', matcher: (elementText: ElementText) => mayNormalizeTo(elementText, selector) && elementText.normalized === selector };
 
     const strictTextNodeMatcher = (elementText: ElementText) => {
       if (!selector && !elementText.immediate.length)
@@ -1956,7 +1956,7 @@ function createTextMatcher(selector: string, internal: boolean): { matcher: Text
     return { matcher: strictTextNodeMatcher, kind: 'strict' };
   }
   selector = selector.toLowerCase();
-  return { kind: 'lax', matcher: (elementText: ElementText) => elementText.normalized.toLowerCase().includes(selector) };
+  return { kind: 'lax', matcher: (elementText: ElementText) => lowerNormalizedText(elementText).includes(selector) };
 }
 
 class ExpectedTextMatcher {

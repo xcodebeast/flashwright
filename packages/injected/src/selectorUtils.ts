@@ -62,26 +62,64 @@ export function shouldSkipForTextMatching(element: Element | ShadowRoot) {
   return element.nodeName === 'SCRIPT' || element.nodeName === 'NOSCRIPT' || element.nodeName === 'STYLE' || document.head && document.head.contains(element);
 }
 
-export type ElementText = { full: string, normalized: string, immediate: string[] };
+export type ElementText = { full: string, normalized: string, immediate: string[], lowerNormalized?: string, kept?: number };
 export type TextMatcher = (text: ElementText) => boolean;
 
 // Flashwright: the first time the text of an element is needed, the texts of all the elements below
 // it are built, while a query looks at the normalized text of only a few of them: the text is
 // normalized on first use. Whether an element is skipped follows from its parent, without looking
-// for each element in the document's head.
+// for each element in the document's head. An element whose text is that of one element inside,
+// with only white space around it, normalizes alike, so nested wrappers share one normalized
+// (and lowercased) text instead of each going through all of it. The characters normalizing keeps
+// whatever surrounds them are counted, which tells that a long text cannot equal a short one.
 class ElementTextData implements ElementText {
   full = '';
   immediate: string[] = [];
+  kept = 0;
+  sole: ElementText | undefined;
   private _normalized: string | undefined;
+  private _lowerNormalized: string | undefined;
 
   get normalized(): string {
     if (this._normalized === undefined)
-      this._normalized = this.full ? normalizeWhiteSpace(this.full) : '';
+      this._normalized = this.sole ? this.sole.normalized : this.full ? normalizeWhiteSpace(this.full) : '';
     return this._normalized;
+  }
+
+  get lowerNormalized(): string {
+    if (this._lowerNormalized === undefined)
+      this._lowerNormalized = this.sole?.lowerNormalized ?? this.normalized.toLowerCase();
+    return this._lowerNormalized;
   }
 }
 
 const kSkippedForTextMatching = new Set(['SCRIPT', 'NOSCRIPT', 'STYLE']);
+// What normalizeWhiteSpace() removes entirely.
+const kWhiteSpaceOnly = /^[\s\u200b\u00ad]*$/;
+
+export function lowerNormalizedText(text: ElementText): string {
+  return text.lowerNormalized ?? text.normalized.toLowerCase();
+}
+
+// Whether the normalized text may be the given normalized string: it keeps at least the characters
+// that are not white space, and the text is never shorter than it.
+export function mayNormalizeTo(text: ElementText, normalized: string): boolean {
+  return text.kept === undefined || (text.kept <= normalized.length && text.full.length >= normalized.length);
+}
+
+// The characters of the text other than those normalizeWhiteSpace() trims, collapses or removes:
+// white space as \s matches it, U+200B and U+00AD.
+function keptCharacters(text: string): number {
+  let kept = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (c > 32 && c < 127)
+      ++kept;
+    else if (!(c <= 32 && (c === 32 || (c >= 9 && c <= 13))) && !kWhiteSpaceOnly.test(text[i]))
+      ++kept;
+  }
+  return kept;
+}
 
 export function elementText(cache: Map<Element | ShadowRoot, ElementText>, root: Element | ShadowRoot): ElementText {
   return computeElementText(cache, root, undefined);
@@ -99,10 +137,26 @@ function computeElementText(cache: Map<Element | ShadowRoot, ElementText>, root:
       } else {
         // The root is not in the head: a child is when it is the head.
         const head = root.ownerDocument.head;
+        let sole: ElementText | undefined;
+        let parts = 0;
+        let whiteSpaceOnly = true;
+        const append = (text: ElementText) => {
+          if (text.full) {
+            sole = text;
+            ++parts;
+          }
+          data.full += text.full;
+          data.kept += text.kept ?? keptCharacters(text.full);
+        };
         for (let child = root.firstChild; child; child = child.nextSibling) {
           if (child.nodeType === Node.TEXT_NODE) {
-            data.full += child.nodeValue || '';
-            currentImmediate += child.nodeValue || '';
+            const text = child.nodeValue || '';
+            data.full += text;
+            currentImmediate += text;
+            const kept = keptCharacters(text);
+            data.kept += kept;
+            if (kept)
+              whiteSpaceOnly = false;
           } else if (child.nodeType === Node.COMMENT_NODE) {
             continue;
           } else {
@@ -110,13 +164,15 @@ function computeElementText(cache: Map<Element | ShadowRoot, ElementText>, root:
               data.immediate.push(currentImmediate);
             currentImmediate = '';
             if (child.nodeType === Node.ELEMENT_NODE)
-              data.full += computeElementText(cache, child as Element, kSkippedForTextMatching.has(child.nodeName) || child === head).full;
+              append(computeElementText(cache, child as Element, kSkippedForTextMatching.has(child.nodeName) || child === head));
           }
         }
         if (currentImmediate)
           data.immediate.push(currentImmediate);
         if ((root as Element).shadowRoot)
-          data.full += computeElementText(cache, (root as Element).shadowRoot!, false).full;
+          append(computeElementText(cache, (root as Element).shadowRoot!, false));
+        if (whiteSpaceOnly && parts === 1)
+          data.sole = sole;
       }
     }
     cache.set(root, value);
