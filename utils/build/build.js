@@ -876,8 +876,6 @@ steps.push(new EsbuildStep({
     '../transform/esmLoader',
     './workerStandby',
     './session',
-    // The same file, as plugins/ import it.
-    '../runner/session',
   ],
   // HMR: same flag as coreBundle; enables the html-reporter Vite dev server
   // in watch builds (reporters/html.ts lives in this bundle).

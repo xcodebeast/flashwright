@@ -108,9 +108,6 @@ const kBrowserRequest = '__flashwright_browser_request__';
 // Asks a worker started ahead of time for its browser, which it confirms after sending it.
 const kReturnBrowser = '__flashwright_return_browser__';
 const kBrowserReturned = '__flashwright_browser_returned__';
-const kWebServerMessage = '__flashwright_web_server__';
-const kWebServerRelease = '__flashwright_web_server_release__';
-const kWebServerReleased = '__flashwright_web_server_released__';
 // Browsers kept per kind of run, at most; a session runs one project.
 const kMaxBrowsers = 8;
 
@@ -130,7 +127,6 @@ export function runCli(argv: string[], hooks: Hooks) {
   }
   if (argv[2] === 'test' && sessionRequested() && !argv.some(arg => kInteractiveArgs.includes(arg.split('=')[0]))) {
     const request = createRequest(argv);
-    runRequest = request;
     runInSession(request).then(outcome => runLocally(argv, hooks, outcome === 'start' ? request : undefined), () => runLocally(argv, hooks));
     return;
   }
@@ -343,8 +339,6 @@ type Channel = {
   send(message: any, handle?: any, callback?: (error: Error | null) => void): boolean;
   readonly connected: boolean;
   disconnect(): void;
-  on(event: 'message', listener: (message: any) => void): unknown;
-  off(event: 'message', listener: (message: any) => void): unknown;
 };
 
 let sessionChannel: Channel | undefined;
@@ -501,96 +495,6 @@ function onSessionMessage(message: any, handle: any) {
     forwardBrowser(browser);
 }
 
-// --- Web servers that the session keeps between runs (see WebServerPlugin). ---
-
-export type SessionWebServer = { url: string, key: string, pid: number, stdin: net.Socket, stdout: net.Socket, stderr: net.Socket };
-
-// Whether the session can keep a web server that this run starts.
-export function sessionKeepsWebServers(): boolean {
-  return !!sessionChannel?.connected;
-}
-
-// The request of this run, as the session tells runs apart.
-let runRequest: RunRequest | undefined;
-
-// What tells a web server from one started differently: its command, directory and environment,
-// the run's as the user started it (the runner adds variables of its own) and the config's.
-export function webServerKey(command: string, cwd: string, env: Record<string, string> | undefined): string {
-  const merged = { ...runRequest?.env, ...env };
-  return fnv1a64(JSON.stringify([command, cwd, Object.entries(merged).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)]));
-}
-
-// Before a run looks for a web server at the URL: the session stops one it keeps there that was
-// started differently, and answers once it has exited.
-export async function releaseSessionWebServer(url: string, key: string): Promise<void> {
-  const channel = sessionChannel;
-  if (!channel?.connected)
-    return;
-  const id = String(++lastRequestId);
-  await new Promise<void>(resolve => {
-    const done = () => {
-      clearTimeout(timer);
-      channel.off('message', onMessage);
-      resolve();
-    };
-    const timer = setTimeout(done, 10000);
-    const onMessage = (message: any) => {
-      if (message?.method === kWebServerReleased && message.params.id === id)
-        done();
-    };
-    channel.on('message', onMessage);
-    channel.send({ method: kWebServerRelease, params: { id, url, key } }, undefined, error => {
-      if (error)
-        done();
-    });
-  });
-}
-
-// Hands a web server that this run started to the session, with its standard streams so that it
-// can go on writing to them: true once the session has it.
-export function handOffWebServer(server: SessionWebServer): Promise<boolean> {
-  const channel = sessionChannel;
-  if (!channel?.connected)
-    return Promise.resolve(false);
-  const { url, key, pid } = server;
-  const send = (params: object, handle?: net.Socket) => new Promise<boolean>(resolve => channel.send({ method: kWebServerMessage, params: { url, key, pid, ...params } }, handle, error => resolve(!error)));
-  const sent = (async () => await send({ part: 'stdin' }, server.stdin) && await send({ part: 'stdout' }, server.stdout) && await send({ part: 'stderr' }, server.stderr) && await send({ sent: true }))();
-  pendingSends.add(sent.then(() => {}));
-  return sent;
-}
-
-type HeldWebServer = Omit<SessionWebServer, 'url'> & { url: string, exited: Promise<void> };
-
-function collectWebServerPart(parts: Map<string, Partial<SessionWebServer>>, message: any, handle: any): SessionWebServer | undefined {
-  const { url, key, pid, part, sent } = message.params;
-  const id = `${pid} ${url}`;
-  const server: Partial<SessionWebServer> = parts.get(id) ?? { url, key, pid };
-  if (part && handle)
-    server[part as 'stdin' | 'stdout' | 'stderr'] = handle;
-  parts.set(id, server);
-  if (!sent)
-    return;
-  parts.delete(id);
-  return server.stdin && server.stdout && server.stderr ? server as SessionWebServer : undefined;
-}
-
-function dropWebServerParts(parts: Map<string, Partial<SessionWebServer>>) {
-  // The runner that sent them kills a server it could not hand over.
-  for (const server of parts.values()) {
-    server.stdin?.destroy();
-    server.stdout?.destroy();
-    server.stderr?.destroy();
-  }
-  parts.clear();
-}
-
-function killWebServer(server: HeldWebServer) {
-  try {
-    process.kill(-server.pid, 'SIGKILL');
-  } catch {
-  }
-}
-
 // --- Moving browsers between processes. ---
 
 function collectBrowserPart(parts: Map<string, Partial<Browser>>, message: BrowserMessage, handle: any): Browser | undefined {
@@ -651,7 +555,6 @@ type WarmProcess = {
   // Until its channel closes, a running runner may still hand over its workers' browsers.
   connected: boolean;
   parts: Map<string, Partial<Browser>>;
-  webServerParts: Map<string, Partial<SessionWebServer>>;
   exiting?: (message: { code: number, stdout: number, stderr: number }) => void;
 };
 
@@ -667,16 +570,12 @@ function runSession(socketFile: string, build: string) {
   let lastRequest: RunRequest | undefined;
   let idleTimer: NodeJS.Timeout | undefined;
   let activeRuns = 0;
-  // Web servers that runs started, by URL.
-  const webServers = new Map<string, HeldWebServer>();
 
   const shutdown = () => {
     for (const warm of warmProcesses.splice(0))
       warm.child.kill();
     for (const browser of browsers.splice(0))
       killBrowser(browser);
-    for (const server of webServers.values())
-      killWebServer(server);
     server.close();
     try {
       fs.unlinkSync(socketFile);
@@ -690,35 +589,6 @@ function runSession(socketFile: string, build: string) {
       if (!activeRuns && !startingRunKey)
         shutdown();
     }, kIdleTimeout);
-  };
-
-  const holdWebServer = (sent: SessionWebServer) => {
-    const previous = webServers.get(sent.url);
-    if (previous)
-      killWebServer(previous);
-    // What it writes goes nowhere, as it would for a server that someone else started. It has
-    // exited, with everything it started, once nothing can write to its output any longer.
-    for (const stream of [sent.stdin, sent.stdout, sent.stderr])
-      stream.on('error', () => {});
-    sent.stdout.resume();
-    sent.stderr.resume();
-    const server: HeldWebServer = { ...sent, exited: new Promise(resolve => sent.stdout.once('close', () => resolve())) };
-    void server.exited.then(() => {
-      if (webServers.get(server.url) === server)
-        webServers.delete(server.url);
-      server.stdin.destroy();
-      server.stderr.destroy();
-    });
-    webServers.set(server.url, server);
-  };
-
-  const releaseWebServer = async (channel: { send(message: any): unknown }, params: { id: string, url: string, key: string }) => {
-    const server = webServers.get(params.url);
-    if (server && server.key !== params.key) {
-      killWebServer(server);
-      await Promise.race([server.exited, new Promise(resolve => setTimeout(resolve, 5000))]);
-    }
-    channel.send({ method: kWebServerReleased, params: { id: params.id } });
   };
 
   const runsThatMayHandOver = (key: string) => (startingRunKey === key ? 1 : 0) + warmProcesses.filter(warm => warm.running && warm.connected && warm.key === key).length;
@@ -807,7 +677,7 @@ function runSession(socketFile: string, build: string) {
       env: { ...warmEnv(request), FLASHWRIGHT_SESSION_ROLE: 'warm', FLASHWRIGHT_SESSION_STANDBYS: String(standbys) },
       stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
     });
-    const warm: WarmProcess = { child, key, ready: Promise.resolve(false), running: false, connected: true, parts: new Map(), webServerParts: new Map() };
+    const warm: WarmProcess = { child, key, ready: Promise.resolve(false), running: false, connected: true, parts: new Map() };
     warm.ready = new Promise<boolean>(resolve => {
       child.on('message', (message: any, handle: any) => {
         if (message?.type === 'warm') {
@@ -820,12 +690,6 @@ function runSession(socketFile: string, build: string) {
           const browser = collectBrowserPart(warm.parts, message, handle);
           if (browser)
             onBrowserReturned(key, browser);
-        } else if (message?.method === kWebServerMessage) {
-          const server = collectWebServerPart(warm.webServerParts, message, handle);
-          if (server)
-            holdWebServer(server);
-        } else if (message?.method === kWebServerRelease) {
-          void releaseWebServer(child, message.params);
         }
       });
       child.once('exit', () => resolve(false));
@@ -837,7 +701,6 @@ function runSession(socketFile: string, build: string) {
       for (const parts of warm.parts.values())
         killBrowser(parts);
       warm.parts.clear();
-      dropWebServerParts(warm.webServerParts);
       answerWaiting(entry => entry.warm === warm || !runsThatMayHandOver(entry.warm.key));
     });
     child.once('exit', () => {
@@ -970,7 +833,6 @@ function runSession(socketFile: string, build: string) {
 
   // The run that started the session: its request, then its workers' browsers.
   const parts = new Map<string, Partial<Browser>>();
-  const webServerParts = new Map<string, Partial<SessionWebServer>>();
   process.on('message', (message: any, handle: any) => {
     if (message?.method === 'request') {
       lastRequest = message.params;
@@ -979,19 +841,12 @@ function runSession(socketFile: string, build: string) {
       const browser = collectBrowserPart(parts, message, handle);
       if (browser)
         onBrowserReturned(startingRunKey, browser);
-    } else if (message?.method === kWebServerMessage) {
-      const server = collectWebServerPart(webServerParts, message, handle);
-      if (server)
-        holdWebServer(server);
-    } else if (message?.method === kWebServerRelease) {
-      void releaseWebServer(process as { send(message: any): unknown }, message.params);
     }
   });
   process.on('disconnect', () => {
     for (const browser of parts.values())
       killBrowser(browser);
     parts.clear();
-    dropWebServerParts(webServerParts);
     startingRunKey = undefined;
     resetIdleTimer();
     if (lastRequest)
@@ -1048,7 +903,6 @@ async function runWarmProcess(hooks: Hooks) {
     process.send!({ type: 'warm' });
   });
   process.channel?.unref();
-  runRequest = request;
 
   // Become the process the user started.
   process.chdir(request.cwd);

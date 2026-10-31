@@ -25,9 +25,6 @@ import { raceAgainstDeadline } from '@isomorphic/timeoutRunner';
 import { isURLAvailable } from '@utils/network';
 import { launchProcess } from '@utils/processLauncher';
 
-import { handOffWebServer, releaseSessionWebServer, sessionKeepsWebServers, webServerKey } from '../runner/session';
-
-import type { ChildProcess } from 'child_process';
 import type { TestRunnerPlugin } from '.';
 import type { FullConfig } from '../../types/testReporter';
 import type { FullConfigInternal } from '../common';
@@ -46,7 +43,6 @@ export type WebServerPluginOptions = {
   stdout?: 'pipe' | 'ignore';
   stderr?: 'pipe' | 'ignore';
   name?: string;
-  keepInSession?: boolean;
 };
 
 const DEFAULT_ENVIRONMENT_VARIABLES = {
@@ -65,8 +61,6 @@ export class WebServerPlugin implements TestRunnerPlugin {
   private _checkPortOnly: boolean;
   private _reporter?: ReporterV2;
   private _waitForStdioPromise: ManualPromise | undefined;
-  // Flashwright: a server this run started, which the warm session may keep (see keepInSession).
-  private _launched: { process: ChildProcess, release: () => { pid: number }, key: string } | undefined;
 
   name = 'playwright:webserver';
 
@@ -91,61 +85,14 @@ export class WebServerPlugin implements TestRunnerPlugin {
 
   public async teardown() {
     debugWebServer(`Terminating the WebServer`);
-    if (await this._handOffToSession())
-      debugWebServer(`Handed the WebServer to the session`);
-    else
-      await this._killProcess?.();
+    await this._killProcess?.();
     debugWebServer(`Terminated the WebServer`);
-  }
-
-  // Flashwright: with reuseExistingServer, the next run would reuse a server that is already running
-  // at the URL: the warm session keeps the one this run started instead of it stopping, and stops
-  // it when the session ends, or when a run asks for one started differently.
-  // A server that a run waits for in its output, which can set environment variables, or that has
-  // to be shut down with a signal, stops with its run as before.
-  private _sessionKey(): string | undefined {
-    if (!this._options.reuseExistingServer || this._options.keepInSession === false || !this._options.url || !sessionKeepsWebServers())
-      return;
-    if (this._options.wait?.stdout || this._options.wait?.stderr || this._options.gracefulShutdown)
-      return;
-    return webServerKey(this._options.command, path.resolve(this._options.cwd ?? process.cwd()), this._options.env);
-  }
-
-  private _spawnEnv(): NodeJS.ProcessEnv {
-    return {
-      ...DEFAULT_ENVIRONMENT_VARIABLES,
-      ...process.env,
-      ...this._options.env,
-    };
-  }
-
-  private async _handOffToSession(): Promise<boolean> {
-    const launched = this._launched;
-    this._launched = undefined;
-    const { stdin, stdout, stderr } = launched?.process ?? {};
-    if (!launched || !stdin || !stdout || !stderr || launched.process.exitCode !== null || launched.process.signalCode !== null)
-      return false;
-    stdout.removeAllListeners('data');
-    stderr.removeAllListeners('data');
-    const { pid } = launched.release();
-    // Piped, the standard streams are sockets.
-    if (await handOffWebServer({ url: this._options.url!, key: launched.key, pid, stdin: stdin as net.Socket, stdout: stdout as net.Socket, stderr: stderr as net.Socket }))
-      return true;
-    // Released, it is no longer stopped with this process.
-    try {
-      process.kill(-pid, 'SIGKILL');
-    } catch {
-    }
-    return true;
   }
 
   private async _startProcess(): Promise<void> {
     let processExitedReject = (error: Error) => { };
     this._processExitedPromise = new Promise((_, reject) => processExitedReject = reject);
 
-    const sessionKey = this._sessionKey();
-    if (sessionKey)
-      await releaseSessionWebServer(this._options.url!, sessionKey);
     const isAlreadyAvailable = await this._isAvailableCallback?.();
     if (isAlreadyAvailable) {
       debugWebServer(`WebServer is already available`);
@@ -159,9 +106,13 @@ export class WebServerPlugin implements TestRunnerPlugin {
       throw new Error('config.webServer.command cannot be empty');
 
     debugWebServer(`Starting WebServer process ${this._options.command}...`);
-    const { launchedProcess, gracefullyClose, release } = await launchProcess({
+    const { launchedProcess, gracefullyClose } = await launchProcess({
       command: this._options.command,
-      env: this._spawnEnv(),
+      env: {
+        ...DEFAULT_ENVIRONMENT_VARIABLES,
+        ...process.env,
+        ...this._options.env,
+      },
       cwd: this._options.cwd,
       stdio: 'stdin',
       shell: true,
@@ -192,8 +143,6 @@ export class WebServerPlugin implements TestRunnerPlugin {
       tempDirectories: [],
     });
     this._killProcess = gracefullyClose;
-    if (sessionKey)
-      this._launched = { process: launchedProcess, release, key: sessionKey };
 
     debugWebServer(`Process started`);
 
