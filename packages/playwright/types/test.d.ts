@@ -7261,8 +7261,10 @@ export interface PlaywrightWorkerOptions {
    * `FLASHWRIGHT_ISOLATION` environment variable is `strict`.
    * - `'recycled'` - each worker keeps one browser context and gives every test a new tab in it, after resetting
    *   everything a test can change: cookies, storage of every visited origin, caches, permissions, service workers,
-   *   routes, init scripts and the clock. The context's renderer stays warm, so the page loads faster. Chromium only;
-   *   other browsers, and tests that record video, debug or connect to a remote browser, always get a new context.
+   *   routes, init scripts and the clock. The context's renderer stays warm, so the page loads faster. Firefox and
+   *   WebKit cannot recycle a context: there, each worker keeps one context and its tab, which goes back to a blank
+   *   page between tests, with the same things reset apart from the tab's history, which keeps the earlier tests'
+   *   pages. Tests that record video, debug or connect to a remote browser always get a new context.
    * - `'strict'` - every test gets a new browser context, like Playwright. Slower, but nothing a reset could miss
    *   carries over from one test to the next, and a crash or a busy script in one test's page cannot affect the next
    *   test's.

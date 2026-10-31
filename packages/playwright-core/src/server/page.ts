@@ -331,6 +331,11 @@ export class Page extends SdkObject<PageEventMap> {
   async resetForReuse(progress: Progress) {
     // Re-navigate once init scripts are gone.
     await this.mainFrame().gotoImpl(progress, 'about:blank', {});
+    // Flashwright: the next test sees the page as a new one: no requests, console messages or errors
+    // of the previous test, frames numbered from the start for aria refs, no keys or buttons held.
+    this.clearPreloadedDocument();
+    this.keyboard.resetForReuse();
+    this.mouse.resetForReuse();
 
     this._emulatedSize = undefined;
     this._emulatedMedia = {};

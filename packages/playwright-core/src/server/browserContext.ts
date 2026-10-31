@@ -509,11 +509,18 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     }
 
     // Navigate to about:blank first to ensure no page scripts are running after this point.
-    await page?.mainFrame().gotoImpl(progress, 'about:blank', {});
+    // Flashwright: a page left in an endless script cannot navigate; the context is replaced instead.
+    if (page) {
+      const navigated = page.mainFrame().gotoImpl(progress, 'about:blank', {}).then(() => true, () => false);
+      if (!await progress.race(raceWithTimeout(navigated, kReusedPageNavigationTimeout, false)))
+        return false;
+    }
 
     // Note: we only need to reset properties from the "paramsThatAllowContextReuse" list.
     // All other properties force a new context.
     await this.clock.uninstall(progress);
+    // Flashwright: and what the previous test changed with context methods (see _recycleBaseline).
+    await this._restoreRecycleBaseline(progress);
     await progress.race(this.setUserAgent(this._options.userAgent));
     await progress.race(this.doUpdateDefaultEmulatedMedia());
     await progress.race(this.doUpdateDefaultViewport());
@@ -545,6 +552,30 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     if (state)
       await this.setStorageState(progress, state, 'initial', await storageStatePage);
     return true;
+  }
+
+  // A reused context keeps its page, which needs the options that context methods changed put back.
+  private async _restoreRecycleBaseline(progress: Progress) {
+    const baseline = structuredClone(this._recycleBaseline);
+    const changed = (key: keyof typeof baseline) => JSON.stringify(this._options[key]) !== JSON.stringify(baseline[key]);
+    if (changed('extraHTTPHeaders')) {
+      this._options.extraHTTPHeaders = baseline.extraHTTPHeaders;
+      await progress.race(this.doUpdateExtraHTTPHeaders());
+    }
+    if (changed('offline')) {
+      this._options.offline = baseline.offline;
+      await progress.race(this.doUpdateOffline());
+    }
+    if (changed('geolocation'))
+      await progress.race(this.setGeolocation(baseline.geolocation));
+    if (changed('httpCredentials'))
+      await this.setHTTPCredentials(progress, baseline.httpCredentials);
+    if (this._permissions.size) {
+      this._permissions.clear();
+      await progress.race(this.doClearPermissions());
+      if (this._options.permissions)
+        await progress.race(this.grantPermissions(this._options.permissions));
+    }
   }
 
   private async _resetForRecycle(progress: Progress, onStorageStatePage: (page: Promise<Page>) => void): Promise<boolean> {
@@ -1184,6 +1215,9 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
             return script.restore(${JSON.stringify(newOrigins.get(origin))});
           })()`;
           await frame.evaluateExpression(progress, restoreScript, { world: 'utility' });
+          // Flashwright: a reused context also starts without the origin's Cache Storage, as a new one would.
+          if (mode === 'resetForReuse')
+            await frame.evaluateExpression(progress, `self.caches && caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))))`, { world: 'utility' });
         }
       }
       this._origins = new Set([...newOrigins.keys()]);
@@ -1307,6 +1341,8 @@ export function normalizeProxySettings(proxy: types.ProxySettings): types.ProxyS
 // A new tab in a healthy renderer is ready within a few milliseconds, and the whole reset within
 // tens of milliseconds.
 const kRecycledPageTimeout = 500;
+// Flashwright: how long a reused context's page may take to navigate away from the previous test.
+const kReusedPageNavigationTimeout = 2000;
 const kRecycleTimeout = 1500;
 
 function openedBy(page: Page, opener: Page): boolean {

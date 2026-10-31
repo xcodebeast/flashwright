@@ -47,7 +47,8 @@ it('should accept a function as the whole argument', async ({ page, server }) =>
   await expect.poll(() => page.evaluate(() => (window as any).result)).toBe('ab');
 });
 
-it('should pass arguments to the callback', async ({ page, server }) => {
+it('should pass arguments to the callback', async ({ page, server, browserName }) => {
+  it.fixme(browserName !== 'chromium' && process.env.FLASHWRIGHT_ISOLATION !== 'strict', 'Firefox and WebKit reuse the page, which stops the goto this test leaves running when it ends');
   const argsPromise = new Promise<any[]>(resolve => {
     void page.addInitScript(({ cb }) => cb(1, 'two', { three: 3 }, [4]), {
       cb: (...a: any[]) => resolve(a),

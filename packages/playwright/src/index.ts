@@ -525,11 +525,15 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
 
   reuseContext: [false, { scope: 'worker', option: true, box: true }],
 
-  _reuseContext: [async ({ video, _optionContextReuseMode, reuseContext, _recycleContext }, use) => {
+  _reuseContext: [async ({ video, _optionContextReuseMode, reuseContext, _recycleContext, browserName, connectOptions, isolation }, use) => {
     let mode = _optionContextReuseMode;
     if (process.env.PW_TEST_REUSE_CONTEXT || reuseContext)
       mode = 'when-possible';
-    const reuse = (mode === 'when-possible' && normalizeVideoMode(video) === 'off') || _recycleContext;
+    // Flashwright: Firefox and WebKit cannot recycle contexts, and opening a page there takes most of
+    // a short test (about 90 ms in Firefox): unless isolation is 'strict', their tests reuse one
+    // context and its tab, reset between tests the way Playwright's reuseContext does.
+    const reusesTab = browserName !== 'chromium' && isolation === 'recycled' && !isDebugging() && !connectOptions && kRecyclingVideoModes.has(normalizeVideoMode(video));
+    const reuse = (mode === 'when-possible' && normalizeVideoMode(video) === 'off') || _recycleContext || reusesTab;
     await use(reuse);
   }, { scope: 'worker',  title: 'context', box: true }],
 
@@ -541,7 +545,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     if (isolation !== 'recycled' && isolation !== 'strict')
       throw new Error(`isolation must be 'recycled' or 'strict', not ${JSON.stringify(isolation)}`);
     const explicitReuse = !!process.env.PW_TEST_REUSE_CONTEXT || reuseContext || _optionContextReuseMode === 'when-possible';
-    const debugging = !!process.env.PWDEBUG || !!(globals.currentTestInfo() as TestInfoImpl | null)?._configInternal.configCLIOverrides.debug;
+    const debugging = isDebugging();
     // Only Chromium can recycle contexts, and a connected browser may be served by stock Playwright.
     await use(browserName === 'chromium' && !explicitReuse && !debugging && !connectOptions && isolation === 'recycled' && kRecyclingVideoModes.has(normalizeVideoMode(video)));
   }, { scope: 'worker', box: true }],
@@ -637,6 +641,10 @@ type ScreenshotOption = PlaywrightWorkerOptions['screenshot'] | undefined;
 
 // Flashwright: video modes in which some attempts record no video, so their tests can recycle contexts.
 const kRecyclingVideoModes = new Set<VideoMode>(['off', 'on-first-retry', 'on-all-retries']);
+
+function isDebugging() {
+  return !!process.env.PWDEBUG || !!(globals.currentTestInfo() as TestInfoImpl | null)?._configInternal.configCLIOverrides.debug;
+}
 
 function normalizeVideoMode(video: VideoMode | 'retry-with-video' | { mode: VideoMode } | undefined): VideoMode {
   if (!video)

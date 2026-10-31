@@ -18,8 +18,10 @@
 import { test as it, expect } from './pageTest';
 import url from 'url';
 
-it('page.goBack should work @smoke', async ({ page, server }) => {
-  expect(await page.goBack()).toBe(null);
+it('page.goBack should work @smoke', async ({ page, server, browserName }) => {
+  // Flashwright: Firefox and WebKit reuse the tab, whose history keeps the earlier tests' pages.
+  if (browserName === 'chromium' || process.env.FLASHWRIGHT_ISOLATION === 'strict')
+    expect(await page.goBack()).toBe(null);
 
   await page.goto(server.EMPTY_PAGE);
   await page.goto(server.PREFIX + '/grid.html');

@@ -53,6 +53,12 @@ export class Keyboard {
     this._page = page;
   }
 
+  // Flashwright: a reused page starts without the keys a previous test left pressed.
+  resetForReuse() {
+    this._pressedModifiers.clear();
+    this._pressedKeys.clear();
+  }
+
   async apiDown(progress: Progress, key: string) {
     await this._page.instrumentation.onBeforeInputAction(progress, this._page);
     await this.down(progress, key);
@@ -207,6 +213,14 @@ export class Mouse {
     this._raw = raw;
     this._page = page;
     this._keyboard = this._page.keyboard;
+  }
+
+  // Flashwright: a reused page starts with the mouse at the origin and no button pressed.
+  resetForReuse() {
+    this._x = 0;
+    this._y = 0;
+    this._lastButton = 'none';
+    this._buttons.clear();
   }
 
   private _currentPoint() {

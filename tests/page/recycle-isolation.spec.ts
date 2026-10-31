@@ -23,8 +23,8 @@ import { test as it, expect } from './pageTest';
 it.describe.configure({ mode: 'default' });
 // Electron runs every test in the same application; there is no per-test context to compare with.
 it.skip(({ isElectron }) => isElectron);
-// Only Chromium recycles contexts; other browsers get a new context for every test, as in Playwright.
-it.skip(({ browserName }) => browserName !== 'chromium');
+// Chromium recycles contexts, Firefox and WebKit reuse one context and its tab.
+it.skip(({ browserName }) => browserName === 'webkit', 'WebKit reuses its context like Firefox, but these checks have not run on it yet');
 
 it('leaves storage, permissions and context settings behind', async ({ page, server }) => {
   const context = page.context();
@@ -57,7 +57,7 @@ it('leaves storage, permissions and context settings behind', async ({ page, ser
   expect(await page.evaluate(() => localStorage.getItem('local'))).toBe('1');
 });
 
-it('sees a fresh context', async ({ page, server }) => {
+it('sees a fresh context', async ({ page, server, browserName }) => {
   const context = page.context();
   expect(context.pages()).toEqual([page]);
   expect(context.serviceWorkers()).toEqual([]);
@@ -86,7 +86,8 @@ it('sees a fresh context', async ({ page, server }) => {
     local: 0,
     session: 0,
     name: '',
-    historyLength: 2,
+    // Firefox reuses the tab, whose history keeps the previous tests' entries.
+    historyLength: browserName === 'firefox' ? expect.any(Number) : 2,
     databases: [],
     caches: [],
     registrations: 0,
@@ -107,7 +108,8 @@ it('is online again', async ({ page, server }) => {
   expect(await page.evaluate(() => navigator.onLine)).toBe(true);
 });
 
-it('leaves its renderer stuck in a script', async ({ page }) => {
+it('leaves its renderer stuck in a script', async ({ page, browserName }) => {
+  it.fixme(browserName === 'firefox', 'setContent does not return while the script runs, also in a new context');
   await page.setContent(`<script>setTimeout(() => { while (true) {} }, 0)</script>`);
 });
 
