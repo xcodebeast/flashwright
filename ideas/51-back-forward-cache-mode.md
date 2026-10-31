@@ -2,6 +2,8 @@
 
 Scope: tests that revisit complete documents with browser back/forward navigation. Effort: large for correct lifecycle integration. Priority: high potential within that workload; explicit opt-in.
 
+**Assessed 2026-10-31:** deferred. Restoring a page from the back-forward cache changes what the application sees (no reload, `pageshow` with `persisted`, requests that bypass routing), so it can only be an opt-in for history-heavy suites.
+
 Research, 2026-10-31, against `c4c3583b` and the live worktree. No launch flags changed or browser started.
 
 ## Where the work is

@@ -2,6 +2,8 @@
 
 Scope: large TypeScript monorepos with many aliases, imports and worker processes. Effort: medium for rule compilation; large for shared lookup results. Priority: promising for import-heavy suites.
 
+**Assessed 2026-10-31:** deferred. A relative import costs a few file-system probes (~10-30 µs), so typical suites spend milliseconds per process; only large monorepos would notice.
+
 Research, 2026-10-31, against `c4c3583b` and the live worktree. No test modules imported or files scanned beyond targeted source reads.
 
 ## Where the work is

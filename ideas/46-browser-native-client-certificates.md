@@ -2,6 +2,8 @@
 
 Scope: applications using mutual TLS through `clientCertificates`. Effort: very large across browsers; a Chromium-only first version is smaller. Priority: high for certificate-heavy enterprise suites.
 
+**Assessed 2026-10-31:** deferred: only suites using `clientCertificates`, and it needs browser changes.
+
 Research, 2026-10-31, against `c4c3583b` and the live worktree. No network traffic or benchmarks generated.
 
 ## Where the work is

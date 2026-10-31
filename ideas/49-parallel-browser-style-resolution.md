@@ -2,6 +2,8 @@
 
 Scope: applications with large DOMs, complex styles and repeated broad style invalidation. Effort: monumental browser-engine work. Priority: exploratory, with a substantial ceiling only on style-bound pages.
 
+**Assessed 2026-10-31:** rejected for now: browser style-engine work. Style, layout and paint are ~9% of renderer main-thread time on TodoMVC (~2 ms per test).
+
 Research, 2026-10-31. Local source inspection and primary-source research only; no browser profiles or build.
 
 ## Where the work is

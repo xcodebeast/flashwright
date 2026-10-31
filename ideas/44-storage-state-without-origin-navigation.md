@@ -2,6 +2,8 @@
 
 Scope: authenticated suites with multiple storage origins or large IndexedDB state, including strict contexts. Effort: large to very large. Priority: high for this workload.
 
+**Assessed 2026-10-31:** partly done. The real cost of a storageState with one localStorage origin was measured: +8.5 ms per recycled Chromium context and +22 ms per reused Firefox tab. Part of it (2 of the 8.5 ms in Chromium, 9 of the 22 ms in Firefox) was the injected script being created in the storage documents, which never use it. `6f14cacc` skips it: 13 -> 11 ms (Chromium) and 32 -> 23 ms (Firefox) per test. Creating the restoring page before the next test's tab, so that restoring overlaps opening the tab, measured slower (13 ms): the first tab created absorbs the browser's busy time. What remains is one intercepted navigation per origin, ~3 ms, which needs browser work: deferred.
+
 Research, 2026-10-31, against `c4c3583b` and the live worktree. No execution or speed measurements.
 
 ## Where the work is

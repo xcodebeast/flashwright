@@ -2,6 +2,8 @@
 
 Scope: large applications repeatedly creating and discarding DOM/JavaScript state in warm renderers. Effort: monumental, spanning V8 and Blink GC. Priority: exploratory; target large heaps, not an assumed TodoMVC win.
 
+**Assessed 2026-10-31:** rejected for now: V8 and Blink garbage collector work, no measured bottleneck in the benchmark apps.
+
 Research, 2026-10-31, against `c4c3583b` and retained design evidence. No profiling or runtime changes.
 
 ## Where the work is

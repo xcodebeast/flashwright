@@ -2,6 +2,8 @@
 
 Scope: Chromium suites using `page.coverage.startJSCoverage()` on computation-heavy applications. Effort: monumental V8/compiler work. Priority: a high-ceiling research candidate within that scope.
 
+**Assessed 2026-10-31:** rejected for now: V8 work (custom browsers are the last option), for coverage runs only.
+
 Research, 2026-10-31, against `c4c3583b` and the live worktree. No engine build, profile or speed measurement.
 
 ## Where the work is

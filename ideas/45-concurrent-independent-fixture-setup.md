@@ -2,6 +2,8 @@
 
 Scope: suites with several expensive asynchronous fixtures per test or worker. Effort: large. Priority: high potential for setup-bound suites; explicit opt-in.
 
+**Assessed 2026-10-31:** deferred. Fixture authors would have to opt in, so existing suites gain nothing; the built-in fixtures form one dependency chain.
+
 Research, 2026-10-31, against `c4c3583b` and the live worktree. No fixtures or services were executed.
 
 ## Where the work is

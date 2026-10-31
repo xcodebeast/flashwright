@@ -2,6 +2,8 @@
 
 Scope: large text snapshots, generated documents and failures comparing substantial strings. Effort: large for exact output compatibility. Priority: high for diagnostic-heavy workloads; no benefit from already-equal snapshots.
 
+**Assessed 2026-10-31:** deferred: only failing comparisons of large texts, and the output must stay byte-identical.
+
 Research, 2026-10-31, against `c4c3583b` and the live worktree. No failures generated or timing runs performed.
 
 ## Where the work is

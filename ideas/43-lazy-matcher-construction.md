@@ -2,6 +2,8 @@
 
 Scope: assertion-heavy browser and API suites. Effort: medium. Priority: a strong first prototype without a browser change.
 
+**Assessed 2026-10-31:** rejected. Building the matchers measured 4.2 ms per TodoMVC run, about 12 µs per `expect()` (under 0.5%).
+
 Research, 2026-10-31, against `c4c3583b` and the live worktree. Source inspection only; no measured speedup.
 
 ## Where the work is
