@@ -2,6 +2,8 @@
 
 **Scope:** parallel suites whose Node globals must remain isolated. **Effort:** large. **Priority:** high for browser startup and memory pressure; conditional for warm, action-heavy runs.
 
+**Assessed 2026-10-31:** deferred. Sharing one browser among separate worker processes adds a hop to every call; `workersPerProcess` already shares a browser within a process (TodoMVC 4 workers: 795 -> 493 MB, 1.12× faster with 4 per process).
+
 Research proposal, 2026-10-31. Source inspection and primary-source research only; no builds, tests or measurements. This separates browser sharing from the existing `workersPerProcess` option.
 
 ## Evidence

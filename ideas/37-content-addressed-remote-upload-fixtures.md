@@ -2,6 +2,8 @@
 
 **Scope:** remote browsers repeatedly receiving large files or directories through setInputFiles. **Effort:** large. **Priority:** high for repeated media/document uploads over limited bandwidth.
 
+**Assessed 2026-10-31:** deferred: remote browsers only.
+
 Research proposal, 2026-10-31. No transfers or measurements. Unlike [windowed artifact downloads](30-windowed-remote-artifact-streams.md), this avoids sending already-present bytes. It also differs from [API multipart assembly](16-segmented-api-request-bodies.md).
 
 ## Evidence

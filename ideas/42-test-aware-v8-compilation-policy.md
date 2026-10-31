@@ -2,6 +2,8 @@
 
 **Scope:** JavaScript-heavy applications repeatedly opened for short tests. **Effort:** very large, requiring pinned V8/Chromium integration. **Priority:** exploratory; useful only if ordinary engine policies leave material work on the critical path.
 
+**Assessed 2026-10-31:** deferred: V8 flag experiments (`--no-maglev`, `--no-opt`, `--max-lazy`) measured 0 to -10% earlier.
+
 Research proposal, 2026-10-31. No engine flags changed, profiles collected or builds run. This changes when application code is compiled and optimized. [Automation-trained browser builds](18-automation-trained-browser-build.md) optimize Chromium's native binary; [portable bytecode](19-portable-application-bytecode-cache.md) reuses compilation artifacts. Neither is a test-lifetime policy for JIT decisions.
 
 ## Evidence

@@ -2,6 +2,8 @@
 
 **Scope:** image-heavy applications, visual suites and parallel fresh-context runs. **Effort:** very large, requiring browser changes. **Priority:** exploratory, with substantial CPU and memory potential on repeated large assets.
 
+**Assessed 2026-10-31:** deferred: needs a browser build (custom browsers are the last option).
+
 Research proposal, 2026-10-31. No browser build or measurements. This shares derived image data, not [JavaScript bytecode](19-portable-application-bytecode-cache.md), HTTP responses or screenshot comparison results.
 
 ## Evidence

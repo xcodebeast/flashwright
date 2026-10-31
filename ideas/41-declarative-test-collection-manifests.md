@@ -2,6 +2,8 @@
 
 **Scope:** large suites with expensive imports, generated cases and frequent narrow selections. **Effort:** large for an explicit format; very large for compiler support. **Priority:** high where collection, rather than browser execution, dominates.
 
+**Assessed 2026-10-31:** deferred: needs a new test format; collection is not a measured bottleneck in the benchmark suites.
+
 Research proposal, 2026-10-31. No test imports or measurements. This avoids collection-time module execution for an opt-in declaration format. [Native transforms](12-native-test-transformation.md) make compilation faster; [file discovery](13-scalable-test-file-discovery.md) finds paths. Neither removes executing modules to discover tests.
 
 ## Evidence

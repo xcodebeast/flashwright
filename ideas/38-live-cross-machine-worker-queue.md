@@ -2,6 +2,8 @@
 
 **Scope:** large CI suites with uneven shards and remote execution capacity. **Effort:** very large. **Priority:** high for long distributed suites; low for short local runs.
 
+**Assessed 2026-10-31:** deferred: distributed execution, outside a single run's speed.
+
 Research proposal, 2026-10-31. No machines provisioned, workers started or measurements taken. This extends execution beyond one host; [idea 08](08-contention-aware-scheduling.md) concerns local placement, and [idea 34](34-dependency-ready-project-execution.md) removes local project barriers.
 
 ## Evidence

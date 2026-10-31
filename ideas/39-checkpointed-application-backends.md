@@ -2,6 +2,8 @@
 
 **Scope:** tests repeatedly booting, migrating or seeding substantial local application stacks. **Effort:** monumental for a general solution. **Priority:** exploratory, with a potentially much larger ceiling than framework micro-optimizations.
 
+**Assessed 2026-10-31:** deferred: application environments, outside the test runner.
+
 Research proposal, 2026-10-31. No VM, server or experiment started. This snapshots an explicitly declared application environment, not the [framework-only Node heap](09-preinitialized-node-runtime.md), browser storage generations or an already-running browser renderer.
 
 ## Evidence

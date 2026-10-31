@@ -2,6 +2,8 @@
 
 **Scope:** suites with several setup projects or uneven dependency branches. **Effort:** large. **Priority:** high when global phase barriers leave usable workers idle.
 
+**Assessed 2026-10-31:** deferred. Most configs have one setup project that every other project depends on, which gains nothing; configs whose projects rely on every setup project having finished without declaring it would break.
+
 Research proposal, 2026-10-31. No execution or measured speedup. This removes project-level barriers; [contention-aware scheduling](08-contention-aware-scheduling.md) chooses placements within available work, and [parallel web servers](27-parallel-web-server-startup.md) concerns a different setup mechanism.
 
 ## Evidence

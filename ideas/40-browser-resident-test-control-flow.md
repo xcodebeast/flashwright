@@ -2,6 +2,8 @@
 
 **Scope:** browser-only, command-dense tests, especially when the current driver is remote. **Effort:** monumental, including a browser runtime and automation bridge. **Priority:** moonshot; simpler driver colocation must be the comparison.
 
+**Assessed 2026-10-31:** deferred: moonshot; local calls cost ~0.2 ms each, so the gain locally is small.
+
 Research proposal, 2026-10-31. No implementation or measurements. [Browser-native actions](01-browser-native-actions.md) move one action at a time. This moves the test's loops, branches and awaits, while preserving each public operation boundary.
 
 ## Evidence

@@ -2,6 +2,8 @@
 
 **Scope:** accessibility snapshot suites, large pages and repeated ARIA assertion checks. **Effort:** medium for conditional rendering; large for a compiled matcher. **Priority:** high within this workload.
 
+**Status:** implemented (`d5a7da6c`): a passing check no longer renders the received snapshot, and node boxes are computed on demand. A passing assertion on the 400-row inventory table: 78 -> 57 ms. Building the tree itself (mostly accessible names, ~70%) remains.
+
 Research proposal, 2026-10-31. No measurements. This targets the ARIA assertion pipeline, independently of [locator indexes](05-incremental-locator-indexes.md), [trace snapshots](07-incremental-trace-recording.md) and [collection equality](25-indexed-collection-assertions.md).
 
 ## Evidence
