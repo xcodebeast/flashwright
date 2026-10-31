@@ -615,3 +615,15 @@ test('should match the names of rows that hide, label or generate parts of their
   await expect(page.getByRole('row', { name: /STRASSE/i })).toHaveCount(0);
   await expect(page.getByRole('row', { name: 'Straße', exact: true })).toHaveCount(0);
 });
+
+test('should match the names of elements with inline content, hidden slots and split surrogates', async ({ page }) => {
+  await page.setContent(`
+    <table><tr><td style='content: url("data:,") / "Save"'>Cancel</td></tr></table>
+    <h1>A<slot style="display:inline" aria-hidden="true" aria-label="X"></slot>B</h1>
+    <button id="b"></button>
+  `);
+  await page.evaluate(() => document.getElementById('b')!.textContent = '\uD801 \uDC28');
+  await expect(page.getByRole('cell', { name: 'Save', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('heading', { name: 'AB', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: '\uDC28' })).toHaveCount(1);
+});

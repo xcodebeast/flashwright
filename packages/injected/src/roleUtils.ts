@@ -719,7 +719,11 @@ export function accessibleNameCannotContain(element: Element, needle: NameNeedle
   if (!stylesAreKnown() || !checkVisibilityOfVisibility(element))
     return;
   const characters = nameCharacters(element, includeHidden);
-  return characters === undefined ? undefined : !needle.fold(characters).includes(needle.characters);
+  // Upper case maps code points: a surrogate on either side of white space the name has and the
+  // characters do not would pair up differently.
+  if (characters === undefined || /[\ud800-\udfff]/.test(characters))
+    return;
+  return !needle.fold(characters).includes(needle.characters);
 }
 
 // What normalizeWhiteSpace() and asFlatString() collapse, trim or remove.
@@ -825,13 +829,16 @@ function nameCharacters(target: Element, includeHidden: boolean): string | undef
     if (element.shadowRoot)
       return false;
     const tagName = elementSafeTagName(element);
+    // isElementHiddenForAria() does not look at their visibility.
+    if (tagName === 'OPTION' || tagName === 'SLOT')
+      return false;
     const hasAttributes = element.hasAttributes();
     // Step 2a: what is hidden adds nothing, but for the ways isElementHiddenForAria() looks into.
     if (!includeHidden) {
       if (isElementIgnoredForAria(element))
         return true;
       const ariaHidden = hasAttributes && getAriaBoolean(element.getAttribute('aria-hidden')) === true;
-      if (tagName !== 'OPTION' && tagName !== 'SLOT' && (ariaHidden || !element.checkVisibility(kCheckVisibilityOptions)))
+      if (ariaHidden || !element.checkVisibility(kCheckVisibilityOptions))
         return getElementComputedDisplay(element) !== 'contents';
     }
     const isImage = (tagName === 'IMG' && element.namespaceURI === kHTMLNamespace) || (tagName === 'SVG' && element.namespaceURI === kSVGNamespace);

@@ -112,7 +112,8 @@ function computeMayHaveContent(element: Element): number {
   const { elements, pseudoElements } = animated(root as Document | ShadowRoot);
   const matcher = matcherFor(root as Document | ShadowRoot);
   let result = 0;
-  if (matcher.all || matcher.ownContent || elements.has(element))
+  // A style attribute can give the element a content too, if not its pseudo-elements.
+  if (matcher.all || matcher.ownContent || elements.has(element) || (element as HTMLElement).style?.getPropertyValue('content'))
     result |= kOwnContent;
   // Class and id selectors ignore case in quirks mode.
   if (element.localName === 'q' || (root.nodeType === 9 ? root as Document : root.ownerDocument!).compatMode === 'BackCompat' || pseudoElements.has(element) || matches(element, root as Document | ShadowRoot))
