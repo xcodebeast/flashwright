@@ -2,7 +2,7 @@
 
 # Flashwright
 
-**A faster Playwright.** Same API, same test runner, same `npx playwright test`: your existing Playwright suite runs unmodified and finishes 2–3.7× sooner.
+**A faster Playwright.** Same API, same test runner, same `npx playwright test`: your existing Playwright suite runs unmodified and finishes 2–3.7× sooner. [flashwright.dev](https://flashwright.dev)
 
 ![Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.70 s, Flashwright 1.12 s](docs/media/race.gif)
 

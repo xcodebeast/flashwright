@@ -29,6 +29,7 @@ const dryRunPublish = process.argv.includes('--dry-run-publish');
 
 const repository = { type: 'git', url: 'git+https://github.com/xcodebeast/flashwright.git' };
 const homepage = 'https://github.com/xcodebeast/flashwright';
+const website = 'https://flashwright.dev';
 const packages = [
   { dir: 'playwright-core', name: 'flashwright-core', dependencies: {} },
   { dir: 'playwright', name: 'flashwright', dependencies: { 'playwright-core': `npm:flashwright-core@${version}` } },
@@ -83,7 +84,7 @@ for (const pkg of packages) {
   manifest.version = version;
   manifest.description = `Flashwright: a faster drop-in replacement for Playwright (fork of Playwright ${upstreamVersion})`;
   manifest.repository = repository;
-  manifest.homepage = homepage;
+  manifest.homepage = website;
   manifest.bugs = { url: `${homepage}/issues` };
   manifest.keywords = ['playwright', 'flashwright', 'e2e', 'testing', 'browser', 'automation', 'test-runner', 'fast'];
   if (manifest.dependencies)
