@@ -283,3 +283,79 @@ test('a first run that outlasts the idle timeout keeps its session', async ({ ru
   expect(browsers).toHaveLength(2);
   expect(new Set(browsers).size).toBe(1);
 });
+
+// A web server that notes each start and shows the MARK it was started with.
+const webServerFiles = (port: number, webServer: string, mark: string) => ({
+  'server.js': `
+    require('fs').appendFileSync('starts.txt', process.pid + '\\n');
+    require('http').createServer((req, res) => {
+      res.setHeader('Content-Type', 'text/html');
+      res.end('<title>app ' + process.env.MARK + '</title>');
+    }).listen(${port}, '127.0.0.1');
+  `,
+  'playwright.config.js': `module.exports = {
+    workers: 1,
+    webServer: { command: 'node server.js', url: 'http://127.0.0.1:${port}', env: { MARK: '${mark}' }, ${webServer} },
+    use: { baseURL: 'http://127.0.0.1:${port}' },
+  };`,
+  'a.spec.ts': `
+    import { test, expect } from '@playwright/test';
+    test('app', async ({ page }) => {
+      await page.goto('/');
+      await expect(page).toHaveTitle('app ${mark}');
+    });
+  `,
+});
+
+async function freePort() {
+  const server = http.createServer();
+  await new Promise<void>(f => server.listen(0, '127.0.0.1', f));
+  const port = (server.address() as AddressInfo).port;
+  await new Promise(f => server.close(f));
+  return port;
+}
+
+const isUp = (port: number) => new Promise<boolean>(resolve => {
+  http.get(`http://127.0.0.1:${port}/`, res => {
+    res.resume();
+    resolve(true);
+  }).on('error', () => resolve(false));
+});
+
+const starts = () => fs.readFileSync(test.info().outputPath('starts.txt'), 'utf8').trim().split('\n').length;
+
+test('keeps the web server that a run started for the next run, until the session ends', async ({ runInlineTest }) => {
+  const port = await freePort();
+  for (let run = 0; run < 2; run++) {
+    const result = await runInlineTest(webServerFiles(port, `reuseExistingServer: true`, 'one'), { workers: 1 }, env());
+    expect(result.exitCode).toBe(0);
+    expect(result.passed).toBe(1);
+  }
+  expect(starts()).toBe(1);
+  await expect.poll(hasSession, { timeout: 20000 }).toBe(false);
+  await expect.poll(() => isUp(port), { timeout: 10000 }).toBe(false);
+});
+
+test('starts a new web server for a run that needs one started differently', async ({ runInlineTest }) => {
+  const port = await freePort();
+  for (const mark of ['one', 'two']) {
+    const result = await runInlineTest(webServerFiles(port, `reuseExistingServer: true`, mark), { workers: 1 }, env());
+    expect(result.exitCode).toBe(0);
+    expect(result.passed).toBe(1);
+  }
+  expect(starts()).toBe(2);
+});
+
+test('stops the web server at the end of each run without reuseExistingServer or with keepInSession: false', async ({ runInlineTest }) => {
+  for (const webServer of [`reuseExistingServer: false`, `reuseExistingServer: true, keepInSession: false`]) {
+    const port = await freePort();
+    fs.rmSync(test.info().outputPath('starts.txt'), { force: true });
+    for (let run = 0; run < 2; run++) {
+      const result = await runInlineTest(webServerFiles(port, webServer, 'one'), { workers: 1 }, env());
+      expect(result.exitCode).toBe(0);
+      expect(result.passed).toBe(1);
+    }
+    expect(starts()).toBe(2);
+    expect(await isUp(port)).toBe(false);
+  }
+});

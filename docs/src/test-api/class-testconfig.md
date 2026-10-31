@@ -741,6 +741,7 @@ export default defineConfig({
     - `signal` <["SIGINT"|"SIGTERM"]>
     - `timeout` <[int]>
   - `ignoreHTTPSErrors` ?<[boolean]> Whether to ignore HTTPS errors when fetching the `url`. Defaults to `false`.
+  - `keepInSession` ?<[boolean]> With `reuseExistingServer`, the warm session that runs outside CI keeps a server that a run started running for the next runs, which reuse it, and stops it when the session ends, or when a run needs one started with a different command, working directory or environment. `false` stops the server when each run ends. Defaults to `true`.
   - `name` ?<[string]> Specifies a custom name for the web server. This name will be prefixed to log messages. Defaults to `[WebServer]`.
   - `port` ?<[int]> The port that your http server is expected to appear on. It does wait until it accepts connections. Either `port` or `url` should be specified.
   - `reuseExistingServer` ?<[boolean]> If true, it will re-use an existing server on the `port` or `url` when available. If no server is running on that `port` or `url`, it will run the command to start a new server. If `false`, it will throw if an existing process is listening on the `port` or `url`. This should be commonly set to `!process.env.CI` to allow the local dev server when running tests locally.
