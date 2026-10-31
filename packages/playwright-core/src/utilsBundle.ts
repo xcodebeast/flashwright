@@ -151,7 +151,46 @@ export declare const json5: typeof json5Module;
 lazy('json5', () => defaultExport(require('json5')));
 
 export declare const sourceMapSupport: typeof sourceMapSupportModule;
-lazy('sourceMapSupport', () => defaultExport(require('source-map-support')));
+lazy('sourceMapSupport', () => {
+  skipRedundantSourceMapSorting();
+  return defaultExport(require('source-map-support'));
+});
+
+// Flashwright: source-map sorts every map's mappings twice when it parses them, by generated and by
+// original position: for a test suite's files, a third of the time to list their tests. Mappings
+// that are already in order stay as they are, and the second order is only sorted when a lookup by
+// original position asks for it, which mapping stack frames never does. Must run before
+// source-map-support loads source-map, which binds quickSort when it loads.
+function skipRedundantSourceMapSorting() {
+  const quickSortModule = require('source-map/lib/quick-sort');
+  const util = require('source-map/lib/util');
+  const sort: (array: any[], comparator: (a: any, b: any) => number) => void = quickSortModule.quickSort;
+  const isSorted = (array: any[], comparator: (a: any, b: any) => number) => {
+    for (let i = 1; i < array.length; i++) {
+      if (comparator(array[i - 1], array[i]) > 0)
+        return false;
+    }
+    return true;
+  };
+  const unsortedOriginalMappings = new WeakSet<any[]>();
+  quickSortModule.quickSort = (array: any[], comparator: (a: any, b: any) => number) => {
+    if (comparator === util.compareByOriginalPositions)
+      unsortedOriginalMappings.add(array);
+    else if (!isSorted(array, comparator))
+      sort(array, comparator);
+  };
+  const { SourceMapConsumer } = require('source-map/lib/source-map-consumer');
+  const descriptor = Object.getOwnPropertyDescriptor(SourceMapConsumer.prototype, '_originalMappings')!;
+  Object.defineProperty(SourceMapConsumer.prototype, '_originalMappings', {
+    ...descriptor,
+    get() {
+      const mappings = descriptor.get!.call(this);
+      if (unsortedOriginalMappings.delete(mappings) && !isSorted(mappings, util.compareByOriginalPositions))
+        sort(mappings, util.compareByOriginalPositions);
+      return mappings;
+    },
+  });
+}
 
 export declare const enquirer: typeof enquirerModule;
 lazy('enquirer', () => defaultExport(require('enquirer')));
