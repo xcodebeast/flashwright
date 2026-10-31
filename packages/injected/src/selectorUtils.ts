@@ -72,9 +72,12 @@ export type TextMatcher = (text: ElementText) => boolean;
 // with only white space around it, normalizes alike, so nested wrappers share one normalized
 // (and lowercased) text instead of each going through all of it. The characters normalizing keeps
 // whatever surrounds them are counted, which tells that a long text cannot equal a short one.
+// Most elements have no text of their own: they share this one, which is never added to.
+const kNoImmediateText: string[] = [];
+
 class ElementTextData implements ElementText {
   full = '';
-  immediate: string[] = [];
+  immediate = kNoImmediateText;
   kept = 0;
   sole: ElementText | undefined;
   private _normalized: string | undefined;
@@ -140,14 +143,6 @@ function computeElementText(cache: Map<Element | ShadowRoot, ElementText>, root:
         let sole: ElementText | undefined;
         let parts = 0;
         let whiteSpaceOnly = true;
-        const append = (text: ElementText) => {
-          if (text.full) {
-            sole = text;
-            ++parts;
-          }
-          data.full += text.full;
-          data.kept += text.kept ?? keptCharacters(text.full);
-        };
         for (let child = root.firstChild; child; child = child.nextSibling) {
           if (child.nodeType === Node.TEXT_NODE) {
             const text = child.nodeValue || '';
@@ -161,16 +156,31 @@ function computeElementText(cache: Map<Element | ShadowRoot, ElementText>, root:
             continue;
           } else {
             if (currentImmediate)
-              data.immediate.push(currentImmediate);
+              addImmediateText(data, currentImmediate);
             currentImmediate = '';
-            if (child.nodeType === Node.ELEMENT_NODE)
-              append(computeElementText(cache, child as Element, kSkippedForTextMatching.has(child.nodeName) || child === head));
+            if (child.nodeType === Node.ELEMENT_NODE) {
+              const text = computeElementText(cache, child as Element, kSkippedForTextMatching.has(child.nodeName) || child === head);
+              if (text.full) {
+                sole = text;
+                ++parts;
+                data.full += text.full;
+                data.kept += text.kept ?? keptCharacters(text.full);
+              }
+            }
           }
         }
         if (currentImmediate)
-          data.immediate.push(currentImmediate);
-        if ((root as Element).shadowRoot)
-          append(computeElementText(cache, (root as Element).shadowRoot!, false));
+          addImmediateText(data, currentImmediate);
+        const shadowRoot = (root as Element).shadowRoot;
+        if (shadowRoot) {
+          const text = computeElementText(cache, shadowRoot, false);
+          if (text.full) {
+            sole = text;
+            ++parts;
+            data.full += text.full;
+            data.kept += text.kept ?? keptCharacters(text.full);
+          }
+        }
         if (whiteSpaceOnly && parts === 1)
           data.sole = sole;
       }
@@ -178,6 +188,12 @@ function computeElementText(cache: Map<Element | ShadowRoot, ElementText>, root:
     cache.set(root, value);
   }
   return value;
+}
+
+function addImmediateText(data: ElementTextData, text: string) {
+  if (data.immediate === kNoImmediateText)
+    data.immediate = [];
+  data.immediate.push(text);
 }
 
 export function elementMatchesText(cache: Map<Element | ShadowRoot, ElementText>, element: Element, matcher: TextMatcher): 'none' | 'self' | 'selfAndChildren' {
