@@ -1,3 +1,5 @@
+<img src="docs/media/logo.png" alt="Flashwright logo" width="200">
+
 # Flashwright
 
 **A faster Playwright.** Same API, same test runner, same `npx playwright test`: your existing Playwright suite runs unmodified and finishes 2–3.7× sooner.

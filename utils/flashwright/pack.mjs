@@ -35,7 +35,9 @@ const packages = [
   { dir: 'playwright-test', name: 'flashwright-test', dependencies: { 'playwright': `npm:flashwright@${version}` } },
 ];
 
-const readme = name => `# ${name}
+const readme = name => `<img src="https://raw.githubusercontent.com/xcodebeast/flashwright/main/docs/media/logo.png" alt="Flashwright logo" width="160">
+
+# ${name}
 
 Part of [Flashwright](${homepage}), a faster [Playwright](https://playwright.dev): a fork of Playwright ${upstreamVersion} with the same API, test runner and browsers, at least 2× faster on every scenario of its benchmark (2.74× on average).
 
