@@ -40,9 +40,10 @@ const speculativeLaunchKey = Symbol.for('flashwright.speculativeLaunch');
 // launched before that is only adopted when nothing it inherits has changed.
 const speculativeEnvKey = Symbol.for('flashwright.speculativeEnv');
 
-// What the runner sets for each worker is not for the browser.
+// What the runner sets for each worker is not for the browser, nor what it sets for Babel when it
+// first transforms a file, which may be after this browser launched or before.
 function browserEnvironment(): string {
-  return JSON.stringify(Object.entries(process.env).filter(([key]) => !/^(TEST_|FLASHWRIGHT_)/.test(key)).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
+  return JSON.stringify(Object.entries(process.env).filter(([key]) => !/^(TEST_|FLASHWRIGHT_)/.test(key) && key !== 'BROWSERSLIST_IGNORE_OLD_DATA').sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0));
 }
 
 function speculativeLaunch(): SpeculativeLaunch {
