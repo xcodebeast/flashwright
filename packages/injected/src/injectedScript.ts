@@ -529,7 +529,8 @@ export class InjectedScript {
     return {
       queryAll: (root: SelectorRoot, selector: string): Element[] => {
         const { matcher } = createTextMatcher(selector, true);
-        const allElements = this._evaluator._queryCSS({ scope: root as Document | Element, pierceShadow: true }, '*');
+        // Flashwright: the only elements getElementLabels() finds labels for.
+        const allElements = this._evaluator._queryCSS({ scope: root as Document | Element, pierceShadow: true }, kLabelledSelector);
         // Flashwright: the DOM caches list the labels of the document once, see getElementLabelElements.
         beginDOMCaches();
         try {
@@ -1917,6 +1918,8 @@ function cssUnquote(s: string): string {
   }
   return r.join('');
 }
+
+const kLabelledSelector = '[aria-labelledby], [aria-label], button, meter, output, progress, select, textarea, input';
 
 function createTextMatcher(selector: string, internal: boolean): { matcher: TextMatcher, kind: 'regex' | 'strict' | 'lax' } {
   if (selector[0] === '/' && selector.lastIndexOf('/') > 0) {
