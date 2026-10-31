@@ -1774,7 +1774,7 @@ export class InjectedScript {
 
     {
       if (expression === 'to.match.aria') {
-        const result = matchesExpectAriaTemplate(element, options.expectedValue);
+        const result = matchesExpectAriaTemplate(element, options.expectedValue, !!options.isNot);
         return {
           received: result.received,
           matches: !!result.matches.length,

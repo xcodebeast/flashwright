@@ -257,8 +257,10 @@ function toAriaNode(element: Element, options: InternalOptions, nameSourceElemen
   const name = roleUtils.getElementAccessibleName(element, false);
   const receivesPointerEvents = roleUtils.receivesPointerEvents(element);
 
-  const box = computeBox(element);
-  if (role === 'generic' && box.inline && element.childNodes.length === 1 && element.childNodes[0].nodeType === Node.TEXT_NODE)
+  // Flashwright: the box (layout and style) is computed when something asks for it: assertions do not.
+  let box: aria.AriaBox | undefined;
+  const computeElementBox = () => box ??= computeBox(element);
+  if (role === 'generic' && computeElementBox().inline && element.childNodes.length === 1 && element.childNodes[0].nodeType === Node.TEXT_NODE)
     return null;
 
   const result: aria.AriaNode = {
@@ -266,7 +268,9 @@ function toAriaNode(element: Element, options: InternalOptions, nameSourceElemen
     name: normalizeWhiteSpace(name.text),
     children: [],
     props: {},
-    box,
+    get box() {
+      return computeElementBox();
+    },
     receivesPointerEvents,
     active
   };
@@ -355,9 +359,12 @@ export type MatcherReceived = {
   regex: string;
 };
 
-export function matchesExpectAriaTemplate(rootElement: Element, template: aria.AriaTemplateNode): { matches: aria.AriaNode[], received: MatcherReceived } {
+export function matchesExpectAriaTemplate(rootElement: Element, template: aria.AriaTemplateNode, isNot?: boolean): { matches: aria.AriaNode[], received: MatcherReceived | undefined } {
   const snapshot = generateAriaTree(rootElement, { mode: 'default' });
   const matches = matchesNodeDeep(snapshot.root, template, false, false);
+  // Flashwright: the received snapshot is only shown when the assertion fails.
+  if (isNot !== undefined && !!matches.length !== isNot)
+    return { matches, received: undefined };
   const { json } = renderAriaTreeAsJSON(snapshot, { mode: 'default' });
   return {
     matches,
