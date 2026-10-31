@@ -17,7 +17,7 @@
 import * as css from '@isomorphic/cssTokenizer';
 
 import { beginDOMCaches, closestCrossShadow, elementSafeTagName, enclosingShadowRootOrDocument, endDOMCaches, getElementComputedDisplay, getElementComputedStyle, getElementLabelElements, isElementStyleVisibilityVisible, isListBoxSelect, isVisibleTextNode, parentElementOrShadowHost } from './domUtils';
-import { beginPseudoContentCaches, endPseudoContentCaches, mayHavePseudoContent } from './pseudoContent';
+import { beginPseudoContentCaches, endPseudoContentCaches, kOwnContent, kPseudoContent, mayHaveContent, mayHavePseudoContent, stylesAreKnown } from './pseudoContent';
 
 import type { AriaRole } from '@isomorphic/ariaSnapshot';
 
@@ -681,6 +681,200 @@ export function getElementAccessibleNameText(element: Element, includeHidden: bo
     cache?.set(element, text);
   }
   return text;
+}
+
+// Flashwright: a role query with a name computes the accessible name of each element of the role,
+// most of the query for the rows of a large table, while most of these names are only computed to
+// find that they do not match. The name of an element whose name comes from its content, made of
+// elements that add their content, their aria-label or nothing, holds the same characters in the
+// same order as these, apart from white space: nameCharacters() collects them without looking at
+// any computed style but for pseudo-element and own content that style sheets may give, and tells
+// that the name cannot contain the characters a match needs.
+export type NameNeedle = { characters: string, fold: (text: string) => string };
+
+// The characters any name that matches has, folded as the comparison does: names and strings are
+// compared after normalizeWhiteSpace(), in upper case unless the match is case-sensitive, and
+// regular expressions with the i flag compare canonicalized code units.
+export function nameNeedle(name: string | RegExp, caseSensitive: boolean): NameNeedle | undefined {
+  let literal: string | undefined;
+  let fold = stripWhiteSpace;
+  if (typeof name === 'string') {
+    literal = name;
+    if (!caseSensitive)
+      fold = text => stripWhiteSpace(text).toUpperCase();
+  } else if (/^[ims]*$/.test(name.flags)) {
+    literal = regexLiteral(name.source);
+    if (name.flags.includes('i'))
+      fold = text => canonicalize(stripWhiteSpace(text));
+  }
+  if (literal === undefined)
+    return;
+  const characters = fold(literal);
+  return characters ? { characters, fold } : undefined;
+}
+
+// True when the element's name cannot contain the needle, false when it may, undefined when this
+// cannot tell.
+export function accessibleNameCannotContain(element: Element, needle: NameNeedle, includeHidden: boolean): boolean | undefined {
+  if (!stylesAreKnown() || !checkVisibilityOfVisibility(element))
+    return;
+  const characters = nameCharacters(element, includeHidden);
+  return characters === undefined ? undefined : !needle.fold(characters).includes(needle.characters);
+}
+
+// What normalizeWhiteSpace() and asFlatString() collapse, trim or remove.
+function stripWhiteSpace(text: string): string {
+  return text.replace(/[\s​­]+/g, '');
+}
+
+// The string a regular expression without special characters matches.
+function regexLiteral(source: string): string | undefined {
+  let literal = '';
+  for (let i = 0; i < source.length; i++) {
+    const c = source[i];
+    if (c === '\\') {
+      const next = source[++i];
+      if (next === undefined || /[0-9A-Za-z]/.test(next))
+        return;
+      literal += next;
+    } else if ('^$.*+?()[]{}|/'.includes(c)) {
+      return;
+    } else {
+      literal += c;
+    }
+  }
+  return literal;
+}
+
+// https://tc39.es/ecma262/#sec-runtime-semantics-canonicalize-ch, without the u or v flag.
+function canonicalize(text: string): string {
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    const upper = c.toUpperCase();
+    result += upper.length !== 1 || (c.charCodeAt(0) >= 128 && upper.charCodeAt(0) < 128) ? c : upper;
+  }
+  return result;
+}
+
+let visibilityPropertySupported: boolean | undefined;
+const kCheckVisibilityOptions = { visibilityProperty: true };
+
+// checkVisibility() looks at the visibility property only where it knows the option.
+function checkVisibilityOfVisibility(element: Element): boolean {
+  if (visibilityPropertySupported === undefined) {
+    let read = false;
+    element.checkVisibility({ get visibilityProperty() {
+      read = true;
+      return true;
+    } } as CheckVisibilityOptions);
+    visibilityPropertySupported = read;
+  }
+  return visibilityPropertySupported;
+}
+
+// Elements that a name from content takes the content of (step 2f, for descendants), unless
+// labelled, with no text alternative of their own (step 2e) but buttons' labels; images are taken
+// apart. Without a role
+// attribute, their implicit roles (or none, also inherited) all allow names from content in
+// descendants (allowsNameFromContent), and none is an embedded control (step 2c).
+const kNameContentTags = new Set(['A', 'ABBR', 'B', 'BDI', 'BDO', 'BR', 'BUTTON', 'CITE', 'CODE', 'DATA', 'DD', 'DEL', 'DFN', 'DIV', 'DL', 'DT', 'EM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'I', 'INS', 'KBD', 'LABEL', 'LI', 'MARK', 'OL', 'P', 'PRE', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRONG', 'SUB', 'SUP', 'TBODY', 'TD', 'TFOOT', 'TH', 'THEAD', 'TIME', 'TR', 'U', 'UL', 'VAR', 'WBR']);
+const kNameTargetTags = new Set(['A', 'BUTTON', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'TD', 'TH', 'TR']);
+const kEmbeddedControlRoles = new Set(['textbox', 'searchbox', 'combobox', 'listbox', 'progressbar', 'scrollbar', 'slider', 'spinbutton', 'meter', 'menu']);
+const kHTMLNamespace = 'http://www.w3.org/1999/xhtml';
+const kSVGNamespace = 'http://www.w3.org/2000/svg';
+
+// The characters of the element's name, as getTextAlternativeInternal() puts them together, or
+// undefined when it takes anything this does not follow.
+function nameCharacters(target: Element, includeHidden: boolean): string | undefined {
+  // The target, named from its content (steps 2b to 2f, and 2i with no title).
+  if (!kNameTargetTags.has(elementSafeTagName(target)) || target.namespaceURI !== kHTMLNamespace || !kAlwaysAllowsNameFromContentRoles.has(getAriaRole(target) || ''))
+    return;
+  if (target.shadowRoot || target.hasAttribute('role') || target.hasAttribute('aria-labelledby') || target.hasAttribute('aria-owns') || target.hasAttribute('title'))
+    return;
+  const targetLabel = target.getAttribute('aria-label') || '';
+  if (trimFlatString(targetLabel))
+    return targetLabel;
+  // A live list of labels looks through the document whenever it changed: the DOM caches list them once.
+  if (elementSafeTagName(target) === 'BUTTON' && getElementLabelElements(target)?.length)
+    return;
+
+  let characters = '';
+  // As innerAccumulatedElementText().
+  const content = (element: Element): boolean => {
+    const styled = mayHaveContent(element);
+    if (styled & kPseudoContent)
+      characters += getCSSContent(element, '::before') || '';
+    const own = styled & kOwnContent ? getCSSContent(element) : undefined;
+    if (own !== undefined) {
+      characters += own;
+    } else {
+      for (let child = element.firstChild; child; child = child.nextSibling) {
+        if (child.nodeType === 3 /* Node.TEXT_NODE */)
+          characters += child.textContent || '';
+        else if (child.nodeType === 1 /* Node.ELEMENT_NODE */ && !descendant(child as Element))
+          return false;
+      }
+    }
+    if (styled & kPseudoContent)
+      characters += getCSSContent(element, '::after') || '';
+    return true;
+  };
+  // As getTextAlternativeInternal() for a descendant of the target.
+  const descendant = (element: Element): boolean => {
+    if (element.shadowRoot)
+      return false;
+    const tagName = elementSafeTagName(element);
+    const hasAttributes = element.hasAttributes();
+    // Step 2a: what is hidden adds nothing, but for the ways isElementHiddenForAria() looks into.
+    if (!includeHidden) {
+      if (isElementIgnoredForAria(element))
+        return true;
+      const ariaHidden = hasAttributes && getAriaBoolean(element.getAttribute('aria-hidden')) === true;
+      if (tagName !== 'OPTION' && tagName !== 'SLOT' && (ariaHidden || !element.checkVisibility(kCheckVisibilityOptions)))
+        return getElementComputedDisplay(element) !== 'contents';
+    }
+    const isImage = (tagName === 'IMG' && element.namespaceURI === kHTMLNamespace) || (tagName === 'SVG' && element.namespaceURI === kSVGNamespace);
+    if (hasAttributes) {
+      if (element.hasAttribute('role') || element.hasAttribute('aria-labelledby') || element.hasAttribute('aria-owns') || element.hasAttribute('contenteditable') || (!isImage && element.hasAttribute('title')))
+        return false;
+      // Step 2d, before which step 2c looks for roles that only an element with a role attribute
+      // or a tag other than kNameContentTags' would have.
+      const ariaLabel = element.getAttribute('aria-label') || '';
+      if (trimFlatString(ariaLabel)) {
+        if (kEmbeddedControlRoles.has(getAriaRole(element) || ''))
+          return false;
+        characters += ariaLabel;
+        return true;
+      }
+    }
+    // Steps 2e to 2i of images.
+    if (tagName === 'IMG' && isImage) {
+      if (kPresentationRoles.has(getAriaRole(element) || ''))
+        return content(element);
+      const alt = element.getAttribute('alt') || '';
+      characters += trimFlatString(alt) ? alt : element.getAttribute('title') || '';
+      return true;
+    }
+    if (isImage) {
+      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {
+        if (elementSafeTagName(child) === 'TITLE')
+          return false;
+      }
+      const title = element.getAttribute('title') || '';
+      if (trimFlatString(title))
+        characters += title;
+      return true;
+    }
+    if (!kNameContentTags.has(tagName) || element.namespaceURI !== kHTMLNamespace)
+      return false;
+    // Step 2e.
+    if (tagName === 'BUTTON' && getElementLabelElements(element)?.length)
+      return false;
+    // Step 2f.
+    return content(element);
+  };
+  return content(target) ? characters : undefined;
 }
 
 export type AccessibleDescription = {

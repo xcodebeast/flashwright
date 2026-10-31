@@ -18,7 +18,7 @@ import { parseAttributeSelector } from '@isomorphic/selectorParser';
 import { normalizeWhiteSpace } from '@isomorphic/stringUtils';
 
 import { elementSafeTagName } from './domUtils';
-import { beginAriaCaches, endAriaCaches, getAriaChecked, getAriaDisabled, getAriaExpanded, getAriaLevel, getAriaPressed, getAriaRole, getAriaSelected, getElementAccessibleDescription, getElementAccessibleNameText, isElementHiddenForAria, kAriaCheckedRoles, kAriaExpandedRoles, kAriaLevelRoles, kAriaPressedRoles, kAriaSelectedRoles, tagsWithImplicitRole } from './roleUtils';
+import { accessibleNameCannotContain, beginAriaCaches, endAriaCaches, getAriaChecked, getAriaDisabled, getAriaExpanded, getAriaLevel, getAriaPressed, getAriaRole, getAriaSelected, getElementAccessibleDescription, getElementAccessibleNameText, isElementHiddenForAria, kAriaCheckedRoles, kAriaExpandedRoles, kAriaLevelRoles, kAriaPressedRoles, kAriaSelectedRoles, nameNeedle, tagsWithImplicitRole } from './roleUtils';
 import { matchesAttributePart } from './selectorUtils';
 
 import type { AttributeSelectorOperator, AttributeSelectorPart } from '@isomorphic/selectorParser';
@@ -143,6 +143,11 @@ function validateAttributes(attrs: AttributeSelectorPart[], role: string): RoleE
 
 function queryRole(scope: SelectorRoot, options: RoleEngineOptions, internal: boolean): Element[] {
   const result: Element[] = [];
+  // Flashwright: see accessibleNameCannotContain(). Where it can rarely tell, as in rows that hold
+  // images, it is not asked any longer.
+  const needle = options.name === undefined ? undefined : nameNeedle(options.name, !!options.nameExact);
+  let asked = 0;
+  let unknown = 0;
   const match = (element: Element) => {
     if (getAriaRole(element) !== options.role)
       return;
@@ -158,6 +163,14 @@ function queryRole(scope: SelectorRoot, options: RoleEngineOptions, internal: bo
       return;
     if (options.disabled !== undefined && getAriaDisabled(element) !== options.disabled)
       return;
+    if (needle && (asked < 16 || unknown * 2 < asked)) {
+      const cannotContain = accessibleNameCannotContain(element, needle, !!options.includeHidden);
+      ++asked;
+      if (cannotContain === undefined)
+        ++unknown;
+      else if (cannotContain)
+        return;
+    }
     if (!options.includeHidden) {
       const isHidden = isElementHiddenForAria(element);
       if (isHidden)

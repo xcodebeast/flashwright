@@ -589,3 +589,29 @@ test('should not match scope by default', async ({ page }) => {
   await expect(children).toHaveCount(2);
   await expect(children).toHaveText(['child 1', 'child 2']);
 });
+
+test('should match the names of rows that hide, label or generate parts of their text', async ({ page }) => {
+  await page.setContent(`
+    <style>.before::before { content: "SKU-" } .own { content: url("data:image/gif;base64,R0lGODlhAQABAAAAACw=") / "SKU-0005" }</style>
+    <table><tbody>
+      <tr><td>SKU-<span style="visibility:hidden">X<b style="visibility:visible">Y</b></span>0001</td></tr>
+      <tr><td>SKU-<span aria-hidden="true">X</span>0002</td><td>Item</td></tr>
+      <tr><td><input type="checkbox" aria-label="Select SKU-0003"></td><td>Item</td></tr>
+      <tr><td class="before">0004</td></tr>
+      <tr><td><span class="own">Item</span></td></tr>
+      <tr><td><button id="labelled">Edit</button></td></tr>
+      <tr><td><img alt="SKU-0007"></td><td>Straße</td></tr>
+      <tr><td>SKU-<span style="display:none">0008</span></td></tr>
+    </tbody></table>
+    <label for="labelled">SKU-0006</label>
+  `);
+  for (const sku of ['SKU-0001', 'SKU-0002', 'SKU-0003', 'SKU-0004', 'SKU-0005', 'SKU-0006', 'SKU-0007']) {
+    await expect(page.getByRole('row', { name: sku })).toHaveCount(1);
+    await expect(page.getByRole('row', { name: new RegExp(sku) })).toHaveCount(1);
+  }
+  await expect(page.getByRole('row', { name: 'SKU-0008' })).toHaveCount(0);
+  await expect(page.getByRole('row', { name: 'SKU-X0002' })).toHaveCount(0);
+  await expect(page.getByRole('row', { name: 'STRASSE' })).toHaveCount(1);
+  await expect(page.getByRole('row', { name: /STRASSE/i })).toHaveCount(0);
+  await expect(page.getByRole('row', { name: 'Straße', exact: true })).toHaveCount(0);
+});

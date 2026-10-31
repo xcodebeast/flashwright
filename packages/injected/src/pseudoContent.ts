@@ -28,29 +28,32 @@
 
 import { getGlobalOptions } from './domUtils';
 
-// What a document or shadow root's style sheets can give content to: every element, or the
-// elements that have one of the ids, classes or tags that the targeted selectors end with, or that
-// match one of the selectors without any (`generic`).
-type Matcher = { all: true } | { all: false, ids: Set<string>, classes: Set<string>, tags: Set<string>, generic: string | undefined };
+// What a document or shadow root's style sheets can give pseudo-element content to: every element,
+// or the elements that have one of the ids, classes or tags that the targeted selectors end with,
+// or that match one of the selectors without any (`generic`). Whether a rule gives content to an
+// element itself (`ownContent`) is only known for the style sheets as a whole.
+type Matcher = { all: true } | { all: false, ids: Set<string>, classes: Set<string>, tags: Set<string>, generic: string | undefined, ownContent: boolean };
+// The elements and the pseudo-elements' elements that animations and transitions target.
+type Animated = { elements: Set<Element>, pseudoElements: Set<Element> };
 
 let cacheMatchers: Map<Document | ShadowRoot, Matcher> | undefined;
-let cacheAnimatedPseudoElements: Map<Document | ShadowRoot, Set<Element>> | undefined;
-// An accessible name asks about an element's ::before and its ::after: the answer is the same.
-let cacheMayHavePseudoContent: Map<Element, boolean> | undefined;
+let cacheAnimated: Map<Document | ShadowRoot, Animated> | undefined;
+// An accessible name asks about an element's ::before, its ::after and itself.
+let cacheMayHaveContent: Map<Element, number> | undefined;
 let cachesCounter = 0;
 
 export function beginPseudoContentCaches() {
   ++cachesCounter;
   cacheMatchers ??= new Map();
-  cacheAnimatedPseudoElements ??= new Map();
-  cacheMayHavePseudoContent ??= new Map();
+  cacheAnimated ??= new Map();
+  cacheMayHaveContent ??= new Map();
 }
 
 export function endPseudoContentCaches() {
   if (!--cachesCounter) {
     cacheMatchers = undefined;
-    cacheAnimatedPseudoElements = undefined;
-    cacheMayHavePseudoContent = undefined;
+    cacheAnimated = undefined;
+    cacheMayHaveContent = undefined;
   }
 }
 
@@ -61,54 +64,74 @@ function mayBeShadowHost(element: Element) {
   return kShadowHostNames.has(element.localName) || element.localName.includes('-');
 }
 
-export function mayHavePseudoContent(element: Element): boolean {
-  // Only Chromium's built-in styles were checked: of all elements, they give content to <q>'s.
+// Whether this evaluation can tell content from the style sheets, see above.
+export function stylesAreKnown(): boolean {
   const options = getGlobalOptions();
-  if (options.browserNameForWorkarounds !== 'chromium' || !options.isUtilityWorld || !options.noExtensionStyles || !cacheMatchers)
-    return true;
-  let result = cacheMayHavePseudoContent!.get(element);
+  return options.browserNameForWorkarounds === 'chromium' && !!options.isUtilityWorld && !!options.noExtensionStyles && !!cacheMatchers;
+}
+
+// The bits of mayHaveContent().
+export const kPseudoContent = 1;
+export const kOwnContent = 2;
+
+export function mayHavePseudoContent(element: Element): boolean {
+  return !!(mayHaveContent(element) & kPseudoContent);
+}
+
+// Whether a style can give the element itself a `content`, which an accessible name takes instead
+// of what the element holds. Chromium's built-in styles give one to no element itself, only to
+// pseudo-elements.
+export function mayHaveOwnContent(element: Element): boolean {
+  return !!(mayHaveContent(element) & kOwnContent);
+}
+
+export function mayHaveContent(element: Element): number {
+  // Only Chromium's built-in styles were checked: of all elements, they give content to <q>'s.
+  if (!stylesAreKnown())
+    return kPseudoContent | kOwnContent;
+  let result = cacheMayHaveContent!.get(element);
   if (result === undefined) {
-    result = computeMayHavePseudoContent(element);
-    cacheMayHavePseudoContent!.set(element, result);
+    result = computeMayHaveContent(element);
+    cacheMayHaveContent!.set(element, result);
   }
   return result;
 }
 
-function computeMayHavePseudoContent(element: Element): boolean {
-  if (element.localName === 'q')
-    return true;
+function computeMayHaveContent(element: Element): number {
   const parent = element.parentElement;
   if (mayBeShadowHost(element) || (parent && mayBeShadowHost(parent)))
-    return true;
+    return kPseudoContent | kOwnContent;
   const root = element.getRootNode();
   const isShadowRoot = root.nodeType === 11 /* Node.DOCUMENT_FRAGMENT_NODE */ && !!(root as ShadowRoot).host;
   if (root.nodeType !== 9 /* Node.DOCUMENT_NODE */ && !isShadowRoot)
-    return true;
-  // Class and id selectors ignore case in quirks mode.
-  if ((root.nodeType === 9 ? root as Document : root.ownerDocument!).compatMode === 'BackCompat')
-    return true;
-  // An animation or transition can keep a pseudo-element after the rules that gave it content no
-  // longer match.
-  if (animatedPseudoElements(root as Document | ShadowRoot).has(element))
-    return true;
+    return kPseudoContent | kOwnContent;
   // An element of a shadow tree also gets the ::part() rules of the trees around it.
   if (isShadowRoot && (element.getAttribute('part') !== null || element.getAttribute('exportparts') !== null))
-    return true;
-  return matches(element, root as Document | ShadowRoot);
+    return kPseudoContent | kOwnContent;
+  // An animation or transition can keep content after the rules that gave it no longer match.
+  const { elements, pseudoElements } = animated(root as Document | ShadowRoot);
+  const matcher = matcherFor(root as Document | ShadowRoot);
+  let result = 0;
+  if (matcher.all || matcher.ownContent || elements.has(element))
+    result |= kOwnContent;
+  // Class and id selectors ignore case in quirks mode.
+  if (element.localName === 'q' || (root.nodeType === 9 ? root as Document : root.ownerDocument!).compatMode === 'BackCompat' || pseudoElements.has(element) || matches(element, root as Document | ShadowRoot))
+    result |= kPseudoContent;
+  return result;
 }
 
-function animatedPseudoElements(root: Document | ShadowRoot): Set<Element> {
-  let elements = cacheAnimatedPseudoElements!.get(root);
-  if (!elements) {
-    elements = new Set();
+function animated(root: Document | ShadowRoot): Animated {
+  let result = cacheAnimated!.get(root);
+  if (!result) {
+    result = { elements: new Set(), pseudoElements: new Set() };
     for (const animation of root.getAnimations()) {
       const effect = animation.effect as KeyframeEffect | null;
-      if (effect?.pseudoElement && effect.target)
-        elements.add(effect.target);
+      if (effect?.target)
+        (effect.pseudoElement ? result.pseudoElements : result.elements).add(effect.target);
     }
-    cacheAnimatedPseudoElements!.set(root, elements);
+    cacheAnimated!.set(root, result);
   }
-  return elements;
+  return result;
 }
 
 function matches(element: Element, root: Document | ShadowRoot): boolean {
@@ -140,6 +163,7 @@ function matcherFor(root: Document | ShadowRoot): Matcher {
 function collect(root: Document | ShadowRoot): Matcher {
   const selectors: string[] = [];
   let all = false;
+  let ownContent = false;
   const visitRules = (rules: CSSRuleList) => {
     for (let i = 0; i < rules.length && !all; i++) {
       const rule = rules[i] as any;
@@ -151,6 +175,8 @@ function collect(root: Document | ShadowRoot): Matcher {
         if (rule.cssRules?.length) {
           all = true;
         } else if (rule.style?.getPropertyValue('content')) {
+          if (!targetsOnlyPseudoContent(rule.selectorText))
+            ownContent = true;
           const elementSelectors = selectorsWithoutPseudoContent(rule.selectorText);
           if (elementSelectors)
             selectors.push(...elementSelectors);
@@ -186,7 +212,7 @@ function collect(root: Document | ShadowRoot): Matcher {
     visitSheet(sheet);
   if (all)
     return { all: true };
-  const matcher = { all: false as const, ids: new Set<string>(), classes: new Set<string>(), tags: new Set<string>(), generic: undefined as string | undefined };
+  const matcher = { all: false as const, ids: new Set<string>(), classes: new Set<string>(), tags: new Set<string>(), generic: undefined as string | undefined, ownContent };
   const generic: string[] = [];
   for (const selector of selectors) {
     const key = rightmostKey(selector);
@@ -322,6 +348,11 @@ function cssUnescape(value: string): string {
 // The selectors of the elements whose ::before or ::after a rule's selector list targets, or
 // undefined when they cannot be told apart. Selectors of the element itself (`content` on an
 // element replaces its content) are left out: only pseudo-element lookups use this.
+// Whether each selector of the list ends with ::before or ::after.
+function targetsOnlyPseudoContent(selectorText: string): boolean {
+  return splitSelectorList(selectorText).every(selector => /::?(before|after)[ \t\n\r\f]*$/i.test(selector));
+}
+
 function selectorsWithoutPseudoContent(selectorText: string): string[] | undefined {
   const result: string[] = [];
   for (const selector of splitSelectorList(selectorText)) {
