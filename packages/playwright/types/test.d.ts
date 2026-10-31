@@ -7264,7 +7264,8 @@ export interface PlaywrightWorkerOptions {
    *   routes, init scripts and the clock. The context's renderer stays warm, so the page loads faster. Firefox and
    *   WebKit cannot recycle a context: there, each worker keeps one context and its tab, which goes back to a blank
    *   page between tests, with the same things reset apart from the tab's history, which keeps the earlier tests'
-   *   pages. Tests that record video, debug or connect to a remote browser always get a new context.
+   *   pages. Tests that debug or connect to a remote browser always get a new context, and so do tests that record
+   *   video only on some attempts (such as `'on-first-retry'`), or on Firefox and WebKit.
    * - `'strict'` - every test gets a new browser context, like Playwright. Slower, but nothing a reset could miss
    *   carries over from one test to the next, and a crash or a busy script in one test's page cannot affect the next
    *   test's.

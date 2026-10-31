@@ -28,6 +28,8 @@ import type { Progress } from './progress';
 export type ScreencastClient = {
   onFrame: (frame: types.ScreencastFrame) => Promise<void> | void;
   gracefulClose?: () => Promise<void> | void;
+  // Flashwright: rejects with the error that closing would report when the client could not start.
+  launched?: () => Promise<void>;
   dispose: () => void;
   size?: types.Size;
   quality?: number;
@@ -59,6 +61,11 @@ export class Screencast implements InstrumentationListener {
       if (!frame.parentFrame() && this._cursorPoint)
         this._restoreCursor(this._cursorPoint).catch(e => debugLogger.log('error', e));
     });
+  }
+
+  // Flashwright: see ScreencastClient.launched.
+  clientsLaunched(): Promise<unknown> {
+    return Promise.all([...this._clients.keys()].map(client => client.launched?.()));
   }
 
   async handlePageOrContextClose() {

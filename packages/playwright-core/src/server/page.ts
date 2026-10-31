@@ -41,6 +41,7 @@ import * as rawBindingsControllerSource from '../generated/bindingsControllerSou
 import { Overlay } from './overlay';
 import { NonRecoverableDOMError } from './dom';
 import { Screencast } from './screencast';
+import { startAutomaticVideoRecording } from './videoRecorder';
 import { saveGlobalsSnapshotSource } from './javascript';
 
 import type { Artifact } from './artifact';
@@ -310,6 +311,9 @@ export class Page extends SdkObject<PageEventMap> {
     if (!this._heldForRecycle)
       return;
     this._heldForRecycle = false;
+    // Flashwright: a context that records video records the tab from now on, like a new page.
+    if (!this.video)
+      startAutomaticVideoRecording(this);
     if (this._initialized)
       this._announce();
   }

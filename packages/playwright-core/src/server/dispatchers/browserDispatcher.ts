@@ -111,15 +111,22 @@ export class BrowserDispatcher extends Dispatcher<Browser, channels.BrowserChann
       await context.close(progress, { reason: params.reason });
       return { firstNavigation };
     }
+    const videos = [context?.endVideos()];
     const contextDispatcher = context ? this.connection.existingDispatcher<BrowserContextDispatcher>(context) : undefined;
     if (contextDispatcher) {
-      // Calls the test left in flight get a moment to settle before they are stopped.
+      // Calls the test left in flight get a moment to settle before they are stopped. A popup they
+      // open records until then.
       await progress.race(contextDispatcher.stopPendingOperations(new Error(params.reason), 50));
+      videos.push(context?.endVideos());
       contextDispatcher._dispose();
     }
+    for (const video of videos)
+      video?.catch(() => {});
     const recycled = context?.startRecycle();
     if (recycled)
       await progress.race(recycled);
+    // Like closing a context, which reports a video that could not be recorded.
+    await progress.race(Promise.all(videos));
     return { firstNavigation };
   }
 

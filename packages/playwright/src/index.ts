@@ -468,23 +468,14 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   _contextFactory: [async ({ browser, video, _reuseContext, _combinedContextOptions /** mitigate dep-via-auto lack of traceability */ }, use, testInfo) => {
     const testInfoImpl = testInfo as TestInfoImpl;
     const videoMode = normalizeVideoMode(video);
-    // Flashwright: reused contexts never record video; recycled ones are only used for tests that
-    // do not record it (see `context` below).
+    // Flashwright: reused contexts never record video; recycled ones only for tests whose every
+    // attempt records it (see `context` below).
     const captureVideo = shouldCaptureVideo(videoMode, testInfo);
     const contexts = new Map<BrowserContext, { close: () => Promise<void>, pagesWithVideo: Page[] }>();
-    let counter = 0;
 
     await use(async options => {
       throwIfInAllHook(testInfoImpl);
-      const show = typeof video === 'string' ? undefined : video.show;
-      const videoOptions: BrowserContextOptions = captureVideo ? {
-        recordVideo: {
-          dir: tracing().artifactsDir(),
-          size: typeof video === 'string' ? undefined : video.size,
-          fps: typeof video === 'string' ? undefined : video.fps,
-          showActions: show?.actions,
-        }
-      } : {};
+      const videoOptions: BrowserContextOptions = captureVideo ? videoRecordingOptions(video) : {};
       const context = await browser.newContext({ ...videoOptions, ...options }) as BrowserContextImpl;
 
       let closed = false;
@@ -495,20 +486,8 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
         const closeReason = testInfo.status === 'timedOut' ? 'Test timeout of ' + testInfo.timeout + 'ms exceeded.' : 'Test ended.';
         await context.close({ reason: closeReason });
         const preserveVideo = captureVideo && shouldPreserveVideo(videoMode, testInfo);
-        if (preserveVideo) {
-          const { pagesWithVideo: pagesForVideo } = contexts.get(context)!;
-          const videos = pagesForVideo.map(p => p.video()).filter(video => !!video);
-          await Promise.all(videos.map(async v => {
-            try {
-              const savedPath = testInfo.outputPath(`video${counter ? '-' + counter : ''}.webm`);
-              ++counter;
-              await v.saveAs(savedPath);
-              testInfo.attachments.push({ name: 'video', path: savedPath, contentType: 'video/webm' });
-            } catch (e) {
-              // Silent catch empty videos.
-            }
-          }));
-        }
+        if (preserveVideo)
+          await saveVideos(testInfo, contexts.get(context)!.pagesWithVideo);
       };
 
       const contextData = { close, pagesWithVideo: [] as Page[] };
@@ -533,7 +512,7 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     // Flashwright: Firefox and WebKit cannot recycle contexts, and opening a page there takes most of
     // a short test (about 90 ms in Firefox): unless isolation is 'strict', their tests reuse one
     // context and its tab, reset between tests the way Playwright's reuseContext does.
-    const reusesTab = browserName !== 'chromium' && isolation === 'recycled' && !isDebugging() && !connectOptions && kRecyclingVideoModes.has(normalizeVideoMode(video));
+    const reusesTab = browserName !== 'chromium' && isolation === 'recycled' && !isDebugging() && !connectOptions && kReusingVideoModes.has(normalizeVideoMode(video));
     const reuse = (mode === 'when-possible' && normalizeVideoMode(video) === 'off') || _recycleContext || reusesTab;
     await use(reuse);
   }, { scope: 'worker',  title: 'context', box: true }],
@@ -557,8 +536,11 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     const show = typeof video === 'string' ? undefined : video.show;
     attachConnectedHeaderIfNeeded(testInfo, browserImpl);
     // Flashwright: with video on retries only, first attempts use the recycled context and the
-    // attempts that record video get a new one.
-    if (!_reuseContext || shouldCaptureVideo(normalizeVideoMode(video), testInfo)) {
+    // attempts that record video get a new one. A recycled context records the video of tests whose
+    // every attempt records one.
+    const videoMode = normalizeVideoMode(video);
+    const captureVideo = shouldCaptureVideo(videoMode, testInfo);
+    if (!_reuseContext || (captureVideo && (!_recycleContext || !kVideoModesRecordingEveryAttempt.has(videoMode)))) {
       const { context, close } = await _contextFactory();
       await installScreencastTitleUpdater(testInfo, context, show?.test);
       await use(context);
@@ -579,17 +561,25 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
     // calls are logged, traced and reported like a fresh context.
     throwIfInAllHook(testInfo);
     const slot = laneSlot();
-    const context = await browser.newContext({ [kRecycleContext]: slot || true } as BrowserContextOptions) as BrowserContextImpl;
+    const context = await browser.newContext({ [kRecycleContext]: slot || true, ...(captureVideo ? videoRecordingOptions(video) : {}) } as BrowserContextOptions) as BrowserContextImpl;
     rememberRecycledContext(browser);
+    const pagesWithVideo: Page[] = [];
+    const onPage = (page: Page) => pagesWithVideo.push(page);
+    if (captureVideo)
+      context.on('page', onPage);
     // Flashwright: the next test's page loads while this one runs (see preloadHistory.ts). Tests
-    // whose first run is traced start tracing before they navigate: they get no preload.
+    // whose first run is traced start tracing before they navigate: they get no preload. Nor do
+    // tests that record video, whose video starts with their page.
     const traceMode = (typeof trace === 'string' ? trace : trace?.mode) ?? 'off';
-    const preloading = preloadPages && ['off', 'on-first-retry', 'on-all-retries', 'retry-with-trace'].includes(traceMode) && canPreloadPages(testInfo);
+    const preloading = preloadPages && !captureVideo && ['off', 'on-first-retry', 'on-all-retries', 'retry-with-trace'].includes(traceMode) && canPreloadPages(testInfo);
     const takenAt = preloading ? preloadNextPage(browserImpl, testInfo, slot) : 0;
     await installScreencastTitleUpdater(testInfo, context, show?.test);
     await use(context);
     const closeReason = testInfo.status === 'timedOut' ? 'Test timeout of ' + testInfo.timeout + 'ms exceeded.' : 'Test ended.';
     await context.close({ reason: closeReason, [kRecycleContext]: true } as { reason: string });
+    context.off('page', onPage);
+    if (captureVideo && shouldPreserveVideo(videoMode, testInfo))
+      await saveVideos(testInfo, pagesWithVideo);
     if (preloading)
       recordFirstNavigation(context, testInfo, takenAt);
   },
@@ -640,8 +630,42 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
 
 type ScreenshotOption = PlaywrightWorkerOptions['screenshot'] | undefined;
 
-// Flashwright: video modes in which some attempts record no video, so their tests can recycle contexts.
-const kRecyclingVideoModes = new Set<VideoMode>(['off', 'on-first-retry', 'on-all-retries']);
+// Flashwright: video modes in which the first attempts record no video, so their tests can reuse a
+// context and its tab; and those in which tests can recycle contexts: every attempt records video,
+// in the tab that the recycled context opens for it, or first attempts record none.
+const kReusingVideoModes = new Set<VideoMode>(['off', 'on-first-retry', 'on-all-retries']);
+const kVideoModesRecordingEveryAttempt = new Set<VideoMode>(['on', 'retain-on-failure', 'retain-on-failure-and-retries']);
+const kRecyclingVideoModes = new Set<VideoMode>([...kReusingVideoModes, ...kVideoModesRecordingEveryAttempt]);
+
+function videoRecordingOptions(video: PlaywrightWorkerOptions['video']): BrowserContextOptions {
+  const show = typeof video === 'string' ? undefined : video.show;
+  return {
+    recordVideo: {
+      dir: tracing().artifactsDir(),
+      size: typeof video === 'string' ? undefined : video.size,
+      fps: typeof video === 'string' ? undefined : video.fps,
+      showActions: show?.actions,
+    }
+  };
+}
+
+// A test's videos are numbered across its contexts.
+const savedVideoCount = new WeakMap<TestInfo, number>();
+
+async function saveVideos(testInfo: TestInfo, pages: Page[]) {
+  const videos = pages.map(p => p.video()).filter(video => !!video);
+  await Promise.all(videos.map(async v => {
+    try {
+      const counter = savedVideoCount.get(testInfo) ?? 0;
+      savedVideoCount.set(testInfo, counter + 1);
+      const savedPath = testInfo.outputPath(`video${counter ? '-' + counter : ''}.webm`);
+      await v.saveAs(savedPath);
+      testInfo.attachments.push({ name: 'video', path: savedPath, contentType: 'video/webm' });
+    } catch (e) {
+      // Silent catch empty videos.
+    }
+  }));
+}
 
 function isDebugging() {
   return !!process.env.PWDEBUG || !!(globals.currentTestInfo() as TestInfoImpl | null)?._configInternal.configCLIOverrides.debug;

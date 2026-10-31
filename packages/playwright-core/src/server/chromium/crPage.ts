@@ -491,7 +491,9 @@ class FrameSession {
       }
     }
 
-    if (this._isMainFrame() && hasUIWindow && !this._page.isStorageStatePage)
+    // Flashwright: a tab held for the next test of a recycled context starts recording when the
+    // test gets it (see Page.revealHeldPage).
+    if (this._isMainFrame() && hasUIWindow && !this._page.isStorageStatePage && !this._page.isHeldForRecycle())
       startAutomaticVideoRecording(this._crPage._page);
 
     let lifecycleEventsEnabled: Promise<any>;

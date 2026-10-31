@@ -53,6 +53,7 @@ export class VideoRecorder {
     this._client = {
       onFrame: frame => this._videoRecorder!.writeFrame(frame.buffer, frame.frameSwapWallTime),
       gracefulClose: () => this.stop(),
+      launched: () => this.launched(),
       dispose: () => this.stop().catch(e => debugLogger.log('error', `Failed to stop video recorder: ${String(e)}`)),
       size: options.size,
       fps: options.fps,
@@ -64,6 +65,14 @@ export class VideoRecorder {
     this._videoRecorder = new FfmpegVideoRecorder(ffmpegPath, videoSize, options.fps ?? kDefaultFps, outputFile);
     this._artifact = new Artifact(this._screencast.page.browserContext, outputFile);
     return this._artifact;
+  }
+
+  // Flashwright: settles once the encoder has started, or rejects with the error that stopping the
+  // recording reports when it could not start.
+  private async launched() {
+    const error = await this._videoRecorder?.launchError();
+    if (error)
+      throw error;
   }
 
   async stop() {
@@ -78,7 +87,13 @@ export class VideoRecorder {
     this._videoRecorder = undefined;
 
     this._screencast.removeClient(client);
-    await videoRecorder._stop();
+    try {
+      await videoRecorder._stop();
+    } catch (error) {
+      // Flashwright: whoever saves the video learns why there is none, instead of waiting for it.
+      await artifact.reportFinished(error);
+      throw error;
+    }
     await artifact.reportFinished();
   }
 }
@@ -251,6 +266,10 @@ class FfmpegVideoRecorder {
   private _emitFrame(frame: Buffer, timestampMs: number) {
     this._process!.stdin!.write(writeClusterHeader(Math.max(0, Math.round(timestampMs)), frame.length));
     this._process!.stdin!.write(frame);
+  }
+
+  launchError(): Promise<Error | null> {
+    return this._launchPromise;
   }
 
   async _stop() {

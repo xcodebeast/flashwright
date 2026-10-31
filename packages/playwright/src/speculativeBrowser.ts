@@ -281,7 +281,8 @@ export function rememberRecycledContext(browser: Browser) {
   const storageState = !!params.storageState;
   delete params.storageState;
   const mayHoldSecrets = params.httpCredentials || params.extraHTTPHeaders?.length || params.proxy || params.clientCertificates?.length;
-  if (rememberedContextHint || !key || !Object.keys(params).length || mayHoldSecrets || !isPlainJSON(params))
+  // A context that records video writes into this worker's own temporary folder.
+  if (rememberedContextHint || !key || !Object.keys(params).length || mayHoldSecrets || params.recordVideo || !isPlainJSON(params))
     return;
   rememberedContextHint = true;
   // Reading the file again takes milliseconds of the first test.

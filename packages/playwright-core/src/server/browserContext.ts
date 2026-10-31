@@ -587,6 +587,7 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
     // busy (an endless script, a stuck dialog), the tab cannot come up; replace the whole context
     // instead, which kills the renderer just like closing the context would.
     const previousPages = this.possiblyUninitializedPages();
+    this.endVideos().catch(() => {});
     // Closing a page is acknowledged by the browser before the renderer tears it down, so its
     // scripts could still write storage after the clearing below; stop them first.
     let scriptsStopped!: () => void;
@@ -630,6 +631,19 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
       this.doClearCacheThrough(page),
     ]));
     return true;
+  }
+
+  // Flashwright: the test of a recycled context is over. Its videos end where the test did, as they
+  // do when a context starts closing: before anything that resets the context can show in them.
+  // They are written out while the next test runs; the returned promise rejects, like closing a
+  // context does, when a video could not be recorded.
+  endVideos(): Promise<unknown> {
+    const pages = this.possiblyUninitializedPages();
+    const launched = Promise.all(pages.map(page => page.screencast.clientsLaunched()));
+    launched.catch(() => {});
+    for (const page of pages)
+      page.screencast.handlePageOrContextClose().catch(() => {});
+    return launched;
   }
 
   // Called when a recycled context is created: the first test's tab opens before storageState is
