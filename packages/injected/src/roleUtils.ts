@@ -796,6 +796,14 @@ function nameCharacters(target: Element, includeHidden: boolean): string | undef
     return;
   if (target.shadowRoot || target.hasAttribute('role') || target.hasAttribute('aria-labelledby') || target.hasAttribute('aria-owns') || target.hasAttribute('title'))
     return;
+  // aria-hidden on the target or around it hides what the target holds also where it does not hide
+  // the target (display: contents), which descendants do not look for below.
+  if (!includeHidden) {
+    for (let element: Element | undefined = target; element; element = parentElementOrShadowHost(element)) {
+      if (getAriaBoolean(element.getAttribute('aria-hidden')) === true)
+        return;
+    }
+  }
   const targetLabel = target.getAttribute('aria-label') || '';
   if (trimFlatString(targetLabel))
     return targetLabel;
