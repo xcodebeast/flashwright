@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flashwright: a faster Playwright, same API and test runner</title>
+<meta name="description" content="Flashwright is a drop-in fork of Playwright 1.64.1. Same API, same test runner, same npx playwright test: your existing suite runs unmodified and finishes 2–3.7× sooner.">
+<link rel="canonical" href="https://xcodebeast.github.io/flashwright/">
+<!-- Search Console: paste the google-site-verification meta tag here -->
+<meta name="theme-color" content="#0c0e13">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Flashwright">
+<meta property="og:title" content="Flashwright: a faster Playwright">
+<meta property="og:description" content="Same API, same test runner, same npx playwright test. Your existing Playwright suite finishes 2–3.7× sooner.">
+<meta property="og:url" content="https://xcodebeast.github.io/flashwright/">
+<meta property="og:image" content="https://xcodebeast.github.io/flashwright/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Flashwright: a faster Playwright. Playwright 3685 ms, Flashwright 1131 ms on the same 24 tests.">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Flashwright",
+  "description": "A faster drop-in replacement for Playwright: a fork of Playwright 1.64.1 with the same API, test runner and browsers, 2–3.7× faster test runs.",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Linux, macOS, Windows",
+  "url": "https://xcodebeast.github.io/flashwright/",
+  "downloadUrl": "https://www.npmjs.com/package/flashwright-test",
+  "codeRepository": "https://github.com/xcodebeast/flashwright",
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "codebeast", "url": "https://codebeast.io" }
+}
+</script>
+<style>
+:root {
+  --bg: #0c0e13;
+  --surface: #141821;
+  --surface-2: #1b202b;
+  --border: #262c39;
+  --text: #e8eaf0;
+  --muted: #9aa3b4;
+  --accent: #f6c445;
+  --accent-ink: #1a1404;
+  --accent-soft: rgba(246, 196, 69, .12);
+  --slow: #5b6475;
+  --code: #f3d27a;
+  --max: 1080px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #fbfaf7;
+    --surface: #ffffff;
+    --surface-2: #f3f1ea;
+    --border: #e4e0d4;
+    --text: #1b1d22;
+    --muted: #5d6472;
+    --accent: #c98a00;
+    --accent-ink: #ffffff;
+    --accent-soft: rgba(201, 138, 0, .1);
+    --slow: #b9bec8;
+    --code: #8a5a00;
+    color-scheme: light;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+a { color: inherit; }
+code, pre, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+code { font-size: .92em; color: var(--code); }
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 16px; }
+@media (min-width: 720px) { .wrap { padding: 0 24px; } }
+
+header.nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+.nav .wrap { display: flex; align-items: center; gap: 20px; height: 56px; }
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; text-decoration: none; letter-spacing: -.01em; }
+.brand svg { width: 22px; height: 22px; }
+.nav nav { display: flex; gap: 18px; margin-left: auto; font-size: 14px; }
+.nav nav a { color: var(--muted); text-decoration: none; }
+.nav nav a:hover { color: var(--text); }
+.nav .hide-sm { display: none; }
+@media (min-width: 720px) { .nav .hide-sm { display: inline; } }
+
+.hero { padding-top: 64px; padding-bottom: 40px; }
+.eyebrow { display: inline-block; font-size: 13px; color: var(--accent); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); padding: 3px 10px; border-radius: 999px; margin-bottom: 18px; }
+h1 { font-size: clamp(38px, 7vw, 68px); line-height: 1.04; letter-spacing: -.035em; margin: 0 0 18px; }
+h1 em { font-style: normal; color: var(--accent); }
+.lede { font-size: clamp(17px, 2.2vw, 20px); color: var(--muted); max-width: 640px; margin: 0 0 28px; }
+.lede strong { color: var(--text); font-weight: 600; }
+
+.install { display: flex; align-items: stretch; max-width: 640px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.install pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-size: 14.5px; flex: 1; color: var(--text); }
+.install pre .p { color: var(--muted); user-select: none; }
+.copy { border: 0; border-left: 1px solid var(--border); background: var(--surface-2); color: var(--text); padding: 0 16px; font: inherit; font-size: 14px; cursor: pointer; }
+.copy:hover { color: var(--accent); }
+.hint { font-size: 14px; color: var(--muted); margin: 10px 0 0; max-width: 640px; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; border: 1px solid var(--border); background: var(--surface); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn svg { width: 18px; height: 18px; }
+
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 48px 0 0; }
+@media (min-width: 720px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.stat b { display: block; font-size: 28px; letter-spacing: -.02em; line-height: 1.2; }
+.stat span { font-size: 14px; color: var(--muted); }
+
+section { padding: 56px 0; border-top: 1px solid var(--border); }
+h2 { font-size: clamp(26px, 4vw, 36px); letter-spacing: -.025em; line-height: 1.15; margin: 0 0 12px; }
+.sub { color: var(--muted); max-width: 720px; margin: 0 0 28px; }
+
+.race { margin: 0; background: #0d1117; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.race video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; }
+.race figcaption { padding: 10px 14px; font-size: 13.5px; color: #9aa3b4; border-top: 1px solid #262c39; }
+
+.bars { display: grid; gap: 14px; }
+.row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
+.row .name { font-size: 14.5px; }
+.row .name small { color: var(--muted); }
+.row .x { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; grid-row: span 2; text-align: right; min-width: 52px; }
+.track { display: grid; gap: 3px; }
+.bar { height: 10px; border-radius: 3px; position: relative; }
+.bar.pw { background: var(--slow); }
+.bar.fw { background: var(--accent); }
+.bar i { position: absolute; left: calc(100% + 6px); top: -4px; font-style: normal; font-size: 11.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.legend { display: flex; gap: 16px; font-size: 13.5px; color: var(--muted); margin-bottom: 18px; }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.legend .l-pw::before { background: var(--slow); }
+.legend .l-fw::before { background: var(--accent); }
+.note { font-size: 14px; color: var(--muted); margin-top: 22px; max-width: 760px; }
+
+.grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 720px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 980px) { .grid.three { grid-template-columns: repeat(3, 1fr); } }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+.card h3 { margin: 0 0 6px; font-size: 17px; letter-spacing: -.01em; }
+.card p { margin: 0; color: var(--muted); font-size: 15px; }
+
+pre.block { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.55; margin: 0 0 22px; }
+pre.block .c { color: var(--muted); }
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 13px; background: var(--surface); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+@media (max-width: 719px) {
+  table.opts tr:first-child { display: none; }
+  table.opts tr { display: grid; grid-template-columns: auto 1fr; border-bottom: 1px solid var(--border); }
+  table.opts tr:last-child { border-bottom: 0; }
+  table.opts td { border-bottom: 0; padding: 4px 14px; }
+  table.opts td:first-child, table.opts td:nth-child(2) { padding-top: 12px; }
+  table.opts td:nth-child(2) code { color: var(--muted); }
+  table.opts td:last-child { grid-column: 1 / -1; padding-bottom: 12px; }
+}
+
+details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0 18px; margin-bottom: 10px; }
+summary { cursor: pointer; padding: 14px 0; font-weight: 600; }
+details p, details ul { color: var(--muted); margin: 0 0 16px; }
+details ul { padding-left: 20px; }
+
+footer { border-top: 1px solid var(--border); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; }
+footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Flashwright home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M13.5 2 4 13.5h6.5L9 22l11-12.5h-6.8L13.5 2z"/></svg>
+      Flashwright
+    </a>
+    <nav aria-label="Main">
+      <a href="#benchmarks">Benchmarks</a>
+      <a class="hide-sm" href="#how">How it works</a>
+      <a class="hide-sm" href="#options">Options</a>
+      <a href="https://github.com/xcodebeast/flashwright">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <span class="eyebrow">Fork of Playwright 1.64.1 · Apache-2.0</span>
+    <h1>A faster <em>Playwright</em>.</h1>
+    <p class="lede">Same API, same test runner, same <code>npx playwright test</code>. <strong>Your existing Playwright suite runs unmodified and finishes 2–3.7× sooner.</strong></p>
+    <div class="install">
+      <pre id="cmd"><span class="p">$ </span>npm i -D @playwright/test@npm:flashwright-test</pre>
+      <button class="copy" type="button" data-copy="npm i -D @playwright/test@npm:flashwright-test">Copy</button>
+    </div>
+    <p class="hint">Imports, configs and commands stay as they are. Library users install <code>playwright@npm:flashwright</code>; <code>playwright-core</code> is <code>flashwright-core</code>.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/xcodebeast/flashwright">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        Star on GitHub
+      </a>
+      <a class="btn" href="https://www.npmjs.com/package/flashwright-test">npm package</a>
+      <a class="btn" href="#benchmarks">See the benchmarks</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>2.74×</b><span>faster on average across the benchmark</span></div>
+      <div class="stat"><b>≥ 2×</b><span>on every scenario of the benchmark</span></div>
+      <div class="stat"><b>85 ms</b><span>to re-run one test, instead of 602 ms</span></div>
+      <div class="stat"><b>2610/2610</b><span>of Playwright's own page tests pass</span></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <figure class="race">
+        <video autoplay muted loop playsinline preload="metadata" width="960" height="540" aria-label="Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.70 s, Flashwright 1.12 s">
+          <source src="media/race.mp4" type="video/mp4">
+          <img src="media/race.gif" width="960" height="540" alt="Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.70 s, Flashwright 1.12 s">
+        </video>
+        <figcaption>Playwright's own TodoMVC example suite, run by both on the same machine. The recorded output of real runs, played back in real time.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="benchmarks">
+    <div class="wrap">
+      <h2>Benchmarks</h2>
+      <p class="sub">Each row is the complete <code>test</code> command, from launch to exit, median of 15 alternating runs on the same machine (6 CPUs, Linux), Chromium headless shell. Flashwright runs with its defaults, warm session off as in CI; the test code doesn't change.</p>
+      <div class="legend"><span class="l-pw">Playwright 1.64.1</span><span class="l-fw">Flashwright</span></div>
+      <div class="bars">
+        <div class="row"><div class="name">TodoMVC example suite <small>· 24 tests · 1 worker</small></div><div class="x">3.26×</div><div class="track"><div class="bar pw" style="width:41.1%"><i>3685 ms</i></div><div class="bar fw" style="width:12.6%"><i>1131 ms</i></div></div></div>
+        <div class="row"><div class="name">TodoMVC example suite <small>· 24 tests · 4 workers</small></div><div class="x">2.20×</div><div class="track"><div class="bar pw" style="width:19.8%"><i>1776 ms</i></div><div class="bar fw" style="width:9.0%"><i>808 ms</i></div></div></div>
+        <div class="row"><div class="name">SVGOMG example suite <small>· 6 tests · 1 worker</small></div><div class="x">3.05×</div><div class="track"><div class="bar pw" style="width:19.4%"><i>1734 ms</i></div><div class="bar fw" style="width:6.3%"><i>568 ms</i></div></div></div>
+        <div class="row"><div class="name">SVGOMG example suite <small>· 6 tests · 4 workers</small></div><div class="x">2.61×</div><div class="track"><div class="bar pw" style="width:13.9%"><i>1246 ms</i></div><div class="bar fw" style="width:5.3%"><i>477 ms</i></div></div></div>
+        <div class="row"><div class="name">Shop app, setup project, 40 ms API <small>· 18 tests · 1 worker</small></div><div class="x">2.07×</div><div class="track"><div class="bar pw" style="width:70.0%"><i>6267 ms</i></div><div class="bar fw" style="width:33.9%"><i>3032 ms</i></div></div></div>
+        <div class="row"><div class="name">Shop app <small>· 18 tests · 4 workers</small></div><div class="x">2.12×</div><div class="track"><div class="bar pw" style="width:28.9%"><i>2588 ms</i></div><div class="bar fw" style="width:13.6%"><i>1219 ms</i></div></div></div>
+        <div class="row"><div class="name">Trivial tests <small>· 15 tests</small></div><div class="x">2.94×</div><div class="track"><div class="bar pw" style="width:11.5%"><i>1035 ms</i></div><div class="bar fw" style="width:3.9%"><i>352 ms</i></div></div></div>
+        <div class="row"><div class="name">Click + assertion <small>· 15 tests</small></div><div class="x">3.66×</div><div class="track"><div class="bar pw" style="width:18.3%"><i>1635 ms</i></div><div class="bar fw" style="width:5.0%"><i>447 ms</i></div></div></div>
+        <div class="row"><div class="name">Assertion on a delayed update <small>· 15 tests</small></div><div class="x">2.40×</div><div class="track"><div class="bar pw" style="width:13.4%"><i>1203 ms</i></div><div class="bar fw" style="width:5.6%"><i>502 ms</i></div></div></div>
+        <div class="row"><div class="name">Navigation <small>· 15 tests</small></div><div class="x">2.73×</div><div class="track"><div class="bar pw" style="width:14.3%"><i>1274 ms</i></div><div class="bar fw" style="width:5.2%"><i>467 ms</i></div></div></div>
+        <div class="row"><div class="name">Fixture setup only <small>· 15 tests</small></div><div class="x">2.92×</div><div class="track"><div class="bar pw" style="width:13.3%"><i>1190 ms</i></div><div class="bar fw" style="width:4.5%"><i>407 ms</i></div></div></div>
+        <div class="row"><div class="name">Form submit to a backend, 20 ms API <small>· 15 tests</small></div><div class="x">2.52×</div><div class="track"><div class="bar pw" style="width:22.4%"><i>2000 ms</i></div><div class="bar fw" style="width:8.9%"><i>795 ms</i></div></div></div>
+        <div class="row"><div class="name"><code>toHaveScreenshot()</code> against a baseline <small>· 15 tests</small></div><div class="x">2.38×</div><div class="track"><div class="bar pw" style="width:26.5%"><i>2374 ms</i></div><div class="bar fw" style="width:11.1%"><i>997 ms</i></div></div></div>
+        <div class="row"><div class="name"><code>page.screenshot()</code> to a file <small>· 15 tests</small></div><div class="x">2.31×</div><div class="track"><div class="bar pw" style="width:21.8%"><i>1948 ms</i></div><div class="bar fw" style="width:9.5%"><i>845 ms</i></div></div></div>
+        <div class="row"><div class="name">Suite with real failures <small>· 15 tests</small></div><div class="x">3.62×</div><div class="track"><div class="bar pw" style="width:48.7%"><i>4365 ms</i></div><div class="bar fw" style="width:13.5%"><i>1207 ms</i></div></div></div>
+        <div class="row"><div class="name">Expected failures, 250 ms timeout each <small>· 15 tests</small></div><div class="x">3.07×</div><div class="track"><div class="bar pw" style="width:53.3%"><i>4768 ms</i></div><div class="bar fw" style="width:17.3%"><i>1554 ms</i></div></div></div>
+        <div class="row"><div class="name">A single test, as an agent re-runs it <small>· 1 test</small></div><div class="x">2.34×</div><div class="track"><div class="bar pw" style="width:6.7%"><i>602 ms</i></div><div class="bar fw" style="width:2.9%"><i>257 ms</i></div></div></div>
+        <div class="row"><div class="name">A single TodoMVC test <small>· 1 test</small></div><div class="x">2.02×</div><div class="track"><div class="bar pw" style="width:7.6%"><i>681 ms</i></div><div class="bar fw" style="width:3.8%"><i>337 ms</i></div></div></div>
+      </div>
+      <p class="note">The TodoMVC and SVGOMG suites are Playwright's own examples; the shop is a small single-page app with a sign-in setup project and 40 ms API latency; the other rows are 15-test files that each exercise one thing. Part of some runs is the application's own waiting, which no framework can remove: without it, Flashwright spends 2.8–4.2× less time than Playwright. Reproduce everything with <code>node bench/matrix.mjs 15</code> from the repository.</p>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <h2>Where the time goes</h2>
+      <p class="sub">Flashwright changes only where Playwright spends time, and keeps its observable behavior. Playwright's own test suites are the regression bar.</p>
+      <div class="grid three">
+        <div class="card"><h3>Warm browsers, fresh contexts</h3><p>Each worker keeps one browser context and gives every test a brand-new tab in it, after resetting everything a test can change: cookies, storage of every origin, caches, routes, permissions, clock and more.</p></div>
+        <div class="card"><h3>Waits that react to the page</h3><p>Actions and assertions re-check as soon as the page changes instead of after a 20–500 ms backoff. An assertion that can no longer pass fails right away.</p></div>
+        <div class="card"><h3>No frame waits before input</h3><p>Clicks, hovers and drags don't wait for animation frames or for moving elements to stop. Playwright's hit-target check still makes sure the element receives the input.</p></div>
+        <div class="card"><h3>Workers ready before they're needed</h3><p>Worker processes and their browsers start while the CLI is still reading the config, a spare stands by once tests fail, and the longest tests start first.</p></div>
+        <div class="card"><h3>A faster start</h3><p>A V8 code cache for Playwright's own bundles, lazy loading of what a run doesn't use, fewer browser round trips per action, page scripts the browser compiles once.</p></div>
+        <div class="card"><h3>Faster screenshots</h3><p>Speed-optimized PNG encoding with the same pixels, and pixel comparison with fast paths for <code>toHaveScreenshot()</code>, whose baselines stay byte-identical to Playwright's.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="agents">
+    <div class="wrap">
+      <h2>Made for agents that check their own work</h2>
+      <p class="sub">Coding agents re-run the same test after every edit. Outside CI, the first <code>playwright test</code> starts a warm session that keeps the runner, workers and browsers ready for the next run.</p>
+      <div class="table-wrap"><table>
+        <tr><th>Run, 1.5 s after the previous one</th><th>Playwright</th><th>Flashwright</th><th>Flashwright, warm session</th></tr>
+        <tr><td>One TodoMVC test</td><td>675 ms</td><td>249 ms</td><td><b>85 ms</b> (7.9×)</td></tr>
+        <tr><td>TodoMVC suite, 4 workers</td><td>1789 ms</td><td>801 ms</td><td><b>553 ms</b> (3.2×)</td></tr>
+        <tr><td>SVGOMG suite, 4 workers</td><td>1247 ms</td><td>484 ms</td><td><b>277 ms</b> (4.5×)</td></tr>
+      </table></div>
+      <div class="grid" style="margin-top:14px">
+        <div class="card"><h3>Screenshots in half the time</h3><p><code>toHaveScreenshot()</code> returns immediately when nothing changed.</p></div>
+        <div class="card"><h3>MCP that answers when the page settles</h3><p><code>playwright mcp --adaptive-settle</code> returns once the page is quiet instead of after a fixed 500 ms: a click that saves through an API returns in 234 ms instead of 1014 ms.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="options">
+    <div class="wrap">
+      <h2>Speed by default, Playwright's behavior on request</h2>
+      <p class="sub">Every speed default is a typed option. A project, file or <code>describe</code> block can turn Playwright's behavior back on, or ask for even less work.</p>
+<pre class="block"><span class="c">// playwright.config.ts: Playwright's behavior, for a suite that relies on it</span>
+export default defineConfig({
+  testOrder: 'file',          <span class="c">// run tests in Playwright's order</span>
+  use: {
+    isolation: 'strict',      <span class="c">// a new browser context for every test</span>
+    waitForAnimations: true,  <span class="c">// wait for elements to stop moving before input</span>
+    failFastWhenIdle: false,  <span class="c">// let failing assertions wait out their timeout</span>
+  },
+});
+
+<span class="c">// a file or describe block that needs less</span>
+test.use({
+  instantAnimations: true,                     <span class="c">// CSS and Web Animations end within a frame</span>
+  blockResources: ['image', 'font', 'media'],  <span class="c">// never load these</span>
+});</pre>
+      <div class="table-wrap"><table class="opts">
+        <tr><th>Option</th><th>Default</th><th>What it does</th></tr>
+        <tr><td><code>isolation</code></td><td><code>'recycled'</code></td><td>A new tab in a reset context per test. <code>'strict'</code> gives every test a new context, like Playwright.</td></tr>
+        <tr><td><code>failFastWhenIdle</code></td><td><code>true</code></td><td>An assertion fails once nothing can change the page before its timeout.</td></tr>
+        <tr><td><code>waitForAnimations</code></td><td><code>false</code></td><td><code>true</code> makes pointer actions wait for moving elements, like Playwright.</td></tr>
+        <tr><td><code>testOrder</code></td><td><code>'longest-first'</code></td><td>With several workers, the slowest tests start first.</td></tr>
+        <tr><td><code>workersPerProcess</code></td><td><code>1</code></td><td>Several workers share one process and browser: less memory, a little faster.</td></tr>
+        <tr><td><code>preloadPages</code></td><td><code>false</code></td><td>The next test's first page loads while the current test runs.</td></tr>
+        <tr><td><code>instantAnimations</code></td><td><code>false</code></td><td>CSS and Web Animations run 1000× faster (Chromium).</td></tr>
+        <tr><td><code>blockResources</code></td><td>none</td><td>Never load images, fonts, media, styles or scripts.</td></tr>
+        <tr><td><code>locatorPolicy</code></td><td><code>'any'</code></td><td><code>'test-id'</code> allows only <code>getByTestId()</code> locators, the fastest kind.</td></tr>
+      </table></div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <h2>Questions</h2>
+      <details>
+        <summary>Do I have to change my tests?</summary>
+        <p>No. Flashwright is published as the packages that stand in for Playwright's, so <code>@playwright/test</code> imports, <code>playwright.config.ts</code> and <code>npx playwright</code> commands stay as they are. Browsers, reporters, the trace viewer, codegen and the VS Code extension are Playwright's.</p>
+      </details>
+      <details>
+        <summary>What behaves differently from Playwright?</summary>
+        <ul>
+          <li>Tests get a fresh tab in a recycled, fully reset context instead of a new context (<code>isolation: 'strict'</code> restores Playwright's).</li>
+          <li>Pointer actions don't wait for moving elements to stop (<code>waitForAnimations: true</code>).</li>
+          <li>Assertions on an idle page fail before their timeout (<code>failFastWhenIdle: false</code>).</li>
+          <li>With several workers, the longest tests start first (<code>testOrder: 'file'</code>).</li>
+          <li>Outside CI, a warm session keeps browsers for up to 5 minutes after a run (<code>FLASHWRIGHT_SESSION=0</code> turns it off).</li>
+          <li>Screenshot files have identical pixels but are larger PNGs; <code>toHaveScreenshot()</code> baselines are unchanged.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Which browsers does it speed up?</summary>
+        <p>Most of the gains are on Chromium. Firefox and WebKit keep Playwright's behavior apart from reusing one tab per worker (TodoMVC on Firefox: 6520 → 3868 ms) and the options that apply to them. Flashwright runs Playwright's own browser builds: there is no custom browser to install or trust.</p>
+      </details>
+      <details>
+        <summary>How do you know nothing broke?</summary>
+        <p>Playwright's own test suites are the bar, compared with pristine Playwright 1.64.1 on the same machine: <code>tests/page</code> passes 2610/2610 on Chromium; the test runner, library, MCP, Electron and extension suites match pristine Playwright.</p>
+      </details>
+      <details>
+        <summary>How do I go back to Playwright?</summary>
+        <p><code>npm i -D @playwright/test@1.64.1</code>. Nothing in your code refers to Flashwright, so that's the whole change.</p>
+      </details>
+      <details>
+        <summary>Is this an official Playwright project?</summary>
+        <p>No. Flashwright is an independent fork of Playwright and is not affiliated with or endorsed by Microsoft. It is Apache-2.0, like Playwright.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Flashwright, by <a href="https://codebeast.io">codebeast</a>. Apache-2.0. An independent fork of <a href="https://github.com/microsoft/playwright">Playwright</a>, not affiliated with Microsoft.</span>
+    <span><a href="https://github.com/xcodebeast/flashwright">GitHub</a> · <a href="https://www.npmjs.com/package/flashwright-test">npm</a> · <a href="https://github.com/xcodebeast/flashwright/releases">Releases</a></span>
+  </div>
+</footer>
+
+<script>
+for (const button of document.querySelectorAll('[data-copy]')) {
+  button.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(button.dataset.copy);
+      button.textContent = 'Copied';
+    } catch {
+      button.textContent = 'Select & copy';
+    }
+    setTimeout(() => button.textContent = 'Copy', 1500);
+  });
+}
+</script>
+</body>
+</html>
