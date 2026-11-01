@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Flashwright: a faster Playwright, same API and test runner</title>
-<meta name="description" content="Flashwright is a drop-in fork of Playwright 1.64.1. Same API, same test runner, same npx playwright test: your existing suite runs unmodified and finishes 2–3.7× sooner.">
+<meta name="description" content="Flashwright is a drop-in fork of Playwright 1.64.1. Same API, same test runner, same npx playwright test: your existing suite runs unmodified and finishes 2–4× sooner.">
 <link rel="canonical" href="https://flashwright.dev/">
 <meta name="google-site-verification" content="6gljoknbi38WsMFQ2yumWQxlznQtHlWODbHOOfPe4Xc">
 <meta name="theme-color" content="#030604">
@@ -14,19 +14,19 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Flashwright">
 <meta property="og:title" content="Flashwright: a faster Playwright">
-<meta property="og:description" content="Same API, same test runner, same npx playwright test. Your existing Playwright suite finishes 2–3.7× sooner.">
+<meta property="og:description" content="Same API, same test runner, same npx playwright test. Your existing Playwright suite finishes 2–4× sooner.">
 <meta property="og:url" content="https://flashwright.dev/">
 <meta property="og:image" content="https://flashwright.dev/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Flashwright: a faster Playwright. Playwright 3685 ms, Flashwright 1131 ms on the same 24 tests.">
+<meta property="og:image:alt" content="Flashwright: a faster Playwright. Playwright 3804 ms, Flashwright 1081 ms on the same 24 tests.">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "Flashwright",
-  "description": "A faster drop-in replacement for Playwright: a fork of Playwright 1.64.1 with the same API, test runner and browsers, 2–3.7× faster test runs.",
+  "description": "A faster drop-in replacement for Playwright: a fork of Playwright 1.64.1 with the same API, test runner and browsers, 2–4× faster test runs.",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "Linux, macOS, Windows",
   "url": "https://flashwright.dev/",
@@ -226,7 +226,7 @@ footer a:hover { color: var(--neon); }
   <div class="wrap hero">
     <div>
       <h1>A faster <span class="glow">Playwright.</span></h1>
-      <p class="lead">Same API, same test runner, same <code>npx playwright test</code>. Your existing suite runs unmodified and finishes 2–3.7× sooner.</p>
+      <p class="lead">Same API, same test runner, same <code>npx playwright test</code>. Your existing suite runs unmodified and finishes 2–4× sooner.</p>
       <div class="actions">
         <a class="btn" href="https://github.com/xcodebeast/flashwright">View on GitHub <span aria-hidden="true">→</span></a>
         <a class="btn quiet" href="#benchmarks">Benchmarks</a>
@@ -251,9 +251,9 @@ footer a:hover { color: var(--neon); }
       <p class="lead">Playwright's own TodoMVC example suite, run by both on the same machine. Real output, played back in real time.</p>
       <div class="term race">
         <div class="term-bar"><div class="dots" aria-hidden="true"><i></i><i></i><i></i></div><span class="term-path">~/todomvc</span></div>
-        <video autoplay muted loop playsinline preload="metadata" poster="race-poster.webp" width="960" height="540" aria-label="Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.70 s, Flashwright 1.12 s">
+        <video autoplay muted loop playsinline preload="metadata" poster="race-poster.webp" width="960" height="540" aria-label="Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.90 s, Flashwright 1.13 s">
           <source src="media/race.mp4" type="video/mp4">
-          <img src="media/race.gif" width="960" height="540" alt="Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.70 s, Flashwright 1.12 s">
+          <img src="media/race.gif" width="960" height="540" alt="Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.90 s, Flashwright 1.13 s">
         </video>
       </div>
     </div>
@@ -266,23 +266,25 @@ footer a:hover { color: var(--neon); }
       <p class="lead">The whole <code>test</code> command, launch to exit. Median of 15 alternating runs, same machine, Chromium headless shell, warm session off.</p>
       <div class="legend"><span class="l-pw">Playwright 1.64.1</span><span class="l-fw">Flashwright</span></div>
       <div class="bars">
-        <div class="row"><div class="name">TodoMVC example suite <small>24 tests · 1 worker</small></div><div class="x">3.26×</div><div class="track"><div class="bar pw" style="width:41.2%"><i>3685 ms</i></div><div class="bar fw" style="width:12.6%"><i>1131 ms</i></div></div></div>
-        <div class="row"><div class="name">TodoMVC example suite <small>24 tests · 4 workers</small></div><div class="x">2.20×</div><div class="track"><div class="bar pw" style="width:19.8%"><i>1776 ms</i></div><div class="bar fw" style="width:9.0%"><i>808 ms</i></div></div></div>
-        <div class="row"><div class="name">SVGOMG example suite <small>6 tests · 1 worker</small></div><div class="x">3.05×</div><div class="track"><div class="bar pw" style="width:19.4%"><i>1734 ms</i></div><div class="bar fw" style="width:6.3%"><i>568 ms</i></div></div></div>
-        <div class="row"><div class="name">SVGOMG example suite <small>6 tests · 4 workers</small></div><div class="x">2.61×</div><div class="track"><div class="bar pw" style="width:13.9%"><i>1246 ms</i></div><div class="bar fw" style="width:5.3%"><i>477 ms</i></div></div></div>
-        <div class="row"><div class="name">Shop app with a sign-in setup project <small>18 tests · 1 worker</small></div><div class="x">2.07×</div><div class="track"><div class="bar pw" style="width:70.0%"><i>6267 ms</i></div><div class="bar fw" style="width:33.9%"><i>3032 ms</i></div></div></div>
-        <div class="row"><div class="name">Shop app with a sign-in setup project <small>18 tests · 4 workers</small></div><div class="x">2.12×</div><div class="track"><div class="bar pw" style="width:28.9%"><i>2588 ms</i></div><div class="bar fw" style="width:13.6%"><i>1219 ms</i></div></div></div>
-        <div class="row"><div class="name">Trivial tests <small>15 tests</small></div><div class="x">2.94×</div><div class="track"><div class="bar pw" style="width:11.6%"><i>1035 ms</i></div><div class="bar fw" style="width:3.9%"><i>352 ms</i></div></div></div>
-        <div class="row"><div class="name">Click + assertion <small>15 tests</small></div><div class="x">3.66×</div><div class="track"><div class="bar pw" style="width:18.3%"><i>1635 ms</i></div><div class="bar fw" style="width:5.0%"><i>447 ms</i></div></div></div>
-        <div class="row"><div class="name">Assertion on a delayed update <small>15 tests</small></div><div class="x">2.40×</div><div class="track"><div class="bar pw" style="width:13.4%"><i>1203 ms</i></div><div class="bar fw" style="width:5.6%"><i>502 ms</i></div></div></div>
-        <div class="row"><div class="name">Navigation <small>15 tests</small></div><div class="x">2.73×</div><div class="track"><div class="bar pw" style="width:14.2%"><i>1274 ms</i></div><div class="bar fw" style="width:5.2%"><i>467 ms</i></div></div></div>
-        <div class="row"><div class="name">Fixture setup only <small>15 tests</small></div><div class="x">2.92×</div><div class="track"><div class="bar pw" style="width:13.3%"><i>1190 ms</i></div><div class="bar fw" style="width:4.5%"><i>407 ms</i></div></div></div>
-        <div class="row"><div class="name">Form submit to a backend <small>15 tests</small></div><div class="x">2.52×</div><div class="track"><div class="bar pw" style="width:22.3%"><i>2000 ms</i></div><div class="bar fw" style="width:8.9%"><i>795 ms</i></div></div></div>
-        <div class="row"><div class="name"><code>toHaveScreenshot()</code> <small>15 tests</small></div><div class="x">2.38×</div><div class="track"><div class="bar pw" style="width:26.5%"><i>2374 ms</i></div><div class="bar fw" style="width:11.1%"><i>997 ms</i></div></div></div>
-        <div class="row"><div class="name"><code>page.screenshot()</code> <small>15 tests</small></div><div class="x">2.31×</div><div class="track"><div class="bar pw" style="width:21.8%"><i>1948 ms</i></div><div class="bar fw" style="width:9.4%"><i>845 ms</i></div></div></div>
-        <div class="row"><div class="name">Suite with real failures <small>15 tests</small></div><div class="x">3.62×</div><div class="track"><div class="bar pw" style="width:48.8%"><i>4365 ms</i></div><div class="bar fw" style="width:13.5%"><i>1207 ms</i></div></div></div>
-        <div class="row"><div class="name">Expected failures <small>15 tests</small></div><div class="x">3.07×</div><div class="track"><div class="bar pw" style="width:53.3%"><i>4768 ms</i></div><div class="bar fw" style="width:17.4%"><i>1554 ms</i></div></div></div>
-        <div class="row"><div class="name">One test, as an agent re-runs it <small>1 test</small></div><div class="x">2.34×</div><div class="track"><div class="bar pw" style="width:6.7%"><i>602 ms</i></div><div class="bar fw" style="width:2.9%"><i>257 ms</i></div></div></div>
+        <div class="row"><div class="name">TodoMVC example suite <small>24 tests · 1 worker</small></div><div class="x">3.52×</div><div class="track"><div class="bar pw" style="width:38.5%"><i>3804 ms</i></div><div class="bar fw" style="width:10.9%"><i>1081 ms</i></div></div></div>
+        <div class="row"><div class="name">TodoMVC example suite <small>24 tests · 4 workers</small></div><div class="x">2.42×</div><div class="track"><div class="bar pw" style="width:18.3%"><i>1811 ms</i></div><div class="bar fw" style="width:7.6%"><i>748 ms</i></div></div></div>
+        <div class="row"><div class="name">SVGOMG example suite <small>6 tests · 1 worker</small></div><div class="x">3.13×</div><div class="track"><div class="bar pw" style="width:17.8%"><i>1760 ms</i></div><div class="bar fw" style="width:5.7%"><i>562 ms</i></div></div></div>
+        <div class="row"><div class="name">SVGOMG example suite <small>6 tests · 4 workers</small></div><div class="x">2.60×</div><div class="track"><div class="bar pw" style="width:12.9%"><i>1279 ms</i></div><div class="bar fw" style="width:5.0%"><i>492 ms</i></div></div></div>
+        <div class="row"><div class="name">Shop app with a sign-in setup project <small>18 tests · 1 worker</small></div><div class="x">2.07×</div><div class="track"><div class="bar pw" style="width:63.4%"><i>6265 ms</i></div><div class="bar fw" style="width:30.6%"><i>3028 ms</i></div></div></div>
+        <div class="row"><div class="name">Shop app with a sign-in setup project <small>18 tests · 4 workers</small></div><div class="x">2.15×</div><div class="track"><div class="bar pw" style="width:26.6%"><i>2629 ms</i></div><div class="bar fw" style="width:12.4%"><i>1223 ms</i></div></div></div>
+        <div class="row"><div class="name">Admin app, 8,500 elements <small>19 tests · 1 worker</small></div><div class="x">2.19×</div><div class="track"><div class="bar pw" style="width:70.0%"><i>6921 ms</i></div><div class="bar fw" style="width:32.0%"><i>3160 ms</i></div></div></div>
+        <div class="row"><div class="name">Admin app, 8,500 elements <small>19 tests · 4 workers</small></div><div class="x">2.03×</div><div class="track"><div class="bar pw" style="width:27.6%"><i>2728 ms</i></div><div class="bar fw" style="width:13.6%"><i>1343 ms</i></div></div></div>
+        <div class="row"><div class="name">Trivial tests <small>15 tests</small></div><div class="x">2.78×</div><div class="track"><div class="bar pw" style="width:10.7%"><i>1059 ms</i></div><div class="bar fw" style="width:3.9%"><i>381 ms</i></div></div></div>
+        <div class="row"><div class="name">Click + assertion <small>15 tests</small></div><div class="x">3.80×</div><div class="track"><div class="bar pw" style="width:17.0%"><i>1678 ms</i></div><div class="bar fw" style="width:4.5%"><i>442 ms</i></div></div></div>
+        <div class="row"><div class="name">Assertion on a delayed update <small>15 tests</small></div><div class="x">2.39×</div><div class="track"><div class="bar pw" style="width:12.5%"><i>1231 ms</i></div><div class="bar fw" style="width:5.2%"><i>514 ms</i></div></div></div>
+        <div class="row"><div class="name">Navigation <small>15 tests</small></div><div class="x">2.79×</div><div class="track"><div class="bar pw" style="width:13.1%"><i>1296 ms</i></div><div class="bar fw" style="width:4.7%"><i>464 ms</i></div></div></div>
+        <div class="row"><div class="name">Fixture setup only <small>15 tests</small></div><div class="x">3.17×</div><div class="track"><div class="bar pw" style="width:12.3%"><i>1214 ms</i></div><div class="bar fw" style="width:3.9%"><i>383 ms</i></div></div></div>
+        <div class="row"><div class="name">Form submit to a backend <small>15 tests</small></div><div class="x">2.66×</div><div class="track"><div class="bar pw" style="width:20.8%"><i>2052 ms</i></div><div class="bar fw" style="width:7.8%"><i>770 ms</i></div></div></div>
+        <div class="row"><div class="name"><code>toHaveScreenshot()</code> <small>15 tests</small></div><div class="x">2.35×</div><div class="track"><div class="bar pw" style="width:24.7%"><i>2438 ms</i></div><div class="bar fw" style="width:10.5%"><i>1038 ms</i></div></div></div>
+        <div class="row"><div class="name"><code>page.screenshot()</code> <small>15 tests</small></div><div class="x">2.48×</div><div class="track"><div class="bar pw" style="width:20.0%"><i>1981 ms</i></div><div class="bar fw" style="width:8.1%"><i>798 ms</i></div></div></div>
+        <div class="row"><div class="name">Suite with real failures <small>15 tests</small></div><div class="x">3.64×</div><div class="track"><div class="bar pw" style="width:45.7%"><i>4514 ms</i></div><div class="bar fw" style="width:12.6%"><i>1241 ms</i></div></div></div>
+        <div class="row"><div class="name">Expected failures <small>15 tests</small></div><div class="x">3.10×</div><div class="track"><div class="bar pw" style="width:48.4%"><i>4790 ms</i></div><div class="bar fw" style="width:15.6%"><i>1543 ms</i></div></div></div>
+        <div class="row"><div class="name">One test, as an agent re-runs it <small>1 test</small></div><div class="x">3.20×</div><div class="track"><div class="bar pw" style="width:6.3%"><i>624 ms</i></div><div class="bar fw" style="width:2.0%"><i>195 ms</i></div></div></div>
       </div>
       <p class="note">Reproduce with <code>node bench/matrix.mjs 15</code>. The full table, and how much of each run is the app's own waiting, is in the <a href="https://github.com/xcodebeast/flashwright#benchmarks">README</a>.</p>
     </div>
@@ -307,14 +309,14 @@ footer a:hover { color: var(--neon); }
   <section class="block" id="agents">
     <div class="wrap">
       <p class="kicker">// For agents</p>
-      <h2>Re-runs in <span class="glow">85 ms</span></h2>
+      <h2>Re-runs in <span class="glow">82 ms</span></h2>
       <p class="lead">Coding agents re-run the same test after every edit. Outside CI, a warm session keeps the runner, workers and browsers ready for the next run.</p>
       <div class="split">
         <div class="table">
           <table>
             <tr><th>Re-run</th><th>Playwright</th><th>Flashwright</th><th>Warm session</th></tr>
-            <tr><td>One TodoMVC test</td><td class="num">675 ms</td><td class="num">249 ms</td><td class="num best">85 ms</td></tr>
-            <tr><td>TodoMVC, 4 workers</td><td class="num">1789 ms</td><td class="num">801 ms</td><td class="num best">553 ms</td></tr>
+            <tr><td>One TodoMVC test</td><td class="num">693 ms</td><td class="num">259 ms</td><td class="num best">82 ms</td></tr>
+            <tr><td>TodoMVC, 4 workers</td><td class="num">1946 ms</td><td class="num">806 ms</td><td class="num best">549 ms</td></tr>
           </table>
         </div>
         <div class="term">
