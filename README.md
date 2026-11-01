@@ -2,13 +2,13 @@
 
 # Flashwright
 
-**A faster Playwright.** Same API, same test runner, same `npx playwright test`: your existing Playwright suite runs unmodified and finishes 2–3.7× sooner. [flashwright.dev](https://flashwright.dev)
+**A faster Playwright.** Same API, same test runner, same `npx playwright test`: your existing Playwright suite runs unmodified and finishes 2–4× sooner. [flashwright.dev](https://flashwright.dev)
 
-![Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.70 s, Flashwright 1.12 s](docs/media/race.gif)
+![Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.90 s, Flashwright 1.13 s](docs/media/race.gif)
 
 <sub>Playwright's own TodoMVC example suite, run by both on the same machine. The recorded output of real runs, played back in real time ([MP4](docs/media/race.mp4)).</sub>
 
-- **At least 2× faster on every scenario we measure**, 2.74× on average: real example suites, a sign-in app with a setup project, failing tests, screenshots, visual comparisons. [Benchmarks](#benchmarks).
+- **At least 2× faster on every scenario we measure**, 2.75× on average: real example suites, a sign-in app with a setup project, an admin page of 8,500 elements, failing tests, screenshots, visual comparisons. [Benchmarks](#benchmarks).
 - **A drop-in replacement.** Flashwright is a fork of Playwright 1.64.1 that changes only where time goes. Playwright's own test suites are its regression bar.
 - **Made for agents that check their own work.** A single test re-runs in under 0.1 s instead of 0.6–0.7 s, because a [warm session](#warm-session) keeps the browser between runs; screenshots take half the time, and the MCP server can return as soon as the page settles.
 
@@ -26,44 +26,46 @@ Projects that use the library without the test runner replace `playwright` the s
 
 ## Benchmarks
 
-![Bar chart: wall-clock time of 16 scenarios, Playwright vs Flashwright; Flashwright is 2.07× to 3.66× faster in each](docs/media/benchmarks.svg)
+![Bar chart: wall-clock time of 18 scenarios, Playwright vs Flashwright; Flashwright is 2.03× to 3.80× faster in each](docs/media/benchmarks.svg)
 
-Each bar is the complete `test` command, from launch to exit, median of 15 alternating runs on the same machine (6 CPUs, Linux), with Chromium's headless shell. Flashwright runs with its defaults apart from the [warm session](#warm-session), which is off, as in CI; nothing in the test code changes. The TodoMVC and SVGOMG suites are Playwright's own examples, the shop is a small single-page app with a sign-in setup project and 40 ms API latency, and the other rows are 15-test files that each exercise one thing. Reproduce with `node bench/matrix.mjs 15`.
+Each bar is the complete `test` command, from launch to exit, median of 15 alternating runs on the same machine (6 CPUs, Linux), with Chromium's headless shell. Flashwright runs with its defaults apart from the [warm session](#warm-session), which is off, as in CI; nothing in the test code changes. The TodoMVC and SVGOMG suites are Playwright's own examples, the shop is a small single-page app with a sign-in setup project and 40 ms API latency, the admin app is a page of 8,500 elements whose 19 tests find them by role, label and text, and the other rows are 15-test files that each exercise one thing. Reproduce with `node bench/matrix.mjs 15`.
 
 <details>
-<summary>All 26 runs of the matrix, and how much of each run is the framework</summary>
+<summary>All 28 runs of the matrix, and how much of each run is the framework</summary>
 
 | Scenario | Tests | Workers | Playwright | Flashwright | Speedup |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| TodoMVC example suite | 24 | 1 | 3685 ms | 1131 ms | 3.26× |
-| TodoMVC example suite | 24 | 4 | 1776 ms | 808 ms | 2.20× |
-| SVGOMG example suite | 6 | 1 | 1734 ms | 568 ms | 3.05× |
-| SVGOMG example suite | 6 | 4 | 1246 ms | 477 ms | 2.61× |
-| Shop app (setup project, 40 ms API latency) | 18 | 1 | 6267 ms | 3032 ms | 2.07× |
-| Shop app | 18 | 4 | 2588 ms | 1219 ms | 2.12× |
-| Trivial tests | 15 | 1 | 1035 ms | 352 ms | 2.94× |
-| Click + assertion | 15 | 1 | 1635 ms | 447 ms | 3.66× |
-| Assertion on a delayed update | 15 | 1 | 1203 ms | 502 ms | 2.40× |
-| Navigation | 15 | 1 | 1274 ms | 467 ms | 2.73× |
-| Fixture setup only | 15 | 1 | 1190 ms | 407 ms | 2.92× |
-| Form submit to a backend (20 ms API) | 15 | 1 | 2000 ms | 795 ms | 2.52× |
-| `toHaveScreenshot()` against a baseline | 15 | 1 | 2374 ms | 997 ms | 2.38× |
-| `page.screenshot()` to a file | 15 | 1 | 1948 ms | 845 ms | 2.31× |
-| Suite with real failures (every third test) | 15 | 1 | 4365 ms | 1207 ms | 3.62× |
-| Expected failures (250 ms timeout each) | 15 | 1 | 4768 ms | 1554 ms | 3.07× |
-| A single test, as an agent re-runs it | 1 | 1 | 602 ms | 257 ms | 2.34× |
-| A single TodoMVC test | 1 | 1 | 681 ms | 337 ms | 2.02× |
+| TodoMVC example suite | 24 | 1 | 3804 ms | 1081 ms | 3.52× |
+| TodoMVC example suite | 24 | 4 | 1811 ms | 748 ms | 2.42× |
+| SVGOMG example suite | 6 | 1 | 1760 ms | 562 ms | 3.13× |
+| SVGOMG example suite | 6 | 4 | 1279 ms | 492 ms | 2.60× |
+| Shop app (setup project, 40 ms API latency) | 18 | 1 | 6265 ms | 3028 ms | 2.07× |
+| Shop app | 18 | 4 | 2629 ms | 1223 ms | 2.15× |
+| Admin app (8,500 elements, role, label and text locators) | 19 | 1 | 6921 ms | 3160 ms | 2.19× |
+| Admin app | 19 | 4 | 2728 ms | 1343 ms | 2.03× |
+| Trivial tests | 15 | 1 | 1059 ms | 381 ms | 2.78× |
+| Click + assertion | 15 | 1 | 1678 ms | 442 ms | 3.80× |
+| Assertion on a delayed update | 15 | 1 | 1231 ms | 514 ms | 2.39× |
+| Navigation | 15 | 1 | 1296 ms | 464 ms | 2.79× |
+| Fixture setup only | 15 | 1 | 1214 ms | 383 ms | 3.17× |
+| Form submit to a backend (20 ms API) | 15 | 1 | 2052 ms | 770 ms | 2.66× |
+| `toHaveScreenshot()` against a baseline | 15 | 1 | 2438 ms | 1038 ms | 2.35× |
+| `page.screenshot()` to a file | 15 | 1 | 1981 ms | 798 ms | 2.48× |
+| Suite with real failures (every third test) | 15 | 1 | 4514 ms | 1241 ms | 3.64× |
+| Expected failures (250 ms timeout each) | 15 | 1 | 4790 ms | 1543 ms | 3.10× |
+| A single test, as an agent re-runs it | 1 | 1 | 624 ms | 195 ms | 3.20× |
+| A single TodoMVC test | 1 | 1 | 708 ms | 261 ms | 2.71× |
 
-The one-file scenarios run in a single worker whatever the setting, so their 4-worker runs (2.24×–3.66×) match the ones above.
+The one-file scenarios run in a single worker whatever the setting, so their 4-worker runs (2.29×–3.98×) match the ones above.
 
-Part of some runs is the application itself: its delays and its server's response time, which no framework can remove. Without it, Flashwright spends 2.8×–4.2× less time than Playwright:
+Part of some runs is the application itself: its delays and its server's response time, which no framework can remove. Without it, Flashwright spends 2.8×–4.3× less time than Playwright:
 
 | Scenario | Workers | The application's waits | Playwright adds | Flashwright adds | |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Form submit to a backend | 1 | 15 × 20 ms | 1700 ms | 495 ms | 3.43× |
-| Assertion on a delayed update | 1 | 15 × 8 ms | 1083 ms | 382 ms | 2.84× |
-| Shop app | 1 | ~2.1 s of API time | 4153 ms | 979 ms | 4.24× |
-| Shop app | 4 | ~1.15 s / ~0.85 s of API time | 1435 ms | 371 ms | 3.87× |
+| Form submit to a backend | 1 | 15 × 20 ms | 1752 ms | 470 ms | 3.73× |
+| Assertion on a delayed update | 1 | 15 × 8 ms | 1111 ms | 394 ms | 2.82× |
+| Shop app | 1 | ~2.1 s of API time | 4150 ms | 976 ms | 4.25× |
+| Shop app | 4 | ~1.17 s / ~0.84 s of API time | 1460 ms | 383 ms | 3.81× |
 
 </details>
 
@@ -76,6 +78,7 @@ Flashwright keeps Playwright's observable behavior; [Differences from Playwright
 - **No frame waits before input.** Clicks, hovers, taps and drags don't wait for animation frames or for moving elements to stop. Playwright's hit-target check still makes sure the element receives the input.
 - **Workers and browsers ready before they're needed.** Worker processes and their browsers start while the CLI is still reading the config (the browser that all of the config's tests launched last time, with its launch options; it is used only if the config leaves the environment unchanged), a spare stands by once tests fail, and an idle spare already holds the context its first test will ask for. A worker whose tests use no browser closes the one it started: with 4 workers of API tests, the run peaks at 330 MB instead of 550. The longest tests start first.
 - **A faster start.** A V8 code cache for Playwright's own bundles, lazy loading of everything a run doesn't use, and less work per call: lazy stack formatting, fewer browser round trips per action, minified page scripts the browser compiles once.
+- **Locators on large pages.** A named `getByRole()` first rules out, from their content, the elements whose accessible name cannot contain the one asked for, and computes only the others' names; role, label and text locators read each element's styles, role and labels once per query. On the admin app's 8,500 elements: a named `getByRole()` takes 15 ms instead of 44, `getByRole('row')` 3.2 ms instead of 8.1, `getByLabel()` 2.8 ms instead of 3.5.
 - **Faster screenshots.** Speed-optimized PNG encoding for `page.screenshot()` (same pixels), and pixel comparison with fast paths for `toHaveScreenshot()`, whose baselines stay byte-identical to Playwright's. With `screenshot: 'only-on-failure'`, a recycled context's pages stand still when the test's context closes and are captured only if the test then fails, instead of every test taking a screenshot in case it does (TodoMVC: 1484 -> 1055 ms, screenshots off: 1051). A page waits at most 20 ms (the outcome normally comes within a millisecond), so what moves by itself, like a blinking caret or an animated image, moves no further than in the frame a screenshot waits for. A page that could still change otherwise (a call or request in flight, a WebSocket, a worker, a dialog, a loading image or font, playing media, styles for the `scripting` media feature) is captured right away, as before.
 
 ## Speed options
@@ -108,7 +111,7 @@ test.use({
 | `workersPerProcess` | `1` | Workers that share one worker process (`--workers-per-process`). Each worker runs one test at a time; the workers of a process share Node.js, the code it loaded and the browser, where each worker's tests get contexts of their own. With 4 workers on TodoMVC, `2` takes a run from 795 to 590 MB and `4` to 493 MB, and makes it 1.08× and 1.12× faster. Each worker keeps its own `process.env`; tests that run at the same time in one process share global variables, the process and the browser: a crash, `process.exit()` or `browser.close()` ends them all. |
 | `instantAnimations` | `false` | The page's CSS transitions, CSS animations and Web Animations run 1000× faster, so fades and slides end at once (Chromium). On a page with a fading dialog: 2.3× faster than without. |
 | `blockResources` | none | Requests for these types (`image`, `media`, `font`, `stylesheet`, `script`) fail before any route sees them. On a 24-image product page: 1.4× faster, 6.8× with `instantAnimations`. |
-| `locatorPolicy` | `'any'` | `'test-id'` lets only `getByTestId()` locators, and the methods that combine them, select elements; any other locator or selector fails right away. A test id is one attribute lookup, while role, label and text locators work out the role and text of the page's elements: on the 8,500 elements of the `inventory` benchmark, a named `getByRole()` takes 37 ms and an attribute lookup 2 ms. |
+| `locatorPolicy` | `'any'` | `'test-id'` lets only `getByTestId()` locators, and the methods that combine them, select elements; any other locator or selector fails right away. A test id is one attribute lookup, while role, label and text locators work out the role and text of the page's elements: on the 8,500 elements of the `inventory` benchmark, a named `getByRole()` takes 15 ms and a test id lookup 1.5 ms. |
 | `webSecurity` | `true` | `false` launches Chromium without the same-origin policy and mixed-content blocking, for a front end whose API sends no CORS headers in tests. |
 | `preloadPages` | `false` | While a test runs, the next test's page loads in a second context, and that test's first `goto` returns at once. Until then the test sees a blank tab; any other call first, or another URL, gets a reset tab as without the option. Takes effect with one worker, or workers fewer than half the CPU cores. With one worker: TodoMVC 1.26×, a suite waiting on its API 1.40× faster. Not for tests that change the server from Node before their `goto` (the page loaded before that change) or watch the requests it receives (the next test's page loads meanwhile). |
 
@@ -116,7 +119,7 @@ Playwright's own options combine with these: `javaScriptEnabled: false`, `servic
 
 ## For agents
 
-- **Re-running one test** takes about 85 ms instead of 602 ms, in the [warm session](#warm-session) that the first run starts; that first run takes 257 ms. `playwright cli` commands start in ~45 ms instead of ~260 ms.
+- **Re-running one test** takes about 80 ms instead of 693 ms, in the [warm session](#warm-session) that the first run starts; that first run takes 259 ms. `playwright cli` commands start in ~45 ms instead of ~260 ms.
 - **Screenshots** take about half the time, and `toHaveScreenshot()` returns immediately when nothing changed.
 - **The MCP server** can answer as soon as the page has settled instead of after a fixed 500 ms: `playwright mcp --adaptive-settle` (or `timeouts.adaptiveSettle: true`). A click that saves through an API returns in 234 ms instead of 1014 ms.
 
@@ -126,13 +129,13 @@ Outside CI, the first `playwright test` in a project starts a session in the bac
 
 | Run, 1.5 s after the previous one | Playwright | Flashwright | Flashwright, warm session |
 | --- | ---: | ---: | ---: |
-| One TodoMVC test | 675 ms | 249 ms | 85 ms (7.9×) |
-| TodoMVC suite, 1 worker | 3677 ms | 1115 ms | 993 ms (3.7×) |
-| TodoMVC suite, 4 workers | 1789 ms | 801 ms | 553 ms (3.2×) |
-| SVGOMG suite, 1 worker | 1746 ms | 568 ms | 416 ms (4.2×) |
-| SVGOMG suite, 4 workers | 1247 ms | 484 ms | 277 ms (4.5×) |
-| Shop app, 1 worker | 6374 ms | 3022 ms | 2899 ms (2.2×) |
-| Shop app, 4 workers | 2577 ms | 1219 ms | 1033 ms (2.5×) |
+| One TodoMVC test | 693 ms | 259 ms | 82 ms (8.5×) |
+| TodoMVC suite, 1 worker | 3863 ms | 1112 ms | 956 ms (4.0×) |
+| TodoMVC suite, 4 workers | 1946 ms | 806 ms | 549 ms (3.5×) |
+| SVGOMG suite, 1 worker | 1794 ms | 584 ms | 440 ms (4.1×) |
+| SVGOMG suite, 4 workers | 1304 ms | 579 ms | 317 ms (4.1×) |
+| Shop app, 1 worker | 6349 ms | 3064 ms | 2909 ms (2.2×) |
+| Shop app, 4 workers | 2721 ms | 1255 ms | 1043 ms (2.6×) |
 
 <sub>Medians of 15 (one test) or 9 alternating runs with a 1.5 s pause before each, like an agent that edits between runs; the session prepares the next run during that pause. Reproduce with `BENCH_PAUSE=1500 node bench/run.mjs todomvc 4 9 stock,fork,fork:FLASHWRIGHT_SESSION=1`.</sub>
 
@@ -161,7 +164,7 @@ Playwright's own test suites are the bar, compared with pristine Playwright 1.64
 
 | Suite | Result |
 | --- | --- |
-| `tests/page` | 2610/2610 |
+| `tests/page` | 2612/2612 |
 | `tests/page` on Firefox | same as pristine (2578 passed) |
 | `tests/playwright-test` | same as pristine |
 | `tests/library` | same as pristine, apart from two checks of internal bookkeeping that see the recycled context |

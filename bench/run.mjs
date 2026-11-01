@@ -32,7 +32,7 @@ await rm(base, { recursive: true, force: true });
 const workload = app.startsWith('workload:') ? app.slice('workload:'.length) : undefined;
 // `shop` is a realistic app suite: setup project with saved auth, fullyParallel, API latency.
 const shop = app === 'shop';
-// `inventory` is an admin page of about 9,000 elements, with tests that use role, label and text locators.
+// `inventory` is an admin page of about 8,500 elements, with tests that use role, label and text locators.
 const inventory = app === 'inventory';
 const corpus = workload || shop || inventory ? undefined : await loadApplicationCorpus(applicationCorpusDirectory(app));
 const server = shop ? await startShopServer() : inventory ? await startInventoryServer() : workload ? await startWorkloadServer() : await startApplicationServer(corpus);

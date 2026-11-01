@@ -16,6 +16,8 @@ const shown = [
   ['SVGOMG example suite · 4 workers', 'svgomg', 4],
   ['Shop app with login setup · 1 worker', 'shop', 1],
   ['Shop app with login setup · 4 workers', 'shop', 4],
+  ['Admin app, 8,500 elements · 1 worker', 'inventory', 1],
+  ['Admin app, 8,500 elements · 4 workers', 'inventory', 4],
   ['Trivial tests', 'workload:noop', 1],
   ['Click + assertion', 'workload:interaction', 1],
   ['Assertion on a delayed update', 'workload:assertion', 1],
