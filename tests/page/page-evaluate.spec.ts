@@ -918,3 +918,9 @@ it('should ignore dangerous object keys', async ({ page }) => {
   const result = await page.evaluate(arg => arg, input);
   expect(result).toEqual({ safeKey: 'safeValue' });
 });
+
+it('should pass unpaired surrogates and text outside ASCII both ways', async ({ page }) => {
+  const text = 'a\ud800b\udc00c \u00fc \u{1f600} \u2028 \u0000';
+  expect(await page.evaluate(s => [s, s.length], text)).toEqual([text, text.length]);
+  expect(await page.evaluate(() => String.fromCharCode(0xd800, 0x41, 0xdfff, 0xe9))).toBe('\ud800A\udfff\u00e9');
+});

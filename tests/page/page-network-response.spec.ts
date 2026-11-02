@@ -32,6 +32,15 @@ it('should work @smoke', async ({ page, server }) => {
   expect((await response.allHeaders())['BaZ']).toBe(undefined);
 });
 
+it('should return a header named __proto__', async ({ page, server }) => {
+  server.setRoute('/empty.html', (req, res) => {
+    res.setHeader('__proto__', 'value');
+    res.end();
+  });
+  const response = await page.goto(server.EMPTY_PAGE);
+  expect((await response.headersArray()).filter(header => header.name === '__proto__')).toEqual([{ name: '__proto__', value: 'value' }]);
+});
+
 it('should return multiple header value', async ({ page, server, browserName, platform }) => {
   it.skip(browserName === 'webkit' && platform === 'win32', 'libcurl does not support non-set-cookie multivalue headers');
 

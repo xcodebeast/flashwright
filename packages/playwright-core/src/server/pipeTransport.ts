@@ -17,21 +17,27 @@
 
 import { debugLogger } from '@utils/debugLogger';
 
+import { cborMessageSize, decodeCBORMessage, encodeCBORMessage } from './cborCodec';
+
 import type { ConnectionTransport, ProtocolRequest, ProtocolResponse } from './transport';
 
 export class PipeTransport implements ConnectionTransport {
   private _pipeRead: NodeJS.ReadableStream;
   private _pipeWrite: NodeJS.WritableStream;
   private _pendingBuffers: Buffer[] = [];
+  private _pendingLength = 0;
   private _closed = false;
+  // Flashwright: Chromium's protocol as CBOR (--remote-debugging-pipe=cbor), see cborCodec.ts.
+  readonly cbor: boolean;
   private _onclose?: (reason?: string) => void;
 
   onmessage?: (message: ProtocolResponse) => void;
 
-  constructor(pipeWrite: NodeJS.WritableStream, pipeRead: NodeJS.ReadableStream) {
+  constructor(pipeWrite: NodeJS.WritableStream, pipeRead: NodeJS.ReadableStream, cbor = false) {
     this._pipeRead = pipeRead;
     this._pipeWrite = pipeWrite;
-    pipeRead.on('data', buffer => this._dispatch(buffer));
+    this.cbor = cbor;
+    pipeRead.on('data', buffer => cbor ? this._dispatchCBOR(buffer) : this._dispatch(buffer));
     pipeRead.on('close', () => {
       this._closed = true;
       if (this._onclose)
@@ -56,7 +62,7 @@ export class PipeTransport implements ConnectionTransport {
     if (this._closed)
       throw new Error('Pipe has been closed');
     // Flashwright: one write per message instead of two.
-    this._pipeWrite.write(JSON.stringify(message) + '\0');
+    this._pipeWrite.write(this.cbor ? encodeCBORMessage(message) : JSON.stringify(message) + '\0');
   }
 
   close() {
@@ -66,14 +72,39 @@ export class PipeTransport implements ConnectionTransport {
   // Flashwright: stops reading and gives the pipes to another owner, who continues the stream of
   // messages (see browserHandoff.ts). Only possible between two messages: returns undefined when
   // part of one has already been read.
-  release(): { write: NodeJS.WritableStream, read: NodeJS.ReadableStream } | undefined {
+  release(): { write: NodeJS.WritableStream, read: NodeJS.ReadableStream, cbor: boolean } | undefined {
     if (this._closed || this._pendingBuffers.some(buffer => buffer.length))
       return;
     this._closed = true;
     this._pipeRead.removeAllListeners('data');
     this._pipeRead.removeAllListeners('close');
     this._pipeRead.pause();
-    return { write: this._pipeWrite, read: this._pipeRead };
+    return { write: this._pipeWrite, read: this._pipeRead, cbor: this.cbor };
+  }
+
+  _dispatchCBOR(buffer: Buffer) {
+    this._pendingBuffers.push(buffer);
+    this._pendingLength += buffer.length;
+    while (true) {
+      let head = this._pendingBuffers[0];
+      if (this._pendingLength < 7)
+        return;
+      if (head.length < 7)
+        this._pendingBuffers = [head = Buffer.concat(this._pendingBuffers, this._pendingLength)];
+      const size = cborMessageSize(head)!;
+      if (this._pendingLength < size)
+        return;
+      // A message that came in several chunks is joined once, when its last chunk has arrived.
+      const all = this._pendingBuffers.length === 1 ? head : Buffer.concat(this._pendingBuffers, this._pendingLength);
+      const message = all.subarray(0, size);
+      setImmediate(() => {
+        if (this.onmessage)
+          this.onmessage.call(null, decodeCBORMessage(message));
+      });
+      const rest = all.subarray(size);
+      this._pendingBuffers = rest.length ? [rest] : [];
+      this._pendingLength = rest.length;
+    }
   }
 
   _dispatch(buffer: Buffer) {

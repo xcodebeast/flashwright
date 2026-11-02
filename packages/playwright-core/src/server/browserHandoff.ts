@@ -28,6 +28,8 @@ export type BrowserHandoffMetadata = {
   browserName: string;
   launchKey: string;
   pid: number;
+  // Whether the DevTools pipe speaks CBOR rather than JSON.
+  cbor?: boolean;
   // Removed by whoever ends the browser.
   tempDirectories: string[];
   // The recycled context of each slot (see Browser.newContextForReuse).

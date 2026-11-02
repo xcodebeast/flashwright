@@ -135,7 +135,7 @@ export abstract class Browser extends SdkObject {
   doAdoptContext(contextId: string, options: types.BrowserContextOptions): Promise<BrowserContext> {
     throw new Error('Not supported');
   }
-  async doDetachForHandoff(): Promise<{ write: NodeJS.WritableStream, read: NodeJS.ReadableStream } | undefined> {
+  async doDetachForHandoff(): Promise<{ write: NodeJS.WritableStream, read: NodeJS.ReadableStream, cbor: boolean } | undefined> {
     return undefined;
   }
   abstract contexts(): BrowserContext[];
@@ -420,11 +420,13 @@ export abstract class Browser extends SdkObject {
     const { pid, tempDirectories } = release();
     this._startedClosing = true;
     return {
-      ...pipes,
+      write: pipes.write,
+      read: pipes.read,
       metadata: {
         browserName: this.options.name,
         launchKey: this.options.launchKey,
         pid,
+        cbor: pipes.cbor,
         tempDirectories,
         contexts: handedOverContexts,
       },

@@ -355,7 +355,8 @@ export class Chromium extends BrowserType {
   override async defaultArgs(options: types.LaunchOptions, isPersistent: boolean, userDataDir: string) {
     const chromeArguments = this._innerDefaultArgs(options);
     chromeArguments.push(`--user-data-dir=${userDataDir}`);
-    chromeArguments.push('--remote-debugging-pipe');
+    // Flashwright: the protocol in the browser's own encoding, see cborCodec.ts.
+    chromeArguments.push(process.env.FLASHWRIGHT_CDP_JSON ? '--remote-debugging-pipe' : '--remote-debugging-pipe=cbor');
     if (isPersistent)
       chromeArguments.push('about:blank');
     else

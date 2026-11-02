@@ -162,7 +162,7 @@ export class CRBrowser extends Browser {
 
   // Flashwright: leaves the browser as a new DevTools client would find it, attached to nothing,
   // and gives up its pipe (see Browser.handoffForSession).
-  override async doDetachForHandoff(): Promise<{ write: NodeJS.WritableStream, read: NodeJS.ReadableStream } | undefined> {
+  override async doDetachForHandoff(): Promise<{ write: NodeJS.WritableStream, read: NodeJS.ReadableStream, cbor: boolean } | undefined> {
     const transport = this._connection.transport();
     if (!(transport instanceof PipeTransport))
       return;
