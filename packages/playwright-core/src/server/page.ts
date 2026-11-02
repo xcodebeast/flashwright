@@ -100,6 +100,8 @@ export interface PageDelegate {
 
   // Work around WebKit's raf issues on Windows.
   rafCountForStablePosition(): number;
+  // Flashwright: whether the frame renders in another process than the page's main frame.
+  isOutOfProcessFrame?(frame: frames.Frame): boolean;
   // Work around Chrome's non-associated input and protocol.
   inputActionEpilogue(): Promise<void>;
   // Work around for asynchronously dispatched CSP errors in Firefox.

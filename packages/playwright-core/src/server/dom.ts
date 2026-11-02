@@ -507,6 +507,16 @@ export class ElementHandle<T extends Node = Node> extends js.JSHandle<T> {
       hitTargetInterceptionHandle = handle as any;
     }
 
+    // Flashwright: the browser sends input to a frame of another process where the page's last
+    // composited frame showed it. Without Playwright's frame waits before input, that frame may
+    // predate the frame's current document or position (the click lands on the <iframe> element
+    // instead), so input to such a frame waits until the main frame has rendered once: a second
+    // animation frame starts after the first one was produced.
+    if (this._page.delegate.isOutOfProcessFrame?.(this._frame)) {
+      const mainContext = await progress.race(this._page.mainFrame().utilityContext());
+      await progress.race(mainContext.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))));
+    }
+
     const actionResult = await this._page.frameManager.waitForSignalsCreatedBy(progress, action.waitAfter === true, async (progress, inputDone) => {
       if ((options as any).__testHookBeforePointerAction)
         await progress.race((options as any).__testHookBeforePointerAction());

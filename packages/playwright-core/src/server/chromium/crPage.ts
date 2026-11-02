@@ -347,6 +347,14 @@ export class CRPage implements PageDelegate {
     return 1;
   }
 
+  isOutOfProcessFrame(frame: frames.Frame): boolean {
+    try {
+      return this._sessionForFrame(frame) !== this._mainFrameSession;
+    } catch {
+      return false;
+    }
+  }
+
   async getContentQuads(handle: dom.ElementHandle): Promise<types.Quad[] | null> {
     return this._sessionForHandle(handle)._getContentQuads(handle);
   }
