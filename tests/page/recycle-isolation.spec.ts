@@ -159,3 +159,30 @@ it('sees none of the late writes', async ({ page, server }) => {
   expect(await page.evaluate(() => localStorage.getItem('late'))).toBe(null);
   expect(await context.cookies()).toEqual([]);
 });
+
+it('leaves timers and page lifecycle handlers writing storage', async ({ page, server }) => {
+  await page.goto(server.EMPTY_PAGE);
+  await page.evaluate(() => {
+    const write = (key: string) => {
+      localStorage.setItem(key, 'write');
+      document.cookie = `${key}=write`;
+      const open = indexedDB.open('late', 1);
+      open.onupgradeneeded = () => open.result.createObjectStore('store');
+      open.onsuccess = () => open.result.transaction('store', 'readwrite').objectStore('store').put('write', key);
+    };
+    setInterval(() => write('interval'), 0);
+    for (const type of ['pagehide', 'unload', 'beforeunload'])
+      window.addEventListener(type, () => write(type));
+    for (const type of ['visibilitychange', 'freeze'])
+      document.addEventListener(type, () => write(type));
+  });
+  await page.waitForFunction(() => localStorage.getItem('interval') === 'write');
+});
+
+it('sees none of their writes', async ({ page, server }) => {
+  const context = page.context();
+  await page.goto(server.EMPTY_PAGE);
+  expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([]);
+  expect(await page.evaluate(async () => (await indexedDB.databases()).map(database => database.name))).toEqual([]);
+  expect(await context.cookies()).toEqual([]);
+});

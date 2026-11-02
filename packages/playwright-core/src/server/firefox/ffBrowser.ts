@@ -280,6 +280,10 @@ export class FFBrowserContext extends BrowserContext {
     await this._browser.session.send('Browser.clearCookies', { browserContextId: this._browserContextId });
   }
 
+  protected override async doSetScriptsDisabledForReset(disabled: boolean): Promise<void> {
+    await this._browser.session.send('Browser.setJavaScriptDisabled', { browserContextId: this._browserContextId, javaScriptDisabled: disabled || this._options.javaScriptEnabled === false });
+  }
+
   async doGrantPermissions(origin: string, permissions: string[]) {
     const webPermissionToProtocol = new Map<string, string[]>([
       ['geolocation', ['geo']],

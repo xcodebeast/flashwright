@@ -520,10 +520,14 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
 
     // Navigate to about:blank first to ensure no page scripts are running after this point.
     // Flashwright: a page left in an endless script cannot navigate; the context is replaced instead.
+    // Scripts are off during that navigation: an unload handler or a timer of the page it leaves
+    // could otherwise still start writing storage, which would land after the clearing below.
     if (page) {
+      await progress.race(this.doSetScriptsDisabledForReset(true));
       const navigated = page.mainFrame().gotoImpl(progress, 'about:blank', {}).then(() => true, () => false);
       if (!await progress.race(raceWithTimeout(navigated, kReusedPageNavigationTimeout, false)))
         return false;
+      await progress.race(this.doSetScriptsDisabledForReset(false));
     }
 
     // Note: we only need to reset properties from the "paramsThatAllowContextReuse" list.
@@ -702,6 +706,11 @@ export abstract class BrowserContext<EM extends EventMap = EventMap> extends Sdk
   }
 
   protected async doClearSiteData(page: Page, origins: string[]): Promise<void> {
+  }
+
+  // Turns scripts off for the context while its reused page leaves the previous test's document;
+  // `false` puts the context's own setting back.
+  protected async doSetScriptsDisabledForReset(disabled: boolean): Promise<void> {
   }
 
   // Stops the pages' scripts and replaces their documents, calling onScriptsStopped in between.
