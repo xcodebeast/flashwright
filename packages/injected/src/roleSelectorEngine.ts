@@ -207,7 +207,10 @@ function queryRole(scope: SelectorRoot, options: RoleEngineOptions, internal: bo
     const shadows: ShadowRoot[] = [];
     if ((root as Element).shadowRoot)
       shadows.push((root as Element).shadowRoot!);
-    for (const element of root.querySelectorAll('*')) {
+    // Flashwright: the elements of querySelectorAll('*'), in the same order, without a list of them.
+    const walker = (root.ownerDocument ?? root as Document).createTreeWalker(root, 1 /* NodeFilter.SHOW_ELEMENT */);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const element = node as Element;
       if (!tags || tags.has(elementSafeTagName(element)) || element.getAttribute('role'))
         match(element);
       if (element.shadowRoot)
