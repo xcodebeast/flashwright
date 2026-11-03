@@ -25,6 +25,7 @@ import { removeFolders } from '@utils/fileUtils';
 
 import { Dispatcher  } from './dispatcher';
 import { ensureStandbys, ensureStandbysForConfig, recordWorkerCount } from './workerStandby';
+import { WebServerPlugin } from '../plugins/webServerPlugin';
 import { pruneSnapshots } from './pruneSnapshots';
 import { recordSnapshotsToAccept } from './acceptSnapshots';
 import { isWarmSessionRun } from './session';
@@ -101,6 +102,8 @@ export class TestRun {
   readonly usedSnapshotPaths = new Set<string>();
   // Flashwright: by test, the snapshots of the test's last attempt that did not match (see acceptSnapshots.ts).
   readonly snapshotsToAccept = new Map<string, { expected: string, actual: string }[]>();
+  // Flashwright: the web servers of projects that have run (see TestProject.webServer).
+  readonly projectWebServers = new Map<commonConfig.FullProjectInternal, WebServerPlugin[]>();
   readonly loadFileFilters: Matcher[] = [];
   readonly preOnlyTestFilters: TestCaseFilter[] = [];
   readonly postShardTestFilters: TestCaseFilter[] = [];
@@ -176,8 +179,36 @@ export function createRunTestsTasks(config: FullConfigInternal) {
   return [
     createPhasesTask(),
     createReportBeginTask(),
+    createProjectWebServersTask(),
     createRunTestsTask(),
   ];
+}
+
+// Flashwright: stops the servers that projects started (see startProjectWebServers).
+function createProjectWebServersTask(): Task<TestRun> {
+  return {
+    title: 'project web servers',
+    teardown: async testRun => {
+      const servers = [...testRun.projectWebServers.values()].flat();
+      testRun.projectWebServers.clear();
+      await Promise.all(servers.map(server => server.teardown()));
+    },
+  };
+}
+
+async function startProjectWebServers(testRun: TestRun, projects: commonConfig.FullProjectInternal[]) {
+  await Promise.all(projects.filter(project => project.webServers.length && !testRun.projectWebServers.has(project)).map(async project => {
+    const servers: WebServerPlugin[] = [];
+    testRun.projectWebServers.set(project, servers);
+    for (const options of project.webServers) {
+      if (options.port && options.url)
+        throw new Error(`Either 'port' or 'url' should be specified in the webServer of project "${project.project.name}".`);
+      const url = options.url || (options.port ? `http://localhost:${options.port}` : undefined);
+      const server = new WebServerPlugin({ ...options, url }, options.port !== undefined);
+      await server.setup(testRun.config.config, testRun.config.configDir, testRun.reporter);
+      servers.push(server);
+    }
+  }));
 }
 
 export function createPruneSnapshotsTask(): Task<TestRun> {
@@ -473,6 +504,7 @@ function createRunTestsTask(): Task<TestRun> {
         // We don't want to run the test groups belonging to the projects
         // that depend on the projects that failed previously.
         const phaseTestGroups: TestGroup[] = [];
+        const projectsToRun: commonConfig.FullProjectInternal[] = [];
         for (const { project, testGroups } of projects) {
           // Inherit extra environment variables from dependencies.
           let extraEnv: Record<string, string | undefined> = {};
@@ -483,8 +515,11 @@ function createRunTestsTask(): Task<TestRun> {
           extraEnvByProjectId.set(project.id, extraEnv);
 
           const hasFailedDeps = project.deps.some(p => !successfulProjects.has(p));
-          if (!hasFailedDeps)
+          if (!hasFailedDeps) {
             phaseTestGroups.push(...testGroups);
+            if (testGroups.length)
+              projectsToRun.push(project);
+          }
         }
 
         if (testRun.config.configCLIOverrides.shuffle)
@@ -493,6 +528,7 @@ function createRunTestsTask(): Task<TestRun> {
           orderTestGroupsByDuration(phaseTestGroups, durations);
 
         if (phaseTestGroups.length) {
+          await startProjectWebServers(testRun, projectsToRun);
           await dispatcher!.run(phaseTestGroups, extraEnvByProjectId);
           // Flashwright: this process ran what the next runs will, worth keeping compiled (see codeCache.ts).
           (globalThis as any)[Symbol.for('flashwright.codeCache')]?.ranTests();

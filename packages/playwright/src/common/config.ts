@@ -170,6 +170,8 @@ export class FullProjectInternal {
   readonly snapshotPathTemplate: string | undefined;
   readonly workers: number | undefined;
   readonly default: boolean;
+  // Flashwright: servers this project's tests need, started before its first tests run.
+  readonly webServers: NonNullable<FullConfig['webServer']>[];
   id = '';
   deps: FullProjectInternal[] = [];
   teardown: FullProjectInternal | undefined;
@@ -213,6 +215,11 @@ export class FullProjectInternal {
     }
     this.respectGitIgnore = takeFirst(projectConfig.respectGitIgnore, config.respectGitIgnore, !projectConfig.testDir && !config.testDir);
     this.workers = projectConfig.workers ? resolveWorkers(projectConfig.workers) : undefined;
+    // Without a projects list, the default project is a copy of the config: its webServer is the
+    // config's, which the run starts for every project.
+    const webServer = (projectConfig as { webServer?: FullConfig['webServer'] | NonNullable<FullConfig['webServer']>[] }).webServer;
+    const inherited = webServer === (config as { webServer?: unknown }).webServer;
+    this.webServers = inherited ? [] : Array.isArray(webServer) ? webServer : webServer ? [webServer] : [];
     if (configCLIOverrides.debug && this.workers)
       this.workers = 1;
     this.default = projectConfig.default ?? true;

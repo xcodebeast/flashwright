@@ -428,6 +428,35 @@ export default defineConfig({
 
 Use [`property: TestConfig.use`] to change this option for all projects.
 
+## property: TestProject.webServer
+* since: v1.64
+- type: ?<[Object]|[Array]<[Object]>>
+
+Web servers that this project's tests need, with the options of [`property: TestConfig.webServer`]. A project's servers start before the first of its tests runs, only when the run has tests of the project, and stop at the end of the run. Unlike [`property: TestConfig.webServer`], a project server never sets [`property: TestOptions.baseURL`]: set it in the project's `use`.
+
+**Usage**
+
+```js title="playwright.config.ts"
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  projects: [
+    {
+      name: 'shop',
+      testDir: './tests/shop',
+      webServer: { command: 'npm run start:shop', url: 'http://localhost:3000' },
+      use: { baseURL: 'http://localhost:3000' },
+    },
+    {
+      name: 'admin',
+      testDir: './tests/admin',
+      webServer: { command: 'npm run start:admin', url: 'http://localhost:3001' },
+      use: { baseURL: 'http://localhost:3001' },
+    },
+  ],
+});
+```
+
 ## property: TestProject.workers
 * since: v1.52
 - type: ?<[int]|[string]>

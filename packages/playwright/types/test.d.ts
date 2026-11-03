@@ -138,6 +138,41 @@ interface TestProject<TestArgs = {}, WorkerArgs = {}> {
    */
   use?: UseOptions<TestArgs, WorkerArgs>;
   /**
+   * Web servers that this project's tests need, with the options of
+   * [testConfig.webServer](https://playwright.dev/docs/api/class-testconfig#test-config-web-server). A project's
+   * servers start before the first of its tests runs, only when the run has tests of the project, and stop at the end
+   * of the run. Unlike [testConfig.webServer](https://playwright.dev/docs/api/class-testconfig#test-config-web-server),
+   * a project server never sets
+   * [testOptions.baseURL](https://playwright.dev/docs/api/class-testoptions#test-options-base-url): set it in the
+   * project's `use`.
+   *
+   * **Usage**
+   *
+   * ```js
+   * // playwright.config.ts
+   * import { defineConfig } from '@playwright/test';
+   *
+   * export default defineConfig({
+   *   projects: [
+   *     {
+   *       name: 'shop',
+   *       testDir: './tests/shop',
+   *       webServer: { command: 'npm run start:shop', url: 'http://localhost:3000' },
+   *       use: { baseURL: 'http://localhost:3000' },
+   *     },
+   *     {
+   *       name: 'admin',
+   *       testDir: './tests/admin',
+   *       webServer: { command: 'npm run start:admin', url: 'http://localhost:3001' },
+   *       use: { baseURL: 'http://localhost:3001' },
+   *     },
+   *   ],
+   * });
+   * ```
+   *
+   */
+  webServer?: TestConfigWebServer | TestConfigWebServer[];
+  /**
    * Whether the project runs when no `--project` command line option is passed. Defaults to `true`.
    *
    * To run a project with `default: false`, select it with the `--project` command line option.
