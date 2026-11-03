@@ -42,6 +42,21 @@ if (read('git', ['status', '--porcelain', '--untracked-files=no']))
 run('git', ['fetch', '--quiet', 'origin', 'main']);
 if (read('git', ['rev-parse', 'HEAD']) !== read('git', ['rev-parse', 'origin/main']))
   fail('main and origin/main differ: push or pull first, so that the published code is on GitHub.');
+// A watch build rewrites lib/ during the release's build, which mixes its unminified bundles into the packages.
+const watchBuilds = () => {
+  if (!fs.existsSync('/proc'))
+    return [];
+  return fs.readdirSync('/proc').filter(pid => /^\d+$/.test(pid)).filter(pid => {
+    try {
+      const args = fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0');
+      return args.includes('--watch') && args.some(arg => arg.endsWith('utils/build/build.js')) && fs.readlinkSync(`/proc/${pid}/cwd`) === root;
+    } catch {
+      return false;
+    }
+  });
+};
+if (!flag('--skip-build') && watchBuilds().length)
+  fail(`A watch build is running in this checkout and would mix its outputs into the packages. Stop it first: kill ${watchBuilds().join(' ')}`);
 let user;
 try {
   user = read('npm', ['whoami']);

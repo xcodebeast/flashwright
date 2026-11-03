@@ -61,7 +61,7 @@ Flashwright is an independent fork and is not affiliated with Microsoft. Apache-
 // Incremental builds leave older hashed trace viewer bundles next to the current ones.
 const viewerAssets = path.join(root, 'packages/playwright-core/lib/vite/traceViewer/assets');
 if (fs.existsSync(viewerAssets) && fs.readdirSync(viewerAssets).filter(name => name.startsWith('codeMirrorModule-')).length > 1) {
-  console.error('packages/playwright-core/lib has outputs of earlier builds; run `npm run clean && npm run build` first.');
+  console.error('packages/playwright-core/lib has outputs of more than one build. Stop any running watch build (npm run watch), then run `npm run clean && npm run build`.');
   process.exit(1);
 }
 
