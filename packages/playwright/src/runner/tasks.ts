@@ -25,6 +25,7 @@ import { removeFolders } from '@utils/fileUtils';
 
 import { Dispatcher  } from './dispatcher';
 import { ensureStandbys, ensureStandbysForConfig, recordWorkerCount } from './workerStandby';
+import { pruneSnapshots } from './pruneSnapshots';
 import { isWarmSessionRun } from './session';
 import { collectProjectsAndTestFiles, createRootSuite, loadFileSuites, loadGlobalHook, loadTestList } from './loadUtils';
 import { buildDependentProjects, buildTeardownToSetupsMap, filterProjects } from './projectUtils';
@@ -75,6 +76,7 @@ export type TestRunOptions = {
   onTestPaused?: (params: TestPausedParams) => void;
   preserveOutputDir?: boolean;
   shardWeights?: number[];
+  pruneSnapshots?: boolean;
 };
 
 export type TestPausedParams = {
@@ -94,6 +96,8 @@ export class TestRun {
   topLevelProjects: commonConfig.FullProjectInternal[] = [];
   hasWorkerErrors = false;
   failedTestCount = 0;
+  // Flashwright: the snapshot files that tests resolved (see pruneSnapshots.ts).
+  readonly usedSnapshotPaths = new Set<string>();
   readonly loadFileFilters: Matcher[] = [];
   readonly preOnlyTestFilters: TestCaseFilter[] = [];
   readonly postShardTestFilters: TestCaseFilter[] = [];
@@ -171,6 +175,16 @@ export function createRunTestsTasks(config: FullConfigInternal) {
     createReportBeginTask(),
     createRunTestsTask(),
   ];
+}
+
+export function createPruneSnapshotsTask(): Task<TestRun> {
+  return {
+    title: 'prune snapshots',
+    setup: async testRun => {
+      if (testRun.options.pruneSnapshots)
+        pruneSnapshots(testRun);
+    },
+  };
 }
 
 export function createClearCacheTask(config: FullConfigInternal): Task<TestRun> {

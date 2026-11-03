@@ -142,6 +142,7 @@ export class TestInfoImpl implements TestInfo {
   readonly attachments: TestInfo['attachments'] = [];
   status: TestStatus = 'passed';
   snapshotSuffix: string = '';
+  readonly _usedSnapshotPaths = new Set<string>();
   readonly outputDir: string;
   readonly snapshotDir: string;
   errors: TestInfoError[] = [];
@@ -632,6 +633,8 @@ export class TestInfoImpl implements TestInfo {
 
     const nameArgument = path.join(path.dirname(subPath), path.basename(subPath, ext));
     const absoluteSnapshotPath = this._applyPathTemplate(template, nameArgument, ext);
+    // Flashwright: for --prune-snapshots, which keeps the snapshots that tests asked for.
+    this._usedSnapshotPaths.add(absoluteSnapshotPath);
     return { absoluteSnapshotPath, relativeOutputPath };
   }
 

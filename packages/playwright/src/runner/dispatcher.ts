@@ -372,6 +372,7 @@ class JobDispatcher {
     }
     this._dataByTestId.delete(params.testId);
     this._remainingByTestId.delete(params.testId);
+    params.usedSnapshotPaths?.forEach(file => this._testRun.usedSnapshotPaths.add(file));
     const { result, test } = data;
     result.duration = params.duration;
     result.errors = params.errors;

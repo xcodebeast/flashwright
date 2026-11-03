@@ -266,6 +266,7 @@ const testOptions: [string, { description: string, choices?: string[], preset?: 
   ['--only-changed [ref]', { description: `Only run test files that have been changed between 'HEAD' and 'ref'. Defaults to running all uncommitted changes. Only supports Git.` }],
   ['--pass-with-no-tests', { description: `Makes test run succeed even if no tests were found` }],
   ['--project <project-name...>', { description: `Only run tests from the specified list of projects, supports '*' wildcard (default: run all projects)` }],
+  ['--prune-snapshots', { description: `After a complete run that passes, delete the snapshot files that no test used` }],
   ['--quiet', { description: `Suppress stdio` }],
   ['--repeat-each <N>', { description: `Run each test N times (default: 1)` }],
   ['--reporter <reporter>', { description: `Reporter to use, comma-separated, can be ${builtInReporters.map(name => `"${name}"`).join(', ')} (default: "${config.defaultReporter}")` }],

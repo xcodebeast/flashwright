@@ -31,7 +31,7 @@ import { internalScreen } from '../reporters/base';
 import { InternalReporter } from '../reporters/internalReporter';
 import { serializeError } from '../util';
 import { createErrorCollectingReporter, createReporters } from './reporters';
-import { TestRun, createApplyRebaselinesTask, createClearCacheTask, createGlobalSetupTasks, createListFilesTask, createLoadTask, createPluginSetupTasks, createReportBeginTask, createRunTestsTasks, runTasks, runTasksDeferCleanup } from './tasks';
+import { TestRun, createApplyRebaselinesTask, createClearCacheTask, createGlobalSetupTasks, createListFilesTask, createLoadTask, createPluginSetupTasks, createPruneSnapshotsTask, createReportBeginTask, createRunTestsTasks, runTasks, runTasksDeferCleanup } from './tasks';
 import { LastRunReporter } from './lastRun';
 import { filterProjects } from './projectUtils';
 
@@ -445,6 +445,7 @@ export async function runAllTestsWithConfig(config: FullConfigInternal, options:
     ...createGlobalSetupTasks(config),
     createLoadTask('in-process', { filterOnly: true, failOnLoadErrors: true }),
     ...createRunTestsTasks(config),
+    createPruneSnapshotsTask(),
   ];
 
   const testRun = new TestRun(config, reporter, { ...options, pauseAtEnd: config.configCLIOverrides.pause, pauseOnError: config.configCLIOverrides.pause });

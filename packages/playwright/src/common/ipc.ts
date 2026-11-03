@@ -124,6 +124,8 @@ export type TestEndPayload = {
   expectedStatus: TestStatus;
   annotations: TestAnnotation[];
   timeout: number;
+  // Flashwright: see pruneSnapshots.ts.
+  usedSnapshotPaths?: string[];
 };
 
 export type StepBeginPayload = {

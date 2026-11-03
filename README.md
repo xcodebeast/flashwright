@@ -172,6 +172,7 @@ Every run still gets new runner and worker processes, so changed tests, configs 
 Features that Playwright users asked for and Playwright did not add. They are additive: configs and tests written for Playwright work as before.
 
 - **Options for one test**: `test('fits a phone', { use: { viewport: { width: 390, height: 844 } } }, async ({ page }) => {})`, next to `tag` and `annotation`, instead of a `describe` group around the test. `test.describe()` takes `use` too. Like `test.use()` in a group, it cannot set the options of worker fixtures, such as `browserName`.
+- **Stale snapshots**: `npx playwright test --prune-snapshots` deletes the snapshot files that no test used, and lists them: renamed or removed screenshots, and the folders of deleted test files. It only prunes after a complete run that passes, with no filter, shard or `.only`, and keeps all the snapshots of a test file with a skipped test. Only files that match a project's snapshot path template with this machine's platform count, so other platforms' screenshots stay.
 
 ## Deprecated APIs
 
