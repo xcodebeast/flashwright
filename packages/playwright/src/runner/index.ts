@@ -23,6 +23,7 @@ export * as testRunner from './testRunner';
 export * as testServer from './testServer';
 export * as watchMode from './watchMode';
 export * as codemod from './codemod';
+export * as doctor from './doctor';
 export * as projectUtils from './projectUtils';
 export * as runnerReporters from './reporters';
 export * as base from '../reporters/base';

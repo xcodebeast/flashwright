@@ -407,6 +407,12 @@ function forwardBrowser(browser: Browser) {
 
 // A run in a runner process that the session prepared, whose `playwright test` process exits as
 // soon as this one tells it the exit code (see flushSessionBrowsers).
+// Flashwright doctor: whether a run here would use a warm session, and whether one is waiting.
+export function warmSessionStatus(cwd: string): { requested: boolean, running: boolean } {
+  const socket = process.platform === 'win32' ? undefined : sessionSocketPath(cwd);
+  return { requested: sessionRequested(), running: !!socket && fs.existsSync(socket) };
+}
+
 export function isWarmSessionRun() {
   return !!outputBytes;
 }

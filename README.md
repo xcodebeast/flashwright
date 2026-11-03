@@ -129,6 +129,7 @@ Playwright's own options combine with these: `javaScriptEnabled: false`, `servic
       - similar buttons: getByRole('button', { name: 'Log out' })
   ```
   It covers role names, text, labels, placeholders, test ids, `nth()` and chains, and points at iframes when nothing is close.
+- **`npx playwright doctor`** checks, without changing anything, what a run needs: Node, a single copy of Playwright, a config that loads, test files for each project, each project's browser and its system libraries, and a display for headed projects. It also says whether agent mode and the warm session are on. `--json` prints the checks for a script or an agent; it exits with 1 when something would stop a run.
 - **The MCP server** can answer as soon as the page has settled instead of after a fixed 500 ms: `playwright mcp --adaptive-settle` (or `timeouts.adaptiveSettle: true`). A click that saves through an API returns in 234 ms instead of 1014 ms.
 
 ### Agent mode

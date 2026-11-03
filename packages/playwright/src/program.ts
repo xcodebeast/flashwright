@@ -44,6 +44,7 @@ const reportActions = () => require('./cli/reportActions') as typeof import('./c
 const testBackend = () => require('./mcp/test/testBackend') as typeof import('./mcp/test/testBackend');
 const agentGenerators = () => require('./agents/generateAgents') as typeof import('./agents/generateAgents');
 const codemod = () => (require('./runner') as typeof import('./runner')).codemod;
+const doctor = () => (require('./runner') as typeof import('./runner')).doctor;
 
 function addTestCommand(program: Command) {
   const command = program.command('test [test-filter...]');
@@ -98,6 +99,18 @@ Examples:
   $ npx playwright codemod tests --write`);
   command.action(async (paths: string[], options: { write?: boolean, keepFirst?: boolean }) => {
     const code = await codemod().runCodemod(paths, { write: !!options.write, keepFirst: !!options.keepFirst });
+    gracefullyProcessExitDoNotHang(code);
+  });
+}
+
+// Flashwright: a read-only check of what a run needs.
+function addDoctorCommand(program: Command) {
+  const command = program.command('doctor');
+  command.description('check the install, config, test files, browsers and their system libraries, without changing anything');
+  command.option('-c, --config <file>', `Configuration file, or a test directory with optional "playwright.config.{m,c}?{js,ts}"`);
+  command.option('--json', 'print the checks as JSON');
+  command.action(async (options: { config?: string, json?: boolean }) => {
+    const code = await doctor().runDoctor(options);
     gracefullyProcessExitDoNotHang(code);
   });
 }
@@ -280,6 +293,7 @@ addTestCommand(program);
 addShowReportCommand(program);
 addMergeReportsCommand(program);
 addClearCacheCommand(program);
+addDoctorCommand(program);
 addCodemodCommand(program);
 addTestMCPServerCommand(program);
 addTestServerCommand(program);
