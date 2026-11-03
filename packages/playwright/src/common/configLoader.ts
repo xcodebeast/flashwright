@@ -207,6 +207,16 @@ function validateConfig(file: string, config: Config) {
       throw errorWithFile(file, `config.agentMode must be a boolean`);
   }
 
+  if ('narratedVideo' in config && config.narratedVideo !== undefined) {
+    const video = config.narratedVideo;
+    if (!video || typeof video !== 'object' || Array.isArray(video))
+      throw errorWithFile(file, `config.narratedVideo must be an object`);
+    if (video.mode !== undefined && !['off', 'on', 'demo'].includes(video.mode))
+      throw errorWithFile(file, `config.narratedVideo.mode must be one of "off", "on", "demo"`);
+    if (video.voice !== undefined && video.voice !== false && typeof video.voice !== 'function' && !['auto', 'system', 'kokoro'].includes(video.voice as string))
+      throw errorWithFile(file, `config.narratedVideo.voice must be one of "auto", "system", "kokoro", false or a function`);
+  }
+
   if ('quiet' in config && config.quiet !== undefined) {
     if (typeof config.quiet !== 'boolean')
       throw errorWithFile(file, `config.quiet must be a boolean`);

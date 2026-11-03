@@ -929,6 +929,14 @@ export interface FullProject<TestArgs = {}, WorkerArgs = {}> {
 
 type LiteralUnion<T extends U, U = string> = T | (U & { zz_IGNORE_ME?: never });
 
+export type NarratedVideoOptions = {
+  mode?: 'off' | 'on' | 'demo';
+  zoom?: boolean;
+  captions?: boolean;
+  voice?: 'auto' | 'system' | 'kokoro' | false | ((text: string) => Promise<Buffer>);
+  voiceName?: string;
+};
+
 /**
  * Playwright Test provides many options to configure how your tests are collected and executed, for example `timeout`
  * or `testDir`. These options are described in the [TestConfig](https://playwright.dev/docs/api/class-testconfig)
@@ -1126,6 +1134,35 @@ interface TestConfig<TestArgs = {}, WorkerArgs = {}> {
    *
    */
   webServer?: TestConfigWebServer | TestConfigWebServer[];
+  /**
+   * Turns the run into one finished video with a voice, captions, a moving cursor and a camera, in `video.mp4` in the
+   * output directory, next to a clip of each test in the test's output directory. See
+   * [fixtures.narrate](https://playwright.dev/docs/api/class-fixtures#fixtures-narrate). The video is put together
+   * after the tests, which run about as fast as without it, so its timing is not the test's. It needs `ffmpeg`.
+   *
+   * In `'on'` mode the video also shows each test's title and result, and what it clicks, types and asserts. In
+   * `'demo'` mode it shows only the page and what
+   * [fixtures.narrate](https://playwright.dev/docs/api/class-fixtures#fixtures-narrate) said, and it leaves out tests
+   * that failed.
+   *
+   * Recording replaces [testOptions.video](https://playwright.dev/docs/api/class-testoptions#test-options-video), turns
+   * off the screenshots of [testOptions.trace](https://playwright.dev/docs/api/class-testoptions#test-options-trace),
+   * and gives each test a new context. A caption shows the text typed into a field, unless the field's name suggests a
+   * secret, such as a password.
+   *
+   * **Usage**
+   *
+   * ```js
+   * // playwright.config.ts
+   * import { defineConfig } from '@playwright/test';
+   *
+   * export default defineConfig({
+   *   narratedVideo: { zoom: false, voiceName: 'Samantha' },
+   * });
+   * ```
+   *
+   */
+  narratedVideo?: NarratedVideoOptions;
   /**
    * Whether to format the run for a coding agent rather than a person. Defaults to `true` when Playwright detects a
    * coding agent (Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot CLI, or any tool that sets the `AI_AGENT`
@@ -2236,6 +2273,10 @@ export interface FullConfig<TestArgs = {}, WorkerArgs = {}> {
    * See [testConfig.webServer](https://playwright.dev/docs/api/class-testconfig#test-config-web-server).
    */
   webServer: TestConfigWebServer | null;
+  /**
+   * See [testConfig.narratedVideo](https://playwright.dev/docs/api/class-testconfig#test-config-narrated-video).
+   */
+  narratedVideo: NarratedVideoOptions;
   /**
    * See [testConfig.agentMode](https://playwright.dev/docs/api/class-testconfig#test-config-agent-mode).
    */
@@ -8586,6 +8627,26 @@ export interface PlaywrightTestArgs {
    *
    */
   request: APIRequestContext;
+  /**
+   * Says a sentence in the video of a run with `--video` or `--demo`: the video stops on the page while a voice reads
+   * it and a caption shows it. It does nothing in other runs. It takes a picture of the page, for the video to hold
+   * while the voice speaks, but it does not wait for the voice. Pass a page to show that page while it is said.
+   *
+   * **Usage**
+   *
+   * ```js
+   * test('keeps the schedule after a reload', async ({ page, narrate }) => {
+   *   await narrate('Choose the timezone and save the schedule.');
+   *   await page.getByLabel('Timezone').fill('Europe/Oslo');
+   *   await page.getByRole('button', { name: 'Save' }).click();
+   *   await page.reload();
+   *   await expect(page.getByLabel('Timezone')).toHaveValue('Europe/Oslo');
+   *   await narrate('The timezone stays selected after a reload.');
+   * });
+   * ```
+   *
+   */
+  narrate: (text: string, page?: Page) => Promise<void>;
   /**
    * Mounts a component story and returns a [Locator](https://playwright.dev/docs/api/class-locator) pointing to the
    * root element the story was rendered into. Scope your queries from the returned locator:

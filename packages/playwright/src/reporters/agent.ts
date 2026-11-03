@@ -55,6 +55,7 @@ export type AgentSummary = {
   flaky: { title: string, project: string, location: string, errors: { message: string, location?: string }[] }[];
   errors: { message: string, location?: string }[];
   rerun?: string;
+  video?: string;
 };
 
 class AgentReporter extends TerminalReporter {
@@ -219,6 +220,7 @@ class AgentReporter extends TerminalReporter {
       flaky: summary.flaky.map(test => ({ title: title(test), project: project(test), location: location(test), errors: (test.results.find(r => r.errors.length)?.errors ?? []).map(formatError) })),
       errors: this._errors.map(formatError),
       rerun: failed.length || summary.interrupted.length || summary.didNotRun ? `${exec} playwright test --last-failed` : undefined,
+      video: (this.config as any)._narratedVideoFile ? relative((this.config as any)._narratedVideoFile) : undefined,
     };
   }
 }

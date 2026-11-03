@@ -193,6 +193,44 @@ Every run still gets new runner and worker processes, so changed tests, configs 
 - **When it is on:** by default, except when the `CI` environment variable is set, when a debugger is attached, with `PWDEBUG`, `--ui` or `--debug`, and on Windows. A CI job usually runs its tests once, so a session would only hold memory there. `FLASHWRIGHT_SESSION=0` turns it off and `FLASHWRIGHT_SESSION=1` turns it on in CI.
 - **What it holds:** one session per project directory, until 5 minutes after its last run (`FLASHWRIGHT_SESSION_TIMEOUT=<seconds>` changes that) or until Flashwright is reinstalled. While it waits, it keeps a runner, a worker for each kept browser and the browsers: about 0.4 GB after one-test runs and 1 GB after a 4-worker suite. Headed browsers are closed, not kept.
 
+## Videos of your tests
+
+`npx playwright test --video` turns a run into one finished video, with a voice, captions, a moving cursor and a camera that follows the action:
+
+```ts
+test('keeps the schedule after a reload', async ({ page, narrate }) => {
+  await narrate('Choose the timezone and save the schedule.');
+  await page.getByLabel('Timezone').fill('Europe/Oslo');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.reload();
+  await expect(page.getByLabel('Timezone')).toHaveValue('Europe/Oslo');
+  await narrate('The timezone stays selected after a reload.');
+});
+```
+
+`narrate` does nothing in other runs, and tests without it still get a video, with captions made from what they click, type and assert. It is one video however many tests run, in the order they are written and with a chapter for each, in `test-results/video.mp4`, and a clip of each test in the test's folder. It needs `ffmpeg`.
+
+- **`--video`** is for your team: each test's title, a caption for each action and assertion, the error of a test that failed, and how many passed.
+- **`--demo`** is for everyone else: only the page and what `narrate` said, without test names or results. Tests that failed are left out, and the run says which.
+
+**The video is made after the tests, which keep their timing.** It holds real frames of the page for as long as a viewer needs: while the voice speaks, while the cursor moves. It does not make a test wait for the voice. A test recording does wait a moment after each action for the browser to show the result, otherwise a fast test would move on before its result was painted: TodoMVC's filter test takes 0.6 s with `--video` and 0.14 s without. Rendering then takes about as long as the video lasts on 6 cores. The timing you see in a video is not the test's, so it says nothing about how fast your app is.
+
+**The voice** is the system's by default: `say` on macOS, Windows' speech engine, or `espeak-ng` on Linux. Without one, the video has captions only. `npx playwright install-voice` downloads Kokoro, a free and much more natural voice that runs on your machine (about 500 MB, outside the project), and runs use it from then on. Sentences are kept between runs, so reruns do not read them again.
+
+```ts
+export default defineConfig({
+  narratedVideo: {
+    mode: 'on',        // 'off' (default), 'on' like --video, 'demo' like --demo
+    zoom: true,        // the camera; --no-video-zoom turns it off
+    captions: true,    // --no-video-captions; the subtitle track stays, off unless a player asks for it
+    voice: 'auto',     // 'auto', 'system', 'kokoro', false (--no-video-voice), or a function that returns the audio, for a paid voice
+    voiceName: 'Samantha',
+  },
+});
+```
+
+A caption shows the text typed into a field, unless the field's name suggests a secret such as a password; the page itself shows what your app shows, so use test data you are happy to share. Recording replaces the `video` option, turns off the screenshots of `trace` and gives each test a new context, and a test cannot use `page.screencast` itself in that run. `summary.json` in [agent mode](#agent-mode) has the video's path.
+
 ## Additions
 
 Features that Playwright users asked for and Playwright did not add. They are additive: configs and tests written for Playwright work as before.
@@ -217,6 +255,7 @@ Playwright still ships about 95 methods its documentation discourages: the selec
 - **Agent mode**: under a coding agent, the default terminal reporter is the `agent` one (see [agent mode](#agent-mode)); `agentMode: false` gives Playwright's.
 - **Call logs** of an action or assertion whose element never appeared end with what the page has instead; finding it takes at most 500 ms, after the call has failed.
 - **File watching** (`--watch` and UI mode) reacts 100 ms after the last change to a file instead of 250 ms.
+- **Actions** wait for the browser's next frame, up to 140 ms, only in a run with `--video` or `--demo`.
 - **Types**: the methods the documentation discourages are marked `@deprecated`, so editors strike them through; they work as before.
 - **Screenshot files** have identical pixels but are 1.6–1.9× larger PNGs. `toHaveScreenshot()` baselines are unchanged.
 - **Temporary files**: worker counts, per-test durations, the context options and the headless browser launch options each config used last (never storage state, credentials, headers, a proxy, certificates, environment variables, browser preferences or arguments with values other than a few harmless ones; readable only by you) and a V8 code cache live in the system temp directory. `PW_DISABLE_WORKER_STANDBY=1` and `FLASHWRIGHT_DISABLE_CODE_CACHE=1` turn off the first and the last.

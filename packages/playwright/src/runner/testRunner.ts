@@ -31,7 +31,7 @@ import { internalScreen } from '../reporters/base';
 import { InternalReporter } from '../reporters/internalReporter';
 import { serializeError } from '../util';
 import { createErrorCollectingReporter, createReporters } from './reporters';
-import { TestRun, createApplyRebaselinesTask, createClearCacheTask, createGlobalSetupTasks, createListFilesTask, createLoadTask, createPluginSetupTasks, createPruneSnapshotsTask, createReportBeginTask, createRunTestsTasks, runTasks, runTasksDeferCleanup } from './tasks';
+import { TestRun, createApplyRebaselinesTask, createClearCacheTask, createGlobalSetupTasks, createListFilesTask, createLoadTask, createNarratedVideoCheckTask, createPluginSetupTasks, createPruneSnapshotsTask, createReportBeginTask, createRunTestsTasks, runTasks, runTasksDeferCleanup } from './tasks';
 import { LastRunReporter } from './lastRun';
 import { filterProjects } from './projectUtils';
 
@@ -287,6 +287,7 @@ export class TestRunner extends EventEmitter<TestRunnerEventMap> {
       ...this._configCLIOverrides,
       repeatEach: 1,
       retries: 0,
+      narratedVideo: { mode: 'off' },
       timeout: params.timeout,
       reporter: params.reporters ? params.reporters.map(r => [r]) : undefined,
       use: {
@@ -441,6 +442,7 @@ export async function runAllTestsWithConfig(config: FullConfigInternal, options:
     createLoadTask('in-process', { failOnLoadErrors: true, filterOnly: false }),
     createReportBeginTask(),
   ] : [
+    createNarratedVideoCheckTask(),
     createApplyRebaselinesTask(),
     ...createGlobalSetupTasks(config),
     createLoadTask('in-process', { filterOnly: true, failOnLoadErrors: true }),

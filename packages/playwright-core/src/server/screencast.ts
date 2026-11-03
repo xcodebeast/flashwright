@@ -30,6 +30,8 @@ export type ScreencastClient = {
   gracefulClose?: () => Promise<void> | void;
   // Flashwright: rejects with the error that closing would report when the client could not start.
   launched?: () => Promise<void>;
+  // Flashwright: told about every input action, and makes actions wait for the frame that shows them.
+  onInputAction?: (action: { timestamp: number, point?: types.Point, box?: types.Rect }) => void;
   dispose: () => void;
   size?: types.Size;
   quality?: number;
@@ -46,6 +48,9 @@ type ActionOptions = {
   style?: { point?: string, highlight?: string, title?: string },
 };
 
+const kNoFrameAfterActionTimeout = 100;
+const kSecondFrameAfterActionTimeout = 40;
+
 export class Screencast implements InstrumentationListener {
   readonly page: Page;
   private _clients = new Map<ScreencastClient, LongStandingScope>();
@@ -53,6 +58,7 @@ export class Screencast implements InstrumentationListener {
   private _size: types.Size | undefined;
   private _lastFrame: types.ScreencastFrame | undefined;
   private _cursorPoint: types.Point | undefined;
+  private _frameWaiters = new Set<() => void>();
 
   constructor(page: Page) {
     this.page = page;
@@ -176,8 +182,33 @@ export class Screencast implements InstrumentationListener {
     this.page.delegate.stopScreencast();
   }
 
+  // Flashwright: a fast test can finish its next action before the browser presents the result of
+  // this one, and that state would be missing from the video. The first frame to arrive may have
+  // been on its way already, so a second one is what shows the action; it only comes if the page
+  // keeps changing, hence the short wait for it. A page that does not change presents no frame.
+  async waitForFrameAfterAction() {
+    if (![...this._clients.keys()].some(client => client.onInputAction))
+      return;
+    let waiter: () => void;
+    await new Promise<void>(resolve => {
+      let frames = 0;
+      let timer = setTimeout(resolve, kNoFrameAfterActionTimeout);
+      waiter = () => {
+        clearTimeout(timer);
+        if (++frames === 2)
+          resolve();
+        else
+          timer = setTimeout(resolve, kSecondFrameAfterActionTimeout);
+      };
+      this._frameWaiters.add(waiter);
+    });
+    this._frameWaiters.delete(waiter!);
+  }
+
   async onScreencastFrame(frame: types.ScreencastFrame) {
     this._lastFrame = frame;
+    for (const waiter of this._frameWaiters)
+      waiter();
     let syncAck = false;
     const asyncResults: Promise<void>[] = [];
     for (const [client, scope] of this._clients) {
@@ -195,6 +226,10 @@ export class Screencast implements InstrumentationListener {
   }
 
   async onBeforeInputAction(progress: Progress, sdkObject: SdkObject, point?: types.Point, box?: types.Rect): Promise<void> {
+    if (sdkObject.attribution.page === this.page) {
+      for (const client of this._clients.keys())
+        client.onInputAction?.({ timestamp: Date.now(), point, box });
+    }
     if (!this._actions)
       return;
 

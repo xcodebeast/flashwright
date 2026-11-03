@@ -46,6 +46,7 @@ const agentGenerators = () => require('./agents/generateAgents') as typeof impor
 const codemod = () => (require('./runner') as typeof import('./runner')).codemod;
 const doctor = () => (require('./runner') as typeof import('./runner')).doctor;
 const acceptSnapshots = () => (require('./runner') as typeof import('./runner')).acceptSnapshots;
+const narratedVoice = () => (require('./runner') as typeof import('./runner')).narratedVoice;
 
 function addTestCommand(program: Command) {
   const command = program.command('test [test-filter...]');
@@ -111,6 +112,16 @@ function addAcceptSnapshotsCommand(program: Command) {
   command.option('-c, --config <file>', `Configuration file, or a test directory with optional "playwright.config.{m,c}?{js,ts}"`);
   command.action(async (options: { config?: string }) => {
     const code = await acceptSnapshots().runAcceptSnapshots(options);
+    gracefullyProcessExitDoNotHang(code);
+  });
+}
+
+// Flashwright: downloads the free voice for --video and --demo, which is too large for the install.
+function addInstallVoiceCommand(program: Command) {
+  const command = program.command('install-voice');
+  command.description('download Kokoro, a free natural voice that runs on this machine, for videos made with --video and --demo (about 500 MB)');
+  command.action(async () => {
+    const code = await narratedVoice().runInstallVoice();
     gracefullyProcessExitDoNotHang(code);
   });
 }
@@ -273,7 +284,11 @@ const testOptions: [string, { description: string, choices?: string[], preset?: 
   ['--last-failed-file <file>', { description: `Override the default path for the last-run JSON file used with --last-failed (default: <outputDir>/.last-run.json). Same as PLAYWRIGHT_LAST_RUN_OUTPUT_FILE environment variable.` }],
   ['--list', { description: `Collect all the tests and report them, but do not run` }],
   ['--max-failures <N>', { description: `Stop after the first N failures` }],
+  ['--demo', { description: `Make a video to show to others: like --video, without test names and results, and without tests that failed` }],
   ['--no-deps', { description: `Do not run project dependencies` }],
+  ['--no-video-captions', { description: `With --video or --demo, draw no captions under the page` }],
+  ['--no-video-voice', { description: `With --video or --demo, make a video without a voice` }],
+  ['--no-video-zoom', { description: `With --video or --demo, keep the whole page in view` }],
   ['--output <dir>', { description: `Folder for output artifacts (default: "test-results")` }],
   ['--only-changed [ref]', { description: `Only run test files that have been changed between 'HEAD' and 'ref'. Defaults to running all uncommitted changes. Only supports Git.` }],
   ['--pass-with-no-tests', { description: `Makes test run succeed even if no tests were found` }],
@@ -298,6 +313,7 @@ const testOptions: [string, { description: string, choices?: string[], preset?: 
   ['-u, --update-snapshots [mode]', { description: `Update snapshots with actual results. Running tests without the flag defaults to "default"`, choices: ['all', 'changed', 'missing', 'none', 'default'], preset: 'changed' }],
   ['--update-source-method <method>', { description: `Chooses the way source is updated (default: "patch")`, choices: ['overwrite', '3way', 'patch'] }],
   ['-j, --workers <workers>', { description: `Number of concurrent workers or percentage of logical CPU cores, use 1 to run in a single worker (default: 50%)` }],
+  ['--video', { description: `Make one video of the run, with a voice, captions, a cursor and a camera, in the output directory. Say things in it with the "narrate" fixture` }],
   ['--watch', { description: `Run the tests of changed files again, in the terminal; press h for the other commands` }],
   ['--workers-per-process <count>', { description: `Number of workers that share one worker process (default: 1)` }],
   ['-x', { description: `Stop after the first failure` }],
@@ -309,6 +325,7 @@ addMergeReportsCommand(program);
 addClearCacheCommand(program);
 addDoctorCommand(program);
 addAcceptSnapshotsCommand(program);
+addInstallVoiceCommand(program);
 addCodemodCommand(program);
 addTestMCPServerCommand(program);
 addTestServerCommand(program);

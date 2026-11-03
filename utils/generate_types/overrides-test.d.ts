@@ -70,11 +70,20 @@ export interface FullProject<TestArgs = {}, WorkerArgs = {}> {
 
 type LiteralUnion<T extends U, U = string> = T | (U & { zz_IGNORE_ME?: never });
 
+export type NarratedVideoOptions = {
+  mode?: 'off' | 'on' | 'demo';
+  zoom?: boolean;
+  captions?: boolean;
+  voice?: 'auto' | 'system' | 'kokoro' | false | ((text: string) => Promise<Buffer>);
+  voiceName?: string;
+};
+
 interface TestConfig<TestArgs = {}, WorkerArgs = {}> {
   projects?: Project<TestArgs, WorkerArgs>[];
   reporter?: LiteralUnion<'list'|'dot'|'line'|'agent'|'github'|'json'|'junit'|'null'|'html'|'blob'|'perfetto', string> | ReporterDescription[];
   use?: UseOptions<TestArgs, WorkerArgs>;
   webServer?: TestConfigWebServer | TestConfigWebServer[];
+  narratedVideo?: NarratedVideoOptions;
 }
 
 export interface Config<TestArgs = {}, WorkerArgs = {}> extends TestConfig<TestArgs, WorkerArgs> {
@@ -86,6 +95,7 @@ export interface FullConfig<TestArgs = {}, WorkerArgs = {}> {
   projects: FullProject<TestArgs, WorkerArgs>[];
   reporter: ReporterDescription[];
   webServer: TestConfigWebServer | null;
+  narratedVideo: NarratedVideoOptions;
 }
 
 export interface TestInfo {
@@ -346,6 +356,7 @@ export interface PlaywrightTestArgs {
   context: BrowserContext;
   page: Page;
   request: APIRequestContext;
+  narrate: (text: string, page?: Page) => Promise<void>;
   mount: <Story = never, Id extends StoryId = StoryId>(storyId: Id, props?: MountProps<Story, Id>) => Promise<Locator & { update(props?: MountProps<Story, Id>): Promise<void>, unmount(): Promise<void> }>;
 }
 

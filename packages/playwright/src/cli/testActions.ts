@@ -119,6 +119,12 @@ function overridesFromOptions(options: { [key: string]: any }): ipc.ConfigCLIOve
     fullyParallel: options.fullyParallel ? true : undefined,
     globalTimeout: options.globalTimeout ? parseInt(options.globalTimeout, 10) : undefined,
     maxFailures: options.x ? 1 : (options.maxFailures ? parseInt(options.maxFailures, 10) : undefined),
+    narratedVideo: {
+      mode: options.demo ? 'demo' : options.video ? 'on' : undefined,
+      zoom: options.videoZoom === false ? false : undefined,
+      captions: options.videoCaptions === false ? false : undefined,
+      voice: options.videoVoice === false ? false : undefined,
+    },
     outputDir: options.output ? path.resolve(process.cwd(), options.output) : undefined,
     pause: !!process.env.PWPAUSE,
     quiet: options.quiet ? options.quiet : undefined,

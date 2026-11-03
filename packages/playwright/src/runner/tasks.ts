@@ -28,6 +28,7 @@ import { ensureStandbys, ensureStandbysForConfig, recordWorkerCount } from './wo
 import { WebServerPlugin } from '../plugins/webServerPlugin';
 import { pruneSnapshots } from './pruneSnapshots';
 import { recordSnapshotsToAccept } from './acceptSnapshots';
+import { checkNarratedVideoCanBeMade, renderNarratedVideo } from './narratedVideo';
 import { isWarmSessionRun } from './session';
 import { collectProjectsAndTestFiles, createRootSuite, loadFileSuites, loadGlobalHook, loadTestList } from './loadUtils';
 import { buildDependentProjects, buildTeardownToSetupsMap, filterProjects } from './projectUtils';
@@ -104,6 +105,8 @@ export class TestRun {
   readonly snapshotsToAccept = new Map<string, { expected: string, actual: string }[]>();
   // Flashwright: the web servers of projects that have run (see TestProject.webServer).
   readonly projectWebServers = new Map<commonConfig.FullProjectInternal, WebServerPlugin[]>();
+  // Flashwright: by test, the folder with the recording of its last attempt (see narratedVideo.ts).
+  readonly narratedVideoRecordings = new Map<string, string>();
   readonly loadFileFilters: Matcher[] = [];
   readonly preOnlyTestFilters: TestCaseFilter[] = [];
   readonly postShardTestFilters: TestCaseFilter[] = [];
@@ -211,6 +214,14 @@ async function startProjectWebServers(testRun: TestRun, projects: commonConfig.F
   }));
 }
 
+// Flashwright: a video that cannot be made is better found out before the tests run.
+export function createNarratedVideoCheckTask(): Task<TestRun> {
+  return {
+    title: 'narrated video check',
+    setup: async testRun => checkNarratedVideoCanBeMade(testRun.config),
+  };
+}
+
 export function createPruneSnapshotsTask(): Task<TestRun> {
   return {
     title: 'snapshot files',
@@ -218,6 +229,7 @@ export function createPruneSnapshotsTask(): Task<TestRun> {
       if (testRun.options.pruneSnapshots)
         pruneSnapshots(testRun);
       await recordSnapshotsToAccept(testRun);
+      await renderNarratedVideo(testRun);
     },
   };
 }

@@ -4249,6 +4249,7 @@ export interface PageEventTarget {
   _dispatchEvent(event: 'locatorHandlerTriggered', params?: PageLocatorHandlerTriggeredEvent): void;
   _dispatchEvent(event: 'route', params?: PageRouteEvent): void;
   _dispatchEvent(event: 'screencastFrame', params?: PageScreencastFrameEvent): void;
+  _dispatchEvent(event: 'screencastInputAction', params?: PageScreencastInputActionEvent): void;
   _dispatchEvent(event: 'webSocketRoute', params?: PageWebSocketRouteEvent): void;
   _dispatchEvent(event: 'webSocket', params?: PageWebSocketEvent): void;
   _dispatchEvent(event: 'worker', params?: PageWorkerEvent): void;
@@ -4353,6 +4354,11 @@ export type PageScreencastFrameEvent = {
   timestamp: number,
   viewportWidth: number,
   viewportHeight: number,
+};
+export type PageScreencastInputActionEvent = {
+  timestamp: number,
+  point?: Point,
+  box?: Rect,
 };
 export type PageWebSocketRouteEvent = {
   webSocketRoute: WebSocketRouteChannel,
@@ -4904,6 +4910,7 @@ export type PageScreencastStartParams = {
   fps?: number,
   sendFrames?: boolean,
   record?: boolean,
+  followActions?: boolean,
 };
 export type PageScreencastStartOptions = {
   size?: {
@@ -4914,6 +4921,7 @@ export type PageScreencastStartOptions = {
   fps?: number,
   sendFrames?: boolean,
   record?: boolean,
+  followActions?: boolean,
 };
 export type PageScreencastStartResult = {
   artifact?: ArtifactChannel,
@@ -4999,6 +5007,7 @@ export interface PageEvents {
   'locatorHandlerTriggered': PageLocatorHandlerTriggeredEvent;
   'route': PageRouteEvent;
   'screencastFrame': PageScreencastFrameEvent;
+  'screencastInputAction': PageScreencastInputActionEvent;
   'webSocketRoute': PageWebSocketRouteEvent;
   'webSocket': PageWebSocketEvent;
   'worker': PageWorkerEvent;

@@ -27,6 +27,7 @@ export class Screencast implements api.Screencast {
   private _savePath: string | undefined;
   private _onFrame: ((frame: { data: Buffer, timestamp: number, viewportWidth: number, viewportHeight: number }) => Promise<any>) | null = null;
   private _artifact: Artifact | undefined;
+  private _onInputAction: ((action: { timestamp: number, point?: { x: number, y: number }, box?: { x: number, y: number, width: number, height: number } }) => void) | undefined;
 
   constructor(page: Page) {
     this._page = page;
@@ -37,6 +38,7 @@ export class Screencast implements api.Screencast {
         await this._page._channel.screencastFrameAck({ frameId }, kNoTimeout).catch(() => {});
       }
     });
+    this._page._channel.on('screencastInputAction', action => this._onInputAction?.(action));
   }
 
   async start(options: { onFrame?: (frame: { data: Buffer, timestamp: number, viewportWidth: number, viewportHeight: number }) => Promise<any>|any, path?: string, size?: { width: number, height: number }, quality?: number, fps?: number } = {}): Promise<DisposableStub> {
@@ -45,12 +47,15 @@ export class Screencast implements api.Screencast {
     this._started = true;
     if (options.onFrame)
       this._onFrame = options.onFrame;
+    // Flashwright: not part of the API; the test runner's --video follows the page's actions.
+    this._onInputAction = (options as any)._onInputAction;
     const result = await this._page._channel.screencastStart({
       size: options.size,
       quality: options.quality,
       fps: options.fps,
       sendFrames: !!options.onFrame,
       record: !!options.path,
+      followActions: this._onInputAction ? true : undefined,
     }, kNoTimeout);
     if (result.artifact) {
       this._artifact = Artifact.from(result.artifact);
@@ -63,6 +68,7 @@ export class Screencast implements api.Screencast {
     await this._page._wrapApiCall(async () => {
       this._started = false;
       this._onFrame = null;
+      this._onInputAction = undefined;
       await this._page._channel.screencastStop({}, kNoTimeout);
       if (this._savePath)
         await this._artifact?.saveAs(this._savePath);

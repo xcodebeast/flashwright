@@ -2478,6 +2478,11 @@ scheme.PageScreencastFrameEvent = tObject({
   viewportWidth: tInt,
   viewportHeight: tInt,
 });
+scheme.PageScreencastInputActionEvent = tObject({
+  timestamp: tFloat,
+  point: tOptional(tType('Point')),
+  box: tOptional(tType('Rect')),
+});
 scheme.PageWebSocketRouteEvent = tObject({
   webSocketRoute: tChannel(['WebSocketRoute']),
 });
@@ -2835,6 +2840,7 @@ scheme.PageScreencastStartParams = tObject({
   fps: tOptional(tInt),
   sendFrames: tOptional(tBoolean),
   record: tOptional(tBoolean),
+  followActions: tOptional(tBoolean),
 });
 scheme.PageScreencastStartResult = tObject({
   artifact: tOptional(tChannel(['Artifact'])),

@@ -100,6 +100,13 @@ export class FullConfigInternal {
       grepInvert: takeFirst(userConfig.grepInvert, null),
       maxFailures: takeFirst(configCLIOverrides.debug ? 1 : undefined, configCLIOverrides.maxFailures, userConfig.maxFailures, 0),
       metadata: metadata ?? userConfig.metadata,
+      narratedVideo: {
+        mode: takeFirst(configCLIOverrides.narratedVideo?.mode, userConfig.narratedVideo?.mode, 'off'),
+        zoom: takeFirst(configCLIOverrides.narratedVideo?.zoom, userConfig.narratedVideo?.zoom, true),
+        captions: takeFirst(configCLIOverrides.narratedVideo?.captions, userConfig.narratedVideo?.captions, true),
+        voice: takeFirst(configCLIOverrides.narratedVideo?.voice, userConfig.narratedVideo?.voice, 'auto'),
+        voiceName: userConfig.narratedVideo?.voiceName,
+      },
       preserveOutput: takeFirst(userConfig.preserveOutput, 'always'),
       projects: [],
       filteredProjects: [],

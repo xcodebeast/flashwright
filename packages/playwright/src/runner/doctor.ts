@@ -24,6 +24,7 @@ import { codingAgentEnvVars, getPackageManagerExecCommand } from '@utils/env';
 
 import { configLoader } from '../common';
 import { packageJSON, packageRoot } from '../package';
+import { narratedVideoChecks } from './narratedVideo';
 import { collectFilesForProject } from './projectUtils';
 import { warmSessionStatus } from './session';
 
@@ -70,6 +71,8 @@ export async function runDoctor(options: { config?: string, json?: boolean }): P
     const reason = process.env.FLASHWRIGHT_AGENT_MODE ? 'FLASHWRIGHT_AGENT_MODE is set' : agents.length ? `${agents.join(', ')} ${agents.length === 1 ? 'is' : 'are'} set` : 'no coding agent detected';
     checks.push({ level: 'info', title: `Agent mode: ${config.config.agentMode ? 'on' : 'off'} (${reason})` });
   }
+  if (config)
+    checks.push(...narratedVideoChecks(config.config.narratedVideo));
   const session = warmSessionStatus(process.cwd());
   checks.push({ level: 'info', title: `Warm session: ${session.requested ? 'on' : 'off'}${session.running ? ', one is running for this directory' : ''}` });
 

@@ -30,6 +30,7 @@ import * as globals from './globals';
 import { createCustomMessageHandler, runDaemonForContext } from './mcp/test/browserBackend';
 import { handBrowsersToSession, rememberRecycledContext, reportLaunch, returnSpeculativeBrowser, takeSpeculativeBrowser } from './speculativeBrowser';
 import { canPreloadPages, preloadNextPage, recordFirstNavigation } from './preloadHistory';
+import { NarratedVideoRecorder } from './narratedVideoRecorder';
 
 import type { Fixtures, PlaywrightTestArgs, PlaywrightTestOptions, PlaywrightWorkerArgs, PlaywrightWorkerOptions, ScreenshotMode, TestInfo, TestType, VideoMode } from '../types/test';
 import type { TestInfoImpl, TestStepInternal } from './worker/testInfo';
@@ -93,6 +94,15 @@ const utilityFixtures: Fixtures<UtilityTestFixtures, UtilityWorkerFixtures> = {
     const artifactsRecorder = new ArtifactsRecorder(playwright, tracing().artifactsDir(), screenshot);
     await artifactsRecorder.willStartTest(testInfo as TestInfoImpl);
 
+    // Flashwright: see --video.
+    let narratedVideo: NarratedVideoRecorder | undefined;
+    if (testInfo.config.narratedVideo.mode !== 'off') {
+      narratedVideo = new NarratedVideoRecorder(testInfo as TestInfoImpl);
+      (testInfo as TestInfoImpl)._narratedVideo = narratedVideo;
+      for (const context of playwright._allContexts().filter(inCurrentLane))
+        narratedVideo.didCreateBrowserContext(context);
+    }
+
     const tracingGroupSteps: TestStepInternal[] = [];
     const pausedContexts = new Set<BrowserContextImpl>();
     const csiListener: ClientInstrumentationListener = {
@@ -123,6 +133,7 @@ const utilityFixtures: Fixtures<UtilityTestFixtures, UtilityWorkerFixtures> = {
           group: getActionGroup({ type: channel.type, method: channel.method }),
         }, tracingGroupSteps[tracingGroupSteps.length - 1]);
         data.callId = step.stepId;
+        narratedVideo?.onApiCall(step, { type: channel.type, method: channel.method, params: channel.params });
         if (channel.type === 'Tracing' && channel.method === 'tracingGroup') {
           // The step will end later, when the corresponding "tracing.groupEnd" call finishes.
           tracingGroupSteps.push(step);
@@ -164,6 +175,7 @@ const utilityFixtures: Fixtures<UtilityTestFixtures, UtilityWorkerFixtures> = {
         });
 
         await artifactsRecorder.didCreateBrowserContext(context);
+        narratedVideo?.didCreateBrowserContext(context);
         const currentTestInfo = globals.currentTestInfo() as TestInfoImpl | undefined;
         if (currentTestInfo) {
           attachConnectedHeaderIfNeeded(currentTestInfo, context.browser());
@@ -176,6 +188,7 @@ const utilityFixtures: Fixtures<UtilityTestFixtures, UtilityWorkerFixtures> = {
         await artifactsRecorder.didCreateRequestContext(context);
       },
       runBeforeCloseBrowserContext: async (context: BrowserContextImpl) => {
+        await narratedVideo?.willCloseBrowserContext(context);
         await artifactsRecorder.willCloseBrowserContext(context);
       },
       runBeforeCloseRequestContext: async (context: APIRequestContextImpl) => {
@@ -191,6 +204,7 @@ const utilityFixtures: Fixtures<UtilityTestFixtures, UtilityWorkerFixtures> = {
     await use();
 
     clientInstrumentation.removeListener(laneListener);
+    await narratedVideo?.didFinishTest();
     await artifactsRecorder.didFinishTest();
   }, { auto: 'all-hooks-included',  title: 'trace recording', box: true, timeout: 0 } as any],
 
@@ -505,7 +519,12 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
 
   reuseContext: [false, { scope: 'worker', option: true, box: true }],
 
-  _reuseContext: [async ({ video, _optionContextReuseMode, reuseContext, _recycleContext, browserName, connectOptions, isolation }, use) => {
+  _reuseContext: [async ({ video, _optionContextReuseMode, reuseContext, _recycleContext, browserName, connectOptions, isolation }, use, workerInfo) => {
+    // Flashwright: each test of a run that makes a video records its own pages from their start.
+    if (workerInfo.config.narratedVideo.mode !== 'off') {
+      await use(false);
+      return;
+    }
     let mode = _optionContextReuseMode;
     if (process.env.PW_TEST_REUSE_CONTEXT || reuseContext)
       mode = 'when-possible';
@@ -521,9 +540,13 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
   // reuse request (VS Code, UI mode, the reuseContext option) keeps Playwright's own reuse, debug
   // sessions and connected browsers get a fresh context per test, and isolation: 'strict' restores
   // that always.
-  _recycleContext: [async ({ video, _optionContextReuseMode, reuseContext, connectOptions, browserName, isolation }, use) => {
+  _recycleContext: [async ({ video, _optionContextReuseMode, reuseContext, connectOptions, browserName, isolation }, use, workerInfo) => {
     if (isolation !== 'recycled' && isolation !== 'strict')
       throw new Error(`isolation must be 'recycled' or 'strict', not ${JSON.stringify(isolation)}`);
+    if (workerInfo.config.narratedVideo.mode !== 'off') {
+      await use(false);
+      return;
+    }
     const explicitReuse = !!process.env.PW_TEST_REUSE_CONTEXT || reuseContext || _optionContextReuseMode === 'when-possible';
     const debugging = isDebugging();
     // Only Chromium can recycle contexts, and a connected browser may be served by stock Playwright.
@@ -582,6 +605,15 @@ const playwrightFixtures: Fixtures<TestFixtures, WorkerFixtures, UtilityTestFixt
       await saveVideos(testInfo, pagesWithVideo);
     if (preloading)
       recordFirstNavigation(context, testInfo, takenAt);
+  },
+
+  narrate: async ({}, use, testInfo) => {
+    await use(async (text: string, page?: Page) => {
+      if (typeof text !== 'string' || !text.trim())
+        throw new Error('narrate() needs a sentence to say.');
+      const video = (testInfo as TestInfoImpl)._narratedVideo as NarratedVideoRecorder | undefined;
+      await video?.narrate(text, page);
+    });
   },
 
   page: async ({ context, _reuseContext, _recycleContext }, use) => {
@@ -681,6 +713,9 @@ function normalizeVideoMode(video: VideoMode | 'retry-with-video' | { mode: Vide
 }
 
 function shouldCaptureVideo(videoMode: VideoMode, testInfo: TestInfo) {
+  // Flashwright: --video records the page itself (see narratedVideoRecorder.ts).
+  if (testInfo.config.narratedVideo.mode !== 'off')
+    return false;
   return videoMode === 'on'
     || videoMode === 'retain-on-failure'
     || videoMode === 'retain-on-failure-and-retries'

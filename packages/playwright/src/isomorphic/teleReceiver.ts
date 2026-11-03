@@ -824,6 +824,7 @@ export const baseFullConfig: reporterTypes.FullConfig = {
   grepInvert: null,
   maxFailures: 0,
   metadata: {},
+  narratedVideo: { mode: 'off', zoom: true, captions: true, voice: 'auto' },
   preserveOutput: 'always',
   testOrder: 'longest-first',
   projects: [],

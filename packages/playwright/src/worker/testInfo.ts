@@ -144,6 +144,9 @@ export class TestInfoImpl implements TestInfo {
   snapshotSuffix: string = '';
   readonly _usedSnapshotPaths = new Set<string>();
   readonly _snapshotsToAccept: { expected: string, actual: string }[] = [];
+  // Flashwright: set while a run makes a video (see --video).
+  _narratedVideo: { onStepBegin(step: TestStepInternal): void, onStepEnd(step: TestStepInternal): void } | undefined;
+  _narratedVideoRecording: string | undefined;
   readonly outputDir: string;
   readonly snapshotDir: string;
   errors: TestInfoError[] = [];
@@ -328,6 +331,7 @@ export class TestInfoImpl implements TestInfo {
           return;
 
         step.endWallTime = Date.now();
+        this._narratedVideo?.onStepEnd(step);
         if (step.category === 'hook' || step.category === 'fixture')
           this._unfinishedPredefinedSteps--;
         if (result.attachments) {
@@ -382,6 +386,7 @@ export class TestInfoImpl implements TestInfo {
     };
     const parentStepList = parentStep ? parentStep.steps : this._steps;
     parentStepList.push(step);
+    this._narratedVideo?.onStepBegin(step);
     if (step.category === 'hook' || step.category === 'fixture')
       this._unfinishedPredefinedSteps++;
     this._stepMap.set(stepId, step);

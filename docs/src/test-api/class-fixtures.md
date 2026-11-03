@@ -114,6 +114,25 @@ Identifier of the story to mount, as resolved by the gallery page. Conventionall
 
 Optional plain, serializable props passed to the story.
 
+## property: Fixtures.narrate
+* since: v1.64
+- type: <[function]\([string], [void]|[Page]\): [Promise]>
+
+Says a sentence in the video of a run with `--video` or `--demo`: the video stops on the page while a voice reads it and a caption shows it. It does nothing in other runs. It takes a picture of the page, for the video to hold while the voice speaks, but it does not wait for the voice. Pass a page to show that page while it is said.
+
+**Usage**
+
+```js
+test('keeps the schedule after a reload', async ({ page, narrate }) => {
+  await narrate('Choose the timezone and save the schedule.');
+  await page.getByLabel('Timezone').fill('Europe/Oslo');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.reload();
+  await expect(page.getByLabel('Timezone')).toHaveValue('Europe/Oslo');
+  await narrate('The timezone stays selected after a reload.');
+});
+```
+
 ## property: Fixtures.page
 * since: v1.10
 - type: <[Page]>

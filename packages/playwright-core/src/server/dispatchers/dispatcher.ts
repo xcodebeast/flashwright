@@ -450,6 +450,7 @@ export class DispatcherConnection {
     const slowMo = sdkObject.attribution.browser?.options.slowMo;
     if (slowMo)
       await new Promise(f => setTimeout(f, slowMo));
+    await sdkObject.attribution.page?.screencast.waitForFrameAfterAction();
   }
 
   private async _dispatchWaitInfo(id: string, dispatcher: DispatcherScope, params: any, metadata: any) {

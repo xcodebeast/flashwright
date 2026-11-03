@@ -109,6 +109,10 @@ export class TestTracing {
       return;
     }
 
+    // Flashwright: a trace's screenshots would hold the page's screencast at the trace's small size.
+    if (this._testInfo.config.narratedVideo.mode !== 'off')
+      this._options.screenshots = false;
+
     if (!this._liveTraceFile && this._options.live) {
       // Note that trace name must start with testId for live tracing to work.
       this._liveTraceFile = { file: path.join(this._tracesDir, `${this._testInfo.testId}-test.trace`), fs: new SerializedFS() };

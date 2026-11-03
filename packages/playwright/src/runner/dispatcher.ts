@@ -375,6 +375,10 @@ class JobDispatcher {
     params.usedSnapshotPaths?.forEach(file => this._testRun.usedSnapshotPaths.add(file));
     // The last attempt of a test decides: a retry that matched leaves nothing to accept.
     this._testRun.snapshotsToAccept.set(params.testId, params.snapshotsToAccept ?? []);
+    if (params.narratedVideoRecording)
+      this._testRun.narratedVideoRecordings.set(params.testId, params.narratedVideoRecording);
+    else
+      this._testRun.narratedVideoRecordings.delete(params.testId);
     const { result, test } = data;
     result.duration = params.duration;
     result.errors = params.errors;

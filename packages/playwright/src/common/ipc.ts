@@ -30,6 +30,7 @@ export type ConfigCLIOverrides = {
   fullyParallel?: boolean;
   globalTimeout?: number;
   maxFailures?: number;
+  narratedVideo?: { mode?: 'off' | 'on' | 'demo', zoom?: boolean, captions?: boolean, voice?: false };
   outputDir?: string;
   pause?: boolean;
   quiet?: boolean;
@@ -128,6 +129,8 @@ export type TestEndPayload = {
   usedSnapshotPaths?: string[];
   // Flashwright: see acceptSnapshots.ts.
   snapshotsToAccept?: { expected: string, actual: string }[];
+  // Flashwright: the folder with this attempt's recording (see narratedVideo.ts).
+  narratedVideoRecording?: string;
 };
 
 export type StepBeginPayload = {

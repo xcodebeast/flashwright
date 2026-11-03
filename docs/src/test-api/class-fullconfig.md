@@ -99,6 +99,12 @@ See [`property: TestConfig.preserveOutput`].
 
 See [`property: TestConfig.agentMode`].
 
+## property: FullConfig.narratedVideo
+* since: v1.64
+- type: <[Object]>
+
+See [`property: TestConfig.narratedVideo`].
+
 ## property: FullConfig.testOrder
 * since: v1.64
 - type: <[TestOrder]<"longest-first"|"file">>

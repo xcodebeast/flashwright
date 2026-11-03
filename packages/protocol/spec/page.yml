@@ -628,6 +628,8 @@ Page:
         fps: int?
         sendFrames: boolean?
         record: boolean?
+        # Flashwright: report input actions and wait for the next frame after each (see --video).
+        followActions: boolean?
       returns:
         artifact: Artifact?
 
@@ -773,6 +775,12 @@ Page:
         timestamp: float
         viewportWidth: int
         viewportHeight: int
+
+    screencastInputAction:
+      parameters:
+        timestamp: float
+        point: Point?
+        box: Rect?
 
     webSocketRoute:
       parameters:

@@ -431,6 +431,7 @@ export class PageDispatcher extends Dispatcher<Page, channels.PageChannel, Brows
           this._dispatchEvent('screencastFrame', { frameId, data: frame.buffer, timestamp: frame.frameSwapWallTime, viewportWidth: frame.viewportWidth, viewportHeight: frame.viewportHeight });
           await promise;
         },
+        onInputAction: params.followActions ? action => this._dispatchEvent('screencastInputAction', action) : undefined,
         gracefulClose: () => this._clearScreencastFrameAcks(),
         dispose: () => this._clearScreencastFrameAcks(),
         size: params.size,

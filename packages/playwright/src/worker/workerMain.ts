@@ -709,6 +709,7 @@ function buildTestEndPayload(testInfo: TestInfoImpl): ipc.TestEndPayload {
     timeout: testInfo.timeout,
     usedSnapshotPaths: testInfo._usedSnapshotPaths.size ? [...testInfo._usedSnapshotPaths] : undefined,
     snapshotsToAccept: testInfo._snapshotsToAccept.length ? testInfo._snapshotsToAccept : undefined,
+    narratedVideoRecording: testInfo._narratedVideoRecording,
   };
 }
 
