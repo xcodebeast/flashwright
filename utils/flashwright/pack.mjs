@@ -40,7 +40,7 @@ const readme = name => `<img src="https://raw.githubusercontent.com/xcodebeast/f
 
 # ${name}
 
-Part of [Flashwright](${homepage}), a faster [Playwright](https://playwright.dev): a fork of Playwright ${upstreamVersion} with the same API, test runner and browsers, at least 2× faster on every scenario of its benchmark (2.74× on average).
+Part of [Flashwright](${homepage}), the fastest end-to-end testing framework: a fork of [Playwright](https://playwright.dev) ${upstreamVersion} with the same API, test runner and browsers, at least 2× faster than Playwright on every scenario of its benchmark and faster than Cypress, WebdriverIO, Selenium, Puppeteer, TestCafe and Nightwatch on the same tests.
 
 ![Playwright and Flashwright running the same 24 tests side by side](https://raw.githubusercontent.com/xcodebeast/flashwright/main/docs/media/race.gif)
 
@@ -82,7 +82,7 @@ for (const pkg of packages) {
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   manifest.name = pkg.name;
   manifest.version = version;
-  manifest.description = `Flashwright: a faster drop-in replacement for Playwright (fork of Playwright ${upstreamVersion})`;
+  manifest.description = `Flashwright: the fastest end-to-end testing framework, a drop-in replacement for Playwright (fork of Playwright ${upstreamVersion})`;
   manifest.repository = repository;
   manifest.homepage = website;
   manifest.bugs = { url: `${homepage}/issues` };

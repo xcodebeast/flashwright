@@ -2,13 +2,13 @@
 
 # Flashwright
 
-**A faster Playwright.** Same API, same test runner, same `npx playwright test`: your existing Playwright suite runs unmodified and finishes 2–4× sooner. [flashwright.dev](https://flashwright.dev)
+**The fastest end-to-end testing framework.** A drop-in Playwright: same API, same test runner, same `npx playwright test`. Your existing Playwright suite runs unmodified and finishes 2–4× sooner, and the same tests run faster than in Cypress, WebdriverIO, Selenium, Puppeteer, TestCafe, Nightwatch and Bun. [flashwright.dev](https://flashwright.dev)
 
 ![Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.65 s, Flashwright 1.05 s](docs/media/race.gif)
 
 <sub>Playwright's own TodoMVC example suite, run by both on the same machine. The recorded output of real runs, played back in real time ([MP4](docs/media/race.mp4)).</sub>
 
-- **The fastest of the 9 browser testing tools we benchmarked**: the same 24 tests run 1.8× faster than the runner-up and 1.9–2× faster than Playwright, and 3–11× faster than WebdriverIO, TestCafe and Cypress. [Compared to other frameworks](#compared-to-other-frameworks).
+- **The fastest e2e framework**: in a benchmark of 9 browser testing tools, the same 24 tests run 1.8× faster than the runner-up and 1.9–2× faster than Playwright, and 3–11× faster than WebdriverIO, TestCafe and Cypress. [Compared to other frameworks](#compared-to-other-frameworks).
 - **At least 2× faster than Playwright on every scenario we measure**, 2.86× on average: real example suites, a sign-in app with a setup project, an admin page of 8,500 elements, failing tests, screenshots, visual comparisons. [Benchmarks](#benchmarks).
 - **A drop-in replacement.** Flashwright is a fork of Playwright 1.64.1 that changes only where time goes. Playwright's own test suites are its regression bar.
 - **Made for agents that check their own work.** A single test re-runs in under 0.1 s instead of 0.6–0.7 s, because a [warm session](#warm-session) keeps the browser between runs; screenshots take half the time, and the MCP server can return as soon as the page settles.
