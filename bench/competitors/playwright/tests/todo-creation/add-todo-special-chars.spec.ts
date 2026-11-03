@@ -1,0 +1,15 @@
+import { test, expect } from '@playwright/test';
+
+test.beforeEach(async ({ page }) => {
+  await page.goto(process.env.APP_URL!);
+});
+
+test.describe("Todo Creation", () => {
+  test("Add todo with special characters", async ({ page }) => {
+    await expect(page.locator(".new-todo")).toBeVisible();
+    await page.locator(".new-todo").fill("Buy @groceries & supplies (urgent!)");
+    await page.locator(".new-todo").press('Enter');
+    await expect(page.locator(".todo-list li label", { hasText: /^Buy @groceries & supplies \(urgent!\)$/ })).toBeVisible();
+    await expect(page.locator(".todo-count")).toHaveText("1 item left");
+  });
+});

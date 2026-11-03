@@ -48,6 +48,9 @@ const ignores = [
   "workbench/",
   // Benchmark corpora: copies of third-party apps and their test suites, kept as their projects have them.
   "bench/apps/",
+  // Tests and configs generated for other frameworks by bench/competitors/generate.mjs.
+  "bench/competitors/*/tests/",
+  "bench/competitors/*/playwright.config.ts",
   "**/playwright-report/",
   "examples",
   "packages/*/lib/",
