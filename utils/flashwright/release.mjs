@@ -49,7 +49,9 @@ const watchBuilds = () => {
   return fs.readdirSync('/proc').filter(pid => /^\d+$/.test(pid)).filter(pid => {
     try {
       const args = fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0');
-      return args.includes('--watch') && args.some(arg => arg.endsWith('utils/build/build.js')) && fs.readlinkSync(`/proc/${pid}/cwd`) === root;
+      // build.js starts a vite --watch per web package, and they outlive it when it is killed.
+      const cwd = fs.readlinkSync(`/proc/${pid}/cwd`);
+      return args.includes('--watch') && args.some(arg => /(utils\/build\/build\.js|vite\/bin\/vite\.js)$/.test(arg)) && (cwd === root || cwd.startsWith(path.join(root, 'packages') + path.sep));
     } catch {
       return false;
     }
