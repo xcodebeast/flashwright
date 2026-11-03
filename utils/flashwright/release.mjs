@@ -5,7 +5,7 @@
 //   2. picks the next version: <upstream version>-flashwright.<n + 1>, from what npm already has,
 //   3. builds from scratch, packs (pack.mjs) and runs bench/consumer-test.mjs on the tarballs,
 //   4. asks for confirmation, publishes flashwright-core, flashwright and flashwright-test in that
-//      order as `latest`, then tags the commit v<version> and pushes the tag.
+//      order as `latest`, tags the commit v<version>, pushes the tag and creates its GitHub Release.
 //
 // Usage: npm run release -- [--dry-run] [--version <version>] [--skip-build] [--skip-check] [--yes] [--otp <code>]
 // --dry-run does everything up to the publish, which it runs with `npm publish --dry-run`.
@@ -127,5 +127,14 @@ step(`Tagging ${tag}`);
 if (!read('git', ['tag', '--list', tag]))
   run('git', ['tag', '-a', tag, '-m', `Flashwright ${version}`]);
 run('git', ['push', 'origin', tag]);
+
+step(`Creating the GitHub Release of ${tag}`);
+const githubRelease = path.join(root, 'utils/flashwright/github-release.mjs');
+try {
+  run(process.execPath, [githubRelease, tag]);
+} catch {
+  // The packages are out and the tag is pushed: this must not read as a failed release.
+  console.error(`\nThe GitHub Release was not created. Log in with gh auth login, then run: node utils/flashwright/github-release.mjs ${tag}`);
+}
 
 console.log(`\nPublished ${version}. Check the registry install with: node bench/consumer-test.mjs --registry`);
