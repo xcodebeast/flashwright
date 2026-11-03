@@ -103,10 +103,11 @@ export type TestAnnotation = TestDetailsAnnotation & {
   location?: Location;
 };
 
-export type TestDetails = {
+export type TestDetails<TestArgs extends {} = {}, WorkerArgs extends {} = {}> = {
   tag?: string | string[];
   annotation?: TestDetailsAnnotation | TestDetailsAnnotation[];
   lock?: string | string[];
+  use?: UseOptions<TestArgs, WorkerArgs>;
 }
 
 type TestBody<TestArgs> = (args: TestArgs, testInfo: TestInfo) => Promise<unknown> | unknown;
@@ -114,72 +115,72 @@ type ConditionBody<TestArgs> = (args: TestArgs) => boolean;
 
 export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
   (title: string, body: TestBody<TestArgs & WorkerArgs>): void;
-  (title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+  (title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
 
   only(title: string, body: TestBody<TestArgs & WorkerArgs>): void;
-  only(title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+  only(title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
 
   describe: {
     (title: string, callback: () => void): void;
     (callback: () => void): void;
-    (title: string, details: TestDetails, callback: () => void): void;
+    (title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
     only(title: string, callback: () => void): void;
     only(callback: () => void): void;
-    only(title: string, details: TestDetails, callback: () => void): void;
+    only(title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
     skip(title: string, callback: () => void): void;
     skip(callback: () => void): void;
-    skip(title: string, details: TestDetails, callback: () => void): void;
+    skip(title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
     fixme(title: string, callback: () => void): void;
     fixme(callback: () => void): void;
-    fixme(title: string, details: TestDetails, callback: () => void): void;
+    fixme(title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
     serial: {
       (title: string, callback: () => void): void;
       (callback: () => void): void;
-      (title: string, details: TestDetails, callback: () => void): void;
+      (title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
       only(title: string, callback: () => void): void;
       only(callback: () => void): void;
-      only(title: string, details: TestDetails, callback: () => void): void;
+      only(title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
     };
 
     parallel: {
       (title: string, callback: () => void): void;
       (callback: () => void): void;
-      (title: string, details: TestDetails, callback: () => void): void;
+      (title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
       only(title: string, callback: () => void): void;
       only(callback: () => void): void;
-      only(title: string, details: TestDetails, callback: () => void): void;
+      only(title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
     };
 
     configure: (options: { mode?: 'default' | 'parallel' | 'serial', retries?: number, timeout?: number, lock?: string | string[] }) => void;
   };
 
   skip(title: string, body: TestBody<TestArgs & WorkerArgs>): void;
-  skip(title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+  skip(title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
   skip(): void;
   skip(condition: boolean, description?: string): void;
   skip(callback: ConditionBody<TestArgs & WorkerArgs>, description?: string): void;
 
   fixme(title: string, body: TestBody<TestArgs & WorkerArgs>): void;
-  fixme(title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+  fixme(title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
   fixme(): void;
   fixme(condition: boolean, description?: string): void;
   fixme(callback: ConditionBody<TestArgs & WorkerArgs>, description?: string): void;
 
   fail: {
     (title: string, body: TestBody<TestArgs & WorkerArgs>): void;
-    (title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+    (title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
     (condition: boolean, description?: string): void;
     (callback: ConditionBody<TestArgs & WorkerArgs>, description?: string): void;
     (): void;
 
     only(title: string, body: TestBody<TestArgs & WorkerArgs>): void;
-    only(title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+    only(title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
   }
 
   abort(message?: string): never;

@@ -167,6 +167,12 @@ Every run still gets new runner and worker processes, so changed tests, configs 
 - **When it is on:** by default, except when the `CI` environment variable is set, when a debugger is attached, with `PWDEBUG`, `--ui` or `--debug`, and on Windows. A CI job usually runs its tests once, so a session would only hold memory there. `FLASHWRIGHT_SESSION=0` turns it off and `FLASHWRIGHT_SESSION=1` turns it on in CI.
 - **What it holds:** one session per project directory, until 5 minutes after its last run (`FLASHWRIGHT_SESSION_TIMEOUT=<seconds>` changes that) or until Flashwright is reinstalled. While it waits, it keeps a runner, a worker for each kept browser and the browsers: about 0.4 GB after one-test runs and 1 GB after a 4-worker suite. Headed browsers are closed, not kept.
 
+## Additions
+
+Features that Playwright users asked for and Playwright did not add. They are additive: configs and tests written for Playwright work as before.
+
+- **Options for one test**: `test('fits a phone', { use: { viewport: { width: 390, height: 844 } } }, async ({ page }) => {})`, next to `tag` and `annotation`, instead of a `describe` group around the test. `test.describe()` takes `use` too. Like `test.use()` in a group, it cannot set the options of worker fixtures, such as `browserName`.
+
 ## Deprecated APIs
 
 Playwright still ships about 95 methods its documentation discourages: the selector-based ones such as `page.click(selector)` and `page.fill(selector, value)`, element handles, `waitForNavigation`, `waitForTimeout`. Flashwright keeps them working and marks them `@deprecated` in its types, so that editors strike them through. `npx playwright codemod` shows, as a diff, how it rewrites the selector-based calls to locators (`page.click('#go')` becomes `page.locator('#go').click()`), `--write` applies it, and it lists with their location the calls to change by hand: element handles, `$eval`, `waitForNavigation`, `waitForTimeout`, `networkidle`. Locators are strict: where a selector matched several elements, the old call used the first one and the rewritten call fails; `--keep-first` adds `.first()` to keep the old behavior.

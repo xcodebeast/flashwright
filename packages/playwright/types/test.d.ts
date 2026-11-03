@@ -2896,10 +2896,11 @@ export type TestAnnotation = TestDetailsAnnotation & {
   location?: Location;
 };
 
-export type TestDetails = {
+export type TestDetails<TestArgs extends {} = {}, WorkerArgs extends {} = {}> = {
   tag?: string | string[];
   annotation?: TestDetailsAnnotation | TestDetailsAnnotation[];
   lock?: string | string[];
+  use?: UseOptions<TestArgs, WorkerArgs>;
 }
 
 type TestBody<TestArgs> = (args: TestArgs, testInfo: TestInfo) => Promise<unknown> | unknown;
@@ -3012,7 +3013,18 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
    *
    * Learn more about [test locks](https://playwright.dev/docs/test-parallel#test-locks).
    * @param title Test title.
-   * @param details Additional test details.
+   * @param details Additional test details. `use` sets options for this test only, like
+   * [test.use(options)](https://playwright.dev/docs/api/class-test#test-use) does for a file or a group. Options of
+   * worker fixtures, such as `browserName`, cannot be set this way, because they need a new worker.
+   *
+   * ```js
+   * test('fits a phone', {
+   * use: { viewport: { width: 390, height: 844 } },
+   * }, async ({ page }) => {
+   * // ...
+   * });
+   * ```
+   *
    * @param body Test body that takes one or two arguments: an object with fixtures and optional
    * [TestInfo](https://playwright.dev/docs/api/class-testinfo).
    */
@@ -3109,11 +3121,22 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
    *
    * Learn more about [test locks](https://playwright.dev/docs/test-parallel#test-locks).
    * @param title Test title.
-   * @param details Additional test details.
+   * @param details Additional test details. `use` sets options for this test only, like
+   * [test.use(options)](https://playwright.dev/docs/api/class-test#test-use) does for a file or a group. Options of
+   * worker fixtures, such as `browserName`, cannot be set this way, because they need a new worker.
+   *
+   * ```js
+   * test('fits a phone', {
+   * use: { viewport: { width: 390, height: 844 } },
+   * }, async ({ page }) => {
+   * // ...
+   * });
+   * ```
+   *
    * @param body Test body that takes one or two arguments: an object with fixtures and optional
    * [TestInfo](https://playwright.dev/docs/api/class-testinfo).
    */
-  (title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+  (title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
 
   /**
    * Declares a focused test. If there are some focused tests or suites, all of them will be run but nothing else.
@@ -3154,7 +3177,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
    * @param body Test body that takes one or two arguments: an object with fixtures and optional
    * [TestInfo](https://playwright.dev/docs/api/class-testinfo).
    */
-  only(title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+  only(title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
 
   /**
    * Declares a group of tests.
@@ -3267,7 +3290,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
    * ```
    *
    * @param title Group title.
-   * @param details Additional details for all tests in the group.
+   * @param details Additional details for all tests in the group. `use` sets options for the group, like
+   * [test.use(options)](https://playwright.dev/docs/api/class-test#test-use) inside it.
    * @param callback A callback that is run immediately when calling
    * [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe). Any tests
    * declared in this callback will belong to the group.
@@ -3384,7 +3408,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
      * ```
      *
      * @param title Group title.
-     * @param details Additional details for all tests in the group.
+     * @param details Additional details for all tests in the group. `use` sets options for the group, like
+     * [test.use(options)](https://playwright.dev/docs/api/class-test#test-use) inside it.
      * @param callback A callback that is run immediately when calling
      * [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe). Any tests
      * declared in this callback will belong to the group.
@@ -3501,7 +3526,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
      * ```
      *
      * @param title Group title.
-     * @param details Additional details for all tests in the group.
+     * @param details Additional details for all tests in the group. `use` sets options for the group, like
+     * [test.use(options)](https://playwright.dev/docs/api/class-test#test-use) inside it.
      * @param callback A callback that is run immediately when calling
      * [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe). Any tests
      * declared in this callback will belong to the group.
@@ -3618,12 +3644,13 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
      * ```
      *
      * @param title Group title.
-     * @param details Additional details for all tests in the group.
+     * @param details Additional details for all tests in the group. `use` sets options for the group, like
+     * [test.use(options)](https://playwright.dev/docs/api/class-test#test-use) inside it.
      * @param callback A callback that is run immediately when calling
      * [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe). Any tests
      * declared in this callback will belong to the group.
      */
-    (title: string, details: TestDetails, callback: () => void): void;
+    (title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
     /**
      * Declares a focused group of tests. If there are some focused tests or suites, all of them will be run but nothing
@@ -3732,7 +3759,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
      * [test.describe.only([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe-only).
      * Any tests added in this callback will belong to the group.
      */
-    only(title: string, details: TestDetails, callback: () => void): void;
+    only(title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
     /**
      * Declares a skipped test group, similarly to
@@ -3835,7 +3862,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
      * [test.describe.skip(title[, details, callback])](https://playwright.dev/docs/api/class-test#test-describe-skip).
      * Any tests added in this callback will belong to the group, and will not be run.
      */
-    skip(title: string, details: TestDetails, callback: () => void): void;
+    skip(title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
     /**
      * Declares a test group similarly to
@@ -3938,7 +3965,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
      * [test.describe.fixme([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe-fixme).
      * Any tests added in this callback will belong to the group, and will not be run.
      */
-    fixme(title: string, details: TestDetails, callback: () => void): void;
+    fixme(title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
     /**
      * **NOTE** See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
@@ -4103,7 +4130,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * [test.describe.serial([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe-serial).
        * Any tests added in this callback will belong to the group.
        */
-      (title: string, details: TestDetails, callback: () => void): void;
+      (title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
       /**
        * **NOTE** See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
@@ -4236,7 +4263,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * [test.describe.serial.only(title[, details, callback])](https://playwright.dev/docs/api/class-test#test-describe-serial-only).
        * Any tests added in this callback will belong to the group.
        */
-      only(title: string, details: TestDetails, callback: () => void): void;
+      only(title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
     };
 
     /**
@@ -4406,7 +4433,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * [test.describe.parallel([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe-parallel).
        * Any tests added in this callback will belong to the group.
        */
-      (title: string, details: TestDetails, callback: () => void): void;
+      (title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
 
       /**
        * **NOTE** See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
@@ -4521,7 +4548,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * [test.describe.parallel.only([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe-parallel-only).
        * Any tests added in this callback will belong to the group.
        */
-      only(title: string, details: TestDetails, callback: () => void): void;
+      only(title: string, details: TestDetails<TestArgs, WorkerArgs>, callback: () => void): void;
     };
 
     /**
@@ -4766,7 +4793,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
    * when the return value is `true`.
    * @param description Optional description that will be reflected in a test report.
    */
-  skip(title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+  skip(title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
   /**
    * Skip a test. Playwright will not run the test past the `test.skip()` call.
    *
@@ -5166,7 +5193,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
    * when the return value is `true`.
    * @param description Optional description that will be reflected in a test report.
    */
-  fixme(title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+  fixme(title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
   /**
    * Mark a test as "fixme", with the intention to fix it. Playwright will not run the test past the `test.fixme()`
    * call.
@@ -5632,7 +5659,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
      * "should fail" when the return value is `true`.
      * @param description Optional description that will be reflected in a test report.
      */
-    (title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+    (title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
     /**
      * Marks a test as "should fail". Playwright runs this test and ensures that it is actually failing. This is useful
      * for documentation purposes to acknowledge that some functionality is broken until it is fixed.
@@ -5924,7 +5951,7 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
      * @param body Test body that takes one or two arguments: an object with fixtures and optional
      * [TestInfo](https://playwright.dev/docs/api/class-testinfo).
      */
-    only(title: string, details: TestDetails, body: TestBody<TestArgs & WorkerArgs>): void;
+    only(title: string, details: TestDetails<TestArgs, WorkerArgs>, body: TestBody<TestArgs & WorkerArgs>): void;
   }
 
   /**

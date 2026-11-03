@@ -68,6 +68,9 @@ export class PoolBuilder {
         pool.validateFunction(modifier.fn, modifier.type + ' modifier', modifier.location);
     }
 
+    // Flashwright: a test's own options (its details' `use`), with the rules of a describe group.
+    if (test._use.length)
+      pool = new FixturePool(test._use, e => this._handleLoadError({ ...e, message: e.message.replace(/^Cannot use\(\{ (.+?) \}\) in a describe group/, `Cannot set $1 in the use details of a test`) }, testErrors), pool, true);
     pool.validateFunction(test.fn, 'Test', test.location);
     return pool;
   }

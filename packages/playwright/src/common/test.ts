@@ -287,6 +287,8 @@ export class TestCase extends Base implements reporterTypes.TestCase {
   // Explicitly declared tags that are not a part of the title.
   _tags: string[] = [];
   _locks: string[] = [];
+  // Flashwright: the options from the test's details; set again where the file is loaded.
+  _use: FixturesWithLocation[] = [];
   _planAnnotations: TestAnnotation[] = [];
 
   constructor(title: string, fn: Function, testType: TestTypeImpl, location: Location) {
@@ -373,6 +375,7 @@ export class TestCase extends Base implements reporterTypes.TestCase {
     const test = TestCase._parse(data);
     test._testType = this._testType;
     test.fn = this.fn;
+    test._use = this._use.slice();
     return test;
   }
 

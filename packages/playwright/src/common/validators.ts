@@ -50,6 +50,8 @@ const testDetailsSchema: JsonSchema = {
         { type: 'array', items: { type: 'string' } },
       ]
     },
+    // Flashwright: options for this test or group, like test.use() in a describe group.
+    use: { type: 'object' },
   },
 };
 
@@ -57,6 +59,7 @@ type ValidTestDetails = {
   tags: string[];
   annotations: (TestDetailsAnnotation & { location: Location })[];
   locks: string[];
+  use?: Record<string, unknown>;
   location: Location;
 };
 
@@ -79,6 +82,7 @@ export function validateTestDetails(details: unknown, location: Location): Valid
     annotations: annotations.map(a => ({ ...a, location })),
     tags,
     locks,
+    use: obj.use as Record<string, unknown> | undefined,
     location,
   };
 }

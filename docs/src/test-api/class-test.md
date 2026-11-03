@@ -116,8 +116,17 @@ Test title.
     - `type` <[string]> Annotation type, for example `'issue'`.
     - `description` ?<[string]> Optional annotation description, for example an issue url.
   - `lock` ?<[string]|[Array]<[string]>>
+  - `use` ?<[Object]>
 
-Additional test details.
+Additional test details. `use` sets options for this test only, like [`method: Test.use`] does for a file or a group. Options of worker fixtures, such as `browserName`, cannot be set this way, because they need a new worker.
+
+```js
+test('fits a phone', {
+  use: { viewport: { width: 390, height: 844 } },
+}, async ({ page }) => {
+  // ...
+});
+```
 
 ### param: Test.(call).body
 * since: v1.10
@@ -479,8 +488,9 @@ Group title.
     - `type` <[string]>
     - `description` ?<[string]>
   - `lock` ?<[string]|[Array]<[string]>>
+  - `use` ?<[Object]>
 
-Additional details for all tests in the group.
+Additional details for all tests in the group. `use` sets options for the group, like [`method: Test.use`] inside it.
 
 ### param: Test.describe.callback
 * since: v1.10

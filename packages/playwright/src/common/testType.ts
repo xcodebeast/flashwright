@@ -113,6 +113,8 @@ export class TestTypeImpl {
     test.annotations.push(...validatedDetails.annotations);
     test._tags.push(...validatedDetails.tags);
     test._locks.push(...validatedDetails.locks);
+    if (validatedDetails.use)
+      test._use.push({ fixtures: validatedDetails.use as Fixtures, location });
     suite._addTest(test);
 
     if (type === 'only' || type === 'fail.only')
@@ -154,6 +156,8 @@ export class TestTypeImpl {
     child._staticAnnotations.push(...validatedDetails.annotations);
     child._tags.push(...validatedDetails.tags);
     child._locks.push(...validatedDetails.locks);
+    if (validatedDetails.use)
+      child._use.push({ fixtures: validatedDetails.use as Fixtures, location });
     suite._addSuite(child);
 
     if (type === 'only' || type === 'serial.only' || type === 'parallel.only')
