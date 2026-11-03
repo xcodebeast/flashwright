@@ -174,11 +174,56 @@ export function recordWorkerLaunch(launch: Launch) {
   launches.set(JSON.stringify(launch), launch);
 }
 
+export function loaderEntryScript() {
+  return path.join(__dirname, '..', 'loader', 'loaderProcessEntry.js');
+}
+
+// The process that loads test files in a watch-mode run (see loaderHost.ts). It writes to the
+// runner's own stdout and stderr, like the loader the run would fork.
+let loaderStandby: Standby | undefined;
+
+function spawnLoaderStandby() {
+  const entryScript = loaderEntryScript();
+  const env: NodeJS.ProcessEnv = { ...process.env, FLASHWRIGHT_LOADER_STANDBY: '1' };
+  const child = child_process.fork(entryScript, { detached: false, env, stdio: ['ignore', 'inherit', 'inherit', 'ipc'] });
+  child.on('error', () => {});
+  const ready = new Promise<boolean>(resolve => {
+    const onMessage = (message: any) => {
+      if (message?.method === 'ready') {
+        child.off('message', onMessage);
+        resolve(true);
+      }
+    };
+    child.on('message', onMessage);
+    child.once('exit', () => resolve(false));
+  });
+  loaderStandby = { child, entryScript, env, ready };
+  child.unref();
+  (child as any).channel?.unref?.();
+}
+
+export async function takeLoaderStandby(entryScript: string, env: NodeJS.ProcessEnv): Promise<child_process.ChildProcess | undefined> {
+  const standby = loaderStandby;
+  loaderStandby = undefined;
+  if (!standby)
+    return;
+  if (!isCompatible(standby, entryScript, env) || !await standby.ready) {
+    release(standby.child);
+    return;
+  }
+  standby.child.ref();
+  (standby.child as any).channel?.ref?.();
+  return standby.child;
+}
+
 // Watch mode runs again in the same process: after a run, start the workers of the next one,
-// with the browser this run's tests launched, so that a change is tested as fast as a warm run.
+// with the browser this run's tests launched, and the process that will load its test files, so
+// that a change is tested as fast as a warm run.
 export function refillStandbysForNextRun() {
   if (!enabled)
     return;
+  if (!loaderStandby)
+    spawnLoaderStandby();
   const [launch, ...others] = launches.values();
   if (launch && !others.length && launch.options)
     rememberedLaunch = launch;
@@ -188,6 +233,9 @@ export function refillStandbysForNextRun() {
 export function discardStandbys() {
   for (const standby of standbys.splice(0))
     release(standby.child);
+  if (loaderStandby)
+    release(loaderStandby.child);
+  loaderStandby = undefined;
 }
 
 // Workers ignore SIGTERM; closing the IPC channel makes them shut down gracefully, browser included.
@@ -205,15 +253,18 @@ export async function takeStandby(entryScript: string, env: NodeJS.ProcessEnv): 
   // Forking takes milliseconds of this thread; let the adopted worker get its first messages before.
   if (keepSpare)
     setImmediate(() => ensureStandbys(1));
-  const keys = new Set([...Object.keys(env), ...Object.keys(standby.env)]);
-  const compatible = standby.entryScript === entryScript && [...keys].every(key => !loadTimeEnvPattern.test(key) || env[key] === standby.env[key]);
-  if (!compatible || !await standby.ready) {
+  if (!isCompatible(standby, entryScript, env) || !await standby.ready) {
     release(standby.child);
     return;
   }
   standby.child.ref();
   (standby.child as any).channel?.ref?.();
   return standby.child;
+}
+
+function isCompatible(standby: Standby, entryScript: string, env: NodeJS.ProcessEnv) {
+  const keys = new Set([...Object.keys(env), ...Object.keys(standby.env)]);
+  return standby.entryScript === entryScript && [...keys].every(key => !loadTimeEnvPattern.test(key) || env[key] === standby.env[key]);
 }
 
 // All projects share one small hint file, keeping only the most recently used entries.

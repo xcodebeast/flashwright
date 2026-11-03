@@ -14,7 +14,19 @@
  * limitations under the License.
  */
 
-import { startProcessRunner } from '../common';
+import { startProcessRunner, transform } from '../common';
 import { create } from './loaderMain';
 
 startProcessRunner(create);
+
+// Flashwright: started ahead of a watch-mode run (see workerStandby.ts); a run's __init__ that
+// arrives meanwhile waits for the warm-up, which it would otherwise do itself.
+if (process.env.FLASHWRIGHT_LOADER_STANDBY) {
+  delete process.env.FLASHWRIGHT_LOADER_STANDBY;
+  setImmediate(() => {
+    try {
+      transform.warmUpTransform();
+    } catch {
+    }
+  });
+}

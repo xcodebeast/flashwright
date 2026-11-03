@@ -35,12 +35,15 @@ test('--watch runs the tests of changed files, with the title filter and project
   await writeFiles({
     'b(1).test.ts': `
       import { test, expect } from '@playwright/test';
+      console.log('output while loading');
       test('wanted', () => { expect(1).toBe(2); });
     `,
   });
   await testProcess.waitForOutput('Waiting for file changes.');
+  // The test file was loaded by a loader started ahead of the run, which prints like any loader.
+  expect(testProcess.output).toContain('output while loading');
   expect(testProcess.output).toContain('(files changed)');
-  expect(testProcess.output).toContain('[one] › b(1).test.ts:3:11 › wanted');
+  expect(testProcess.output).toContain('[one] › b(1).test.ts:4:11 › wanted');
   expect(testProcess.output).toContain('1 failed');
   expect(testProcess.output).not.toContain('[two]');
   expect(testProcess.output).not.toContain('a.test.ts');

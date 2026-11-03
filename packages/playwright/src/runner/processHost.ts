@@ -23,7 +23,7 @@ import { monotonicTime, timeOrigin } from '@isomorphic/time';
 import { raceAgainstDeadline } from '@isomorphic/timeoutRunner';
 import { ManualPromise } from '@isomorphic/manualPromise';
 import { killProcessTree } from '@utils/processLauncher';
-import { recordWorkerLaunch, takeStandby } from './workerStandby';
+import { recordWorkerLaunch, takeLoaderStandby, takeStandby } from './workerStandby';
 import { receiveWorkerMessage, trackDetachedTeardown, trackSessionWorker } from './session';
 
 import type { ipc, processRunner } from '../common';
@@ -121,7 +121,7 @@ export class ProcessHost extends EventEmitter {
     };
     // Flashwright: reuse a worker process that was started while the CLI was loading.
     const pipesOutput = !!options.onStdOut && !!options.onStdErr && !process.env.PW_RUNNER_DEBUG;
-    const adopted = pipesOutput ? await takeStandby(this._entryScript, env) : undefined;
+    const adopted = pipesOutput ? await takeStandby(this._entryScript, env) : (!options.onStdOut && !options.onStdErr ? await takeLoaderStandby(this._entryScript, env) : undefined);
     this.process = adopted ?? child_process.fork(this._entryScript, {
       // Note: we pass detached:false, so that workers are in the same process group.
       // This way Ctrl+C or a kill command can shutdown all workers in case they misbehave.

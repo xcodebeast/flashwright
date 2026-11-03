@@ -240,6 +240,14 @@ export function transformHook(originalCode: string, filename: string, moduleUrl?
   return { code, serializedCache: added.serializedCache };
 }
 
+// Flashwright: a loader started ahead of a watch-mode run loads babel and its TypeScript plugins
+// while it waits, which a changed file would otherwise pay for. The result is not cached.
+export function warmUpTransform() {
+  process.env.BROWSERSLIST_IGNORE_OLD_DATA = 'true';
+  const { babelTransform }: { babelTransform: BabelTransformFunction } = require(libPath('transform', 'babelBundle'));
+  babelTransform('const value: number = 1;\nexport default value;\n', path.join(process.cwd(), '__flashwright_warm_up__.ts'), false, []);
+}
+
 function calculateHash(content: string, filePath: string, isModule: boolean, pluginsEpilogue: BabelPlugin[], jsx: JsxOptions | undefined): string {
   const hash = crypto.createHash('sha1')
       .update(isModule ? 'esm' : 'no_esm')

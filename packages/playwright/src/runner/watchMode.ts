@@ -153,6 +153,8 @@ export async function runWatchModeLoop(configLocation: ConfigLocation, initialOp
   teleSuiteUpdater.processListReport(report);
 
   const projectNames = teleSuiteUpdater.rootSuite!.suites.map(s => s.title);
+  // Flashwright: the first change starts as warm as the later ones.
+  refillStandbysForNextRun();
 
   let lastRun: { type: 'changed' | 'regular' | 'failed', failedTestIds?: string[], dirtyTestIds?: string[], dirtyLocations?: string[] } = { type: 'regular' };
   let result: reporterTypes.FullResult['status'] = 'passed';

@@ -144,7 +144,7 @@ It also writes `test-results/summary.json`, with an `outcome` that tells apart f
 
 `npx playwright test --watch` runs, in the terminal, the tests of each test file you save and of the test files that import a file you save, with the command's filters. It is Playwright's terminal watch mode, which Playwright keeps behind an environment variable; `h` lists its other commands: run all, run the failures, repeat, change the project, file or title filter, show the browser.
 
-A saved file's tests report 465 ms after the save instead of 1065 ms (one test that opens a page, medians of 9): the changed files run right away instead of after listing every test, and the next run's worker and browser start while you read the results.
+A saved file's tests report 255 ms after the save instead of 1065 ms (4.2×; one test that opens a page, medians of 9): the changed files run right away instead of after listing every test, and while you read the results the next run's worker starts with its browser, and so does the process that loads test files, with babel already loaded.
 
 ### Warm session
 
