@@ -708,6 +708,7 @@ function buildTestEndPayload(testInfo: TestInfoImpl): ipc.TestEndPayload {
     annotations: testInfo.annotations,
     timeout: testInfo.timeout,
     usedSnapshotPaths: testInfo._usedSnapshotPaths.size ? [...testInfo._usedSnapshotPaths] : undefined,
+    snapshotsToAccept: testInfo._snapshotsToAccept.length ? testInfo._snapshotsToAccept : undefined,
   };
 }
 

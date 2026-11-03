@@ -26,6 +26,7 @@ import { removeFolders } from '@utils/fileUtils';
 import { Dispatcher  } from './dispatcher';
 import { ensureStandbys, ensureStandbysForConfig, recordWorkerCount } from './workerStandby';
 import { pruneSnapshots } from './pruneSnapshots';
+import { recordSnapshotsToAccept } from './acceptSnapshots';
 import { isWarmSessionRun } from './session';
 import { collectProjectsAndTestFiles, createRootSuite, loadFileSuites, loadGlobalHook, loadTestList } from './loadUtils';
 import { buildDependentProjects, buildTeardownToSetupsMap, filterProjects } from './projectUtils';
@@ -98,6 +99,8 @@ export class TestRun {
   failedTestCount = 0;
   // Flashwright: the snapshot files that tests resolved (see pruneSnapshots.ts).
   readonly usedSnapshotPaths = new Set<string>();
+  // Flashwright: by test, the snapshots of the test's last attempt that did not match (see acceptSnapshots.ts).
+  readonly snapshotsToAccept = new Map<string, { expected: string, actual: string }[]>();
   readonly loadFileFilters: Matcher[] = [];
   readonly preOnlyTestFilters: TestCaseFilter[] = [];
   readonly postShardTestFilters: TestCaseFilter[] = [];
@@ -179,10 +182,11 @@ export function createRunTestsTasks(config: FullConfigInternal) {
 
 export function createPruneSnapshotsTask(): Task<TestRun> {
   return {
-    title: 'prune snapshots',
+    title: 'snapshot files',
     setup: async testRun => {
       if (testRun.options.pruneSnapshots)
         pruneSnapshots(testRun);
+      await recordSnapshotsToAccept(testRun);
     },
   };
 }

@@ -45,6 +45,7 @@ const testBackend = () => require('./mcp/test/testBackend') as typeof import('./
 const agentGenerators = () => require('./agents/generateAgents') as typeof import('./agents/generateAgents');
 const codemod = () => (require('./runner') as typeof import('./runner')).codemod;
 const doctor = () => (require('./runner') as typeof import('./runner')).doctor;
+const acceptSnapshots = () => (require('./runner') as typeof import('./runner')).acceptSnapshots;
 
 function addTestCommand(program: Command) {
   const command = program.command('test [test-filter...]');
@@ -99,6 +100,17 @@ Examples:
   $ npx playwright codemod tests --write`);
   command.action(async (paths: string[], options: { write?: boolean, keepFirst?: boolean }) => {
     const code = await codemod().runCodemod(paths, { write: !!options.write, keepFirst: !!options.keepFirst });
+    gracefullyProcessExitDoNotHang(code);
+  });
+}
+
+// Flashwright: makes the last run's actual screenshots and snapshots the expected ones.
+function addAcceptSnapshotsCommand(program: Command) {
+  const command = program.command('accept-snapshots');
+  command.description(`make what the last run's failed screenshot and snapshot comparisons produced the expected snapshots, without running the tests`);
+  command.option('-c, --config <file>', `Configuration file, or a test directory with optional "playwright.config.{m,c}?{js,ts}"`);
+  command.action(async (options: { config?: string }) => {
+    const code = await acceptSnapshots().runAcceptSnapshots(options);
     gracefullyProcessExitDoNotHang(code);
   });
 }
@@ -296,6 +308,7 @@ addShowReportCommand(program);
 addMergeReportsCommand(program);
 addClearCacheCommand(program);
 addDoctorCommand(program);
+addAcceptSnapshotsCommand(program);
 addCodemodCommand(program);
 addTestMCPServerCommand(program);
 addTestServerCommand(program);

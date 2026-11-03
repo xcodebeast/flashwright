@@ -126,6 +126,8 @@ export type TestEndPayload = {
   timeout: number;
   // Flashwright: see pruneSnapshots.ts.
   usedSnapshotPaths?: string[];
+  // Flashwright: see acceptSnapshots.ts.
+  snapshotsToAccept?: { expected: string, actual: string }[];
 };
 
 export type StepBeginPayload = {

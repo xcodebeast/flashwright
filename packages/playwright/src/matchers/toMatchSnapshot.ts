@@ -196,6 +196,8 @@ class SnapshotHelper {
     writeFileSync(this.actualPath, actual);
     attachments.push({ name: addSuffixToFilePath(this.attachmentBaseName, '-actual'), contentType: this.mimeType, path: this.actualPath });
     const message = `A snapshot doesn't exist at ${this.expectedPath}${isWriteMissingMode ? ', writing actual.' : '.'}`;
+    if (!isWriteMissingMode)
+      this.testInfo._snapshotsToAccept.push({ expected: this.expectedPath, actual: this.actualPath });
     if (this.updateSnapshots === 'all' || this.updateSnapshots === 'changed' || this.updateSnapshots === 'missing') {
       /* eslint-disable no-console */
       console.log(message);
@@ -238,6 +240,7 @@ class SnapshotHelper {
     if (actual !== undefined) {
       writeFileSync(this.actualPath, actual);
       attachments.push({ name: addSuffixToFilePath(this.attachmentBaseName, '-actual'), contentType: this.mimeType, path: this.actualPath });
+      this.testInfo._snapshotsToAccept.push({ expected: this.expectedPath, actual: this.actualPath });
     }
     if (diff !== undefined) {
       writeFileSync(this.diffPath, diff);

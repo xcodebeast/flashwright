@@ -110,6 +110,8 @@ export interface ExpectTestInfo {
   _deadline(): { deadline: number; timeout: number };
   _resolveSnapshotPaths(kind: 'snapshot' | 'screenshot' | 'aria', name: string | string[] | undefined, updateSnapshotIndex: 'updateSnapshotIndex' | 'dontUpdateSnapshotIndex', anonymousExtension?: string): { absoluteSnapshotPath: string; relativeOutputPath: string };
   _getOutputPath(...pathSegments: string[]): string;
+  // Flashwright: snapshots whose comparison failed, for `playwright accept-snapshots`.
+  _snapshotsToAccept: { expected: string, actual: string }[];
 }
 
 export type ExpectConfig = {

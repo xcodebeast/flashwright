@@ -143,6 +143,7 @@ export class TestInfoImpl implements TestInfo {
   status: TestStatus = 'passed';
   snapshotSuffix: string = '';
   readonly _usedSnapshotPaths = new Set<string>();
+  readonly _snapshotsToAccept: { expected: string, actual: string }[] = [];
   readonly outputDir: string;
   readonly snapshotDir: string;
   errors: TestInfoError[] = [];
