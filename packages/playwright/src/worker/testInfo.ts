@@ -331,7 +331,6 @@ export class TestInfoImpl implements TestInfo {
           return;
 
         step.endWallTime = Date.now();
-        this._narratedVideo?.onStepEnd(step);
         if (step.category === 'hook' || step.category === 'fixture')
           this._unfinishedPredefinedSteps--;
         if (result.attachments) {
@@ -365,6 +364,8 @@ export class TestInfoImpl implements TestInfo {
             }
           }
         }
+
+        this._narratedVideo?.onStepEnd(step);
 
         if (!step.group) {
           const payload: ipc.StepEndPayload = {

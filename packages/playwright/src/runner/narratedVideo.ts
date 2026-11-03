@@ -110,7 +110,7 @@ export function describeAction(step: Recording['steps'][0]): string {
   }
 }
 
-function describeAssertion(step: Recording['steps'][0]): string {
+export function describeAssertion(step: Pick<Recording['steps'][0], 'title' | 'subtitle' | 'failed'>): string {
   const matcher = step.title.match(/Expect "(.*)"/)?.[1] ?? step.title;
   const negated = /^not /.test(matcher);
   const name = matcher.replace(/^not /, '');

@@ -165,6 +165,33 @@ test('a sentence shows the page it is given, and the camera follows actions to o
   expect(colors).toEqual(['red', 'blue', 'red', 'blue']);
 });
 
+test('a failed assertion is recorded as failed, and soft ones too', async ({ runInlineTest }) => {
+  const result = await runInlineTest({
+    'playwright.config.js': voiceConfig(),
+    'a.spec.ts': `
+      import { test, expect } from '@playwright/test';
+      test('fails', async ({ page }) => {
+        await page.setContent('<div>Hello</div>');
+        await expect(page.getByText('Hello')).toBeVisible();
+        await expect.soft(page.getByText('Soft')).toBeVisible({ timeout: 300 });
+        await expect(page.getByText('Goodbye')).toBeVisible({ timeout: 300 });
+      });
+    `,
+  }, { video: true }, { FLASHWRIGHT_KEEP_VIDEO_WORK: '1' });
+  expect(result.exitCode).toBe(1);
+  const root = test.info().outputPath('test-results', '.video-recordings');
+  const recording = JSON.parse(fs.readFileSync(path.join(root, fs.readdirSync(root)[0], 'recording.json'), 'utf8'));
+  const assertions = recording.steps.filter((step: any) => step.category === 'expect').map((step: any) => [step.subtitle, !!step.failed]);
+  expect(assertions).toEqual([
+    [`getByText('Hello')`, false],
+    [`getByText('Soft')`, true],
+    [`getByText('Goodbye')`, true],
+  ]);
+  const { narratedVideo } = require('../../packages/playwright/lib/runner/index.js');
+  expect(narratedVideo.describeAssertion({ title: 'Expect "toBeEnabled"', subtitle: `getByRole('button', { name: 'Checkout' })`, failed: true })).toBe('Expected \u201cCheckout\u201d to be enabled');
+  expect(narratedVideo.describeAssertion({ title: 'Expect "toBeEnabled"', subtitle: `getByRole('button', { name: 'Checkout' })` })).toBe('\u201cCheckout\u201d is enabled');
+});
+
 test('closing another context does not stop the recording', async ({ runInlineTest }) => {
   const result = await runInlineTest({
     'playwright.config.js': voiceConfig(),
