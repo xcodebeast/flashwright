@@ -8,7 +8,8 @@
 
 <sub>Playwright's own TodoMVC example suite, run by both on the same machine. The recorded output of real runs, played back in real time ([MP4](docs/media/race.mp4)).</sub>
 
-- **At least 2× faster on every scenario we measure**, 2.86× on average: real example suites, a sign-in app with a setup project, an admin page of 8,500 elements, failing tests, screenshots, visual comparisons. [Benchmarks](#benchmarks).
+- **The fastest of the 9 browser testing tools we benchmarked**: the same 24 tests run 1.8× faster than the runner-up and 1.9–2× faster than Playwright, and 3–11× faster than WebdriverIO, TestCafe and Cypress. [Compared to other frameworks](#compared-to-other-frameworks).
+- **At least 2× faster than Playwright on every scenario we measure**, 2.86× on average: real example suites, a sign-in app with a setup project, an admin page of 8,500 elements, failing tests, screenshots, visual comparisons. [Benchmarks](#benchmarks).
 - **A drop-in replacement.** Flashwright is a fork of Playwright 1.64.1 that changes only where time goes. Playwright's own test suites are its regression bar.
 - **Made for agents that check their own work.** A single test re-runs in under 0.1 s instead of 0.6–0.7 s, because a [warm session](#warm-session) keeps the browser between runs; screenshots take half the time, and the MCP server can return as soon as the page settles.
 
@@ -23,6 +24,31 @@ npx playwright test
 ```
 
 Projects that use the library without the test runner replace `playwright` the same way (`npm i playwright@npm:flashwright`), and `playwright-core` is `flashwright-core`. Browsers, configs, reporters, the trace viewer, codegen and the VS Code extension are Playwright's.
+
+## Compared to other frameworks
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/competitors-dark.svg">
+  <img alt="The same 24 TodoMVC tests in 9 frameworks. With 1 worker: Flashwright 2.41 s, Bun test with Bun.WebView 4.39 s, Playwright 4.63 s, Selenium 5.48 s, Puppeteer 6.29 s, Nightwatch 6.45 s, WebdriverIO 10.57 s, Cypress 17.29 s, TestCafe 22.55 s. With 4 workers: Flashwright 1.54 s, Selenium 2.77 s, Bun 2.80 s, Puppeteer 2.98 s, Playwright 3.12 s, Nightwatch 3.38 s, WebdriverIO 4.91 s, TestCafe 9.28 s, Cypress 17.37 s." src="docs/media/competitors.svg">
+</picture>
+
+Playwright's TodoMVC example suite, ported to each tool from one shared description of its 24 tests, so every tool runs the same actions and assertions with the same CSS selectors. Every tool drives the same Chromium 156 on the same machine with its own recommended waits (no fixed sleeps) and its default isolation between tests, and a run counts only when all 24 tests pass. Each number is the whole test command, median of 15 runs.
+
+Tools that start something for every spec file (Cypress bundles each spec; WebdriverIO, Selenium and Nightwatch start a browser session per file) fall further behind when each test has a file of its own, the layout of Playwright's example:
+
+| Tool | Grouped, 1 worker | Grouped, 4 workers | One test per file, 1 worker | One test per file, 4 workers |
+| --- | ---: | ---: | ---: | ---: |
+| **Flashwright** | **2.41 s** | **1.54 s** | **2.41 s** | **1.47 s** |
+| Bun test + Bun.WebView | 4.39 s | 2.80 s | 4.41 s | 3.99 s |
+| Playwright | 4.63 s | 3.12 s | 4.70 s | 2.92 s |
+| Selenium + Mocha | 5.48 s | 2.77 s | 10.27 s | 4.81 s |
+| Puppeteer + Jest | 6.29 s | 2.98 s | 6.14 s | 2.77 s |
+| Nightwatch | 6.45 s | 3.38 s | 11.48 s | 5.44 s |
+| WebdriverIO | 10.57 s | 4.91 s | 23.67 s | 9.21 s |
+| TestCafe | 22.55 s | 9.28 s | 22.61 s | 9.32 s |
+| Cypress | 17.29 s | 17.37 s¹ | 38.44 s | 38.41 s¹ |
+
+<sub>¹ Cypress runs one spec file at a time: parallel runs need Cypress Cloud. Versions: Flashwright 1.64.1-flashwright.8, Playwright 1.64.1, Cypress 16.2.1, WebdriverIO 10.1.0, selenium-webdriver 4.52.0, Puppeteer 25.16.0, TestCafe 3.7.7, Nightwatch 3.16.0, Bun 1.4.4. `Bun.WebView` is an experimental browser API without assertions or text locators; its port waits with a small helper. Bun failed 1 of its 60 runs (not counted). Setup, every port and how to reproduce: [bench/competitors](bench/competitors). Found a faster setting for a tool, or a port its users wouldn't write that way? Issues and pull requests are welcome.</sub>
 
 ## Benchmarks
 

@@ -164,6 +164,14 @@ header nav .sm-hide { display: none; }
 .bar.pw { background: rgba(255, 255, 255, .16); }
 .bar.fw { background: var(--neon); box-shadow: 0 0 12px rgba(74, 222, 128, .35); }
 .bar i { position: absolute; left: calc(100% + 8px); top: -6px; font-style: normal; font-family: var(--mono); font-size: 10.5px; color: var(--faint); white-space: nowrap; }
+.panels { display: grid; gap: 40px; margin-top: 44px; }
+@media (min-width: 960px) { .panels { grid-template-columns: 1fr 1fr; } }
+.panels > * { min-width: 0; }
+.panel { display: grid; gap: 14px; align-content: start; }
+.panel-title { font-family: var(--mono); font-size: 12px; color: var(--neon); margin: 0 0 4px; }
+.panel .note { margin: 6px 0 0; font-size: 12.5px; }
+.row.ours .name { color: var(--neon); font-weight: 600; }
+.row:not(.ours) .x { color: var(--muted); }
 .legend { display: flex; gap: 20px; margin-top: 28px; font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
 .legend span::before { content: ""; display: inline-block; width: 14px; height: 6px; border-radius: 2px; margin-right: 8px; vertical-align: 1px; }
 .legend .l-pw::before { background: rgba(255, 255, 255, .16); }
@@ -214,7 +222,7 @@ footer a:hover { color: var(--neon); }
   <div class="wrap">
     <a class="brand" href="./"><img src="logo-mark.png" width="36" height="36" alt="">&lt;Flashwright /&gt;</a>
     <nav aria-label="Main">
-      <a href="#benchmarks">Benchmarks</a>
+      <a href="#compare">Benchmarks</a>
       <a class="sm-hide" href="#how">How it works</a>
       <a class="sm-hide" href="#options">Options</a>
       <a href="https://github.com/xcodebeast/flashwright">GitHub</a>
@@ -229,7 +237,7 @@ footer a:hover { color: var(--neon); }
       <p class="lead">Same API, same test runner, same <code>npx playwright test</code>. Your existing suite runs unmodified and finishes 2–4× sooner.</p>
       <div class="actions">
         <a class="btn" href="https://github.com/xcodebeast/flashwright">View on GitHub <span aria-hidden="true">→</span></a>
-        <a class="btn quiet" href="#benchmarks">Benchmarks</a>
+        <a class="btn quiet" href="#compare">Benchmarks</a>
       </div>
       <div class="term">
         <div class="term-bar">
@@ -256,6 +264,44 @@ footer a:hover { color: var(--neon); }
           <img src="media/race.gif" width="960" height="540" alt="Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.65 s, Flashwright 1.05 s">
         </video>
       </div>
+    </div>
+  </section>
+
+  <section class="block" id="compare">
+    <div class="wrap">
+      <p class="kicker">// Compared</p>
+      <h2>Faster than <span class="glow">every framework we measured</span></h2>
+      <p class="lead">The same 24 TodoMVC tests ported to 9 tools, on the same machine and the same Chromium. Each tool uses its own recommended waits and isolation, and every counted run passes all 24 tests. Median of 15 runs of the whole test command.</p>
+      <div class="panels">
+        <!-- competitors:start -->
+        <div class="panel">
+          <p class="panel-title">1 worker</p>
+          <div class="row ours"><div class="name">Flashwright</div><div class="x">fastest</div><div class="track"><div class="bar fw" style="width:7.5%"><i>2.41 s</i></div></div></div>
+          <div class="row"><div class="name">Bun test + Bun.WebView</div><div class="x">1.8×</div><div class="track"><div class="bar pw" style="width:13.6%"><i>4.39 s</i></div></div></div>
+          <div class="row"><div class="name">Playwright</div><div class="x">1.9×</div><div class="track"><div class="bar pw" style="width:14.4%"><i>4.63 s</i></div></div></div>
+          <div class="row"><div class="name">Selenium + Mocha</div><div class="x">2.3×</div><div class="track"><div class="bar pw" style="width:17.0%"><i>5.48 s</i></div></div></div>
+          <div class="row"><div class="name">Puppeteer + Jest</div><div class="x">2.6×</div><div class="track"><div class="bar pw" style="width:19.5%"><i>6.29 s</i></div></div></div>
+          <div class="row"><div class="name">Nightwatch</div><div class="x">2.7×</div><div class="track"><div class="bar pw" style="width:20.0%"><i>6.45 s</i></div></div></div>
+          <div class="row"><div class="name">WebdriverIO</div><div class="x">4.4×</div><div class="track"><div class="bar pw" style="width:32.8%"><i>10.57 s</i></div></div></div>
+          <div class="row"><div class="name">Cypress</div><div class="x">7.2×</div><div class="track"><div class="bar pw" style="width:53.7%"><i>17.29 s</i></div></div></div>
+          <div class="row"><div class="name">TestCafe</div><div class="x">9.4×</div><div class="track"><div class="bar pw" style="width:70.0%"><i>22.55 s</i></div></div></div>
+        </div>
+        <div class="panel">
+          <p class="panel-title">4 workers</p>
+          <div class="row ours"><div class="name">Flashwright</div><div class="x">fastest</div><div class="track"><div class="bar fw" style="width:6.2%"><i>1.54 s</i></div></div></div>
+          <div class="row"><div class="name">Selenium + Mocha</div><div class="x">1.8×</div><div class="track"><div class="bar pw" style="width:11.1%"><i>2.77 s</i></div></div></div>
+          <div class="row"><div class="name">Bun test + Bun.WebView</div><div class="x">1.8×</div><div class="track"><div class="bar pw" style="width:11.3%"><i>2.80 s</i></div></div></div>
+          <div class="row"><div class="name">Puppeteer + Jest</div><div class="x">1.9×</div><div class="track"><div class="bar pw" style="width:12.0%"><i>2.98 s</i></div></div></div>
+          <div class="row"><div class="name">Playwright</div><div class="x">2.0×</div><div class="track"><div class="bar pw" style="width:12.6%"><i>3.12 s</i></div></div></div>
+          <div class="row"><div class="name">Nightwatch</div><div class="x">2.2×</div><div class="track"><div class="bar pw" style="width:13.6%"><i>3.38 s</i></div></div></div>
+          <div class="row"><div class="name">WebdriverIO</div><div class="x">3.2×</div><div class="track"><div class="bar pw" style="width:19.8%"><i>4.91 s</i></div></div></div>
+          <div class="row"><div class="name">TestCafe</div><div class="x">6.0×</div><div class="track"><div class="bar pw" style="width:37.4%"><i>9.28 s</i></div></div></div>
+          <div class="row"><div class="name">Cypress</div><div class="x">11.3×</div><div class="track"><div class="bar pw" style="width:70.0%"><i>17.37 s</i></div></div></div>
+          <p class="note">Cypress runs one spec file at a time: parallel runs need Cypress Cloud.</p>
+        </div>
+        <!-- competitors:end -->
+      </div>
+      <p class="note">Tests grouped by feature in 7 files. With one test per file, tools that start something per file fall further behind. Every port, version and setting is in <a href="https://github.com/xcodebeast/flashwright/tree/main/bench/competitors">bench/competitors</a>; corrections are welcome.</p>
     </div>
   </section>
 
