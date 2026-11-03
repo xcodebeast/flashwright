@@ -140,6 +140,12 @@ It also writes `test-results/summary.json`, with an `outcome` that tells apart f
 
 `agentMode: true` or `false` in the config sets it, and `FLASHWRIGHT_AGENT_MODE=1` or `0` overrides both. A `--reporter` on the command line and file reporters (`html`, `json`, `junit`, `blob`) are kept. `reporter: 'agent'` works outside agent mode too, with `outputFile` to move the JSON.
 
+### Watch mode
+
+`npx playwright test --watch` runs, in the terminal, the tests of each test file you save and of the test files that import a file you save, with the command's filters. It is Playwright's terminal watch mode, which Playwright keeps behind an environment variable; `h` lists its other commands: run all, run the failures, repeat, change the project, file or title filter, show the browser.
+
+A saved file's tests report 465 ms after the save instead of 1065 ms (one test that opens a page, medians of 9): the changed files run right away instead of after listing every test, and the next run's worker and browser start while you read the results.
+
 ### Warm session
 
 Outside CI, the first `playwright test` in a project starts a session in the background. The session keeps the next run's runner process and workers started, and it keeps the browsers: a worker that exits hands its browser to the session instead of closing it, with the context reset as between two tests and with the renderer that has already compiled the application. The next run's first test starts as warm as the second test of a run.
@@ -175,6 +181,7 @@ Playwright still ships about 95 methods its documentation discourages: the selec
 - **Warm session** (outside CI; `FLASHWRIGHT_SESSION=0` turns it off): after `playwright test` exits, a session process, the next run's runner and workers, and the run's browsers keep running, for up to 5 minutes after the last run. A test can see a browser process that an earlier run used, with its context reset as between two tests of one run.
 - **Agent mode**: under a coding agent, the default terminal reporter is the `agent` one (see [agent mode](#agent-mode)); `agentMode: false` gives Playwright's.
 - **Call logs** of an action or assertion whose element never appeared end with what the page has instead; finding it takes at most 500 ms, after the call has failed.
+- **File watching** (`--watch` and UI mode) reacts 100 ms after the last change to a file instead of 250 ms.
 - **Types**: the methods the documentation discourages are marked `@deprecated`, so editors strike them through; they work as before.
 - **Screenshot files** have identical pixels but are 1.6–1.9× larger PNGs. `toHaveScreenshot()` baselines are unchanged.
 - **Temporary files**: worker counts, per-test durations, the context options and the headless browser launch options each config used last (never storage state, credentials, headers, a proxy, certificates, environment variables, browser preferences or arguments with values other than a few harmless ones; readable only by you) and a V8 code cache live in the system temp directory. `PW_DISABLE_WORKER_STANDBY=1` and `FLASHWRIGHT_DISABLE_CODE_CACHE=1` turn off the first and the last.

@@ -66,7 +66,8 @@ export async function runTests(args: string[], opts: { [key: string]: any }) {
     return;
   }
 
-  if (process.env.PWTEST_WATCH) {
+  // Flashwright: --watch is the terminal watch mode that Playwright has behind PWTEST_WATCH.
+  if (process.env.PWTEST_WATCH || opts.watch) {
     if (opts.onlyChanged)
       throw new Error(`--only-changed is not supported in watch mode. If you'd like that to change, file an issue and let us know about your usecase for it.`);
 

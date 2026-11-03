@@ -28,6 +28,7 @@ import { eventsHelper } from '@utils/eventsHelper';
 
 import { separator, terminalScreen } from '../reporters/base';
 import { TestServerDispatcher } from './testServer';
+import { refillStandbysForNextRun } from './workerStandby';
 import { TeleSuiteUpdater } from '../isomorphic/teleSuiteUpdater';
 import { TestServerConnection  } from '../isomorphic/testServerConnection';
 
@@ -107,6 +108,16 @@ export async function runWatchModeLoop(configLocation: ConfigLocation, initialOp
   let queue = Promise.resolve();
   const changedFiles = new Set<string>();
   testServerConnection.onTestFilesChanged(({ testFiles }) => {
+    // Flashwright: without a file filter, the changed test files are the run's locations, so the
+    // run starts without listing every test first. Projects and the title filter still apply.
+    if (!options.files) {
+      testFiles.forEach(file => dirtyTestFiles.add(file));
+      if (dirtyTestFiles.size) {
+        onDirtyTests.resolve('changed');
+        onDirtyTests = new ManualPromise();
+      }
+      return;
+    }
     testFiles.forEach(file => changedFiles.add(file));
 
     queue = queue.then(async () => {
@@ -143,7 +154,7 @@ export async function runWatchModeLoop(configLocation: ConfigLocation, initialOp
 
   const projectNames = teleSuiteUpdater.rootSuite!.suites.map(s => s.title);
 
-  let lastRun: { type: 'changed' | 'regular' | 'failed', failedTestIds?: string[], dirtyTestIds?: string[] } = { type: 'regular' };
+  let lastRun: { type: 'changed' | 'regular' | 'failed', failedTestIds?: string[], dirtyTestIds?: string[], dirtyLocations?: string[] } = { type: 'regular' };
   let result: reporterTypes.FullResult['status'] = 'passed';
 
   while (true) {
@@ -164,9 +175,16 @@ export async function runWatchModeLoop(configLocation: ConfigLocation, initialOp
 
     const shouldRunChangedFiles = bufferMode ? command === 'run' : command === 'changed';
     if (shouldRunChangedFiles) {
-      if (dirtyTestIds.size === 0)
+      if (dirtyTestIds.size === 0 && dirtyTestFiles.size === 0)
         continue;
 
+      if (!dirtyTestIds.size) {
+        const locations = [...dirtyTestFiles].map(fileLocation);
+        dirtyTestFiles.clear();
+        await runTests(options, testServerConnection, { locations, title: 'files changed' });
+        lastRun = { type: 'changed', dirtyLocations: locations };
+        continue;
+      }
       const testIds = [...dirtyTestIds];
       dirtyTestIds.clear();
       dirtyTestFiles.clear();
@@ -243,7 +261,7 @@ export async function runWatchModeLoop(configLocation: ConfigLocation, initialOp
         await runTests(options, testServerConnection, { title: 're-running tests' });
         continue;
       } else if (lastRun.type === 'changed') {
-        await runTests(options, testServerConnection, { title: 're-running tests', testIds: lastRun.dirtyTestIds });
+        await runTests(options, testServerConnection, { title: 're-running tests', testIds: lastRun.dirtyTestIds, locations: lastRun.dirtyLocations });
       } else if (lastRun.type === 'failed') {
         await runTests({}, testServerConnection, { title: 're-running tests', testIds: lastRun.failedTestIds });
       }
@@ -305,6 +323,7 @@ const isInterrupt = (text: string, key: any) => text === '\x03' || text === '\x1
 async function runTests(watchOptions: WatchModeOptions, testServerConnection: TestServerConnection, options?: {
   title?: string,
   testIds?: string[],
+  locations?: string[],
 }) {
   printConfiguration(watchOptions, options?.title);
 
@@ -318,13 +337,20 @@ async function runTests(watchOptions: WatchModeOptions, testServerConnection: Te
   await testServerConnection.runTests({
     grep: watchOptions.grep,
     testIds: options?.testIds,
-    locations: watchOptions?.files ?? [], // TODO: always collect locations based on knowledge about tree, so that we don't have to load all tests
+    locations: options?.locations ?? watchOptions?.files ?? [], // TODO: always collect locations based on knowledge about tree, so that we don't have to load all tests
     projects: watchOptions.projects,
     connectWsEndpoint,
     reuseContext: connectWsEndpoint ? true : undefined,
     workers: connectWsEndpoint ? 1 : undefined,
     headed: connectWsEndpoint ? true : undefined,
   }).finally(() => waitForDone.dispose());
+  // Flashwright: the next run's workers start while this one's results are read.
+  refillStandbysForNextRun();
+}
+
+// A location that matches exactly this file: locations are regular expressions.
+function fileLocation(file: string): string {
+  return `/^${file.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}$/`;
 }
 
 function readCommand() {

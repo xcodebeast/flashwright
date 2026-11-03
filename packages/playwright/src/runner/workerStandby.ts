@@ -174,6 +174,17 @@ export function recordWorkerLaunch(launch: Launch) {
   launches.set(JSON.stringify(launch), launch);
 }
 
+// Watch mode runs again in the same process: after a run, start the workers of the next one,
+// with the browser this run's tests launched, so that a change is tested as fast as a warm run.
+export function refillStandbysForNextRun() {
+  if (!enabled)
+    return;
+  const [launch, ...others] = launches.values();
+  if (launch && !others.length && launch.options)
+    rememberedLaunch = launch;
+  ensureStandbys(Math.max(1, Math.min(workerCount || 1, cpus)) * workersPerProcess);
+}
+
 export function discardStandbys() {
   for (const standby of standbys.splice(0))
     release(standby.child);

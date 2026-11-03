@@ -102,7 +102,7 @@ type Browser = {
 const kIdleTimeout = (Number(process.env.FLASHWRIGHT_SESSION_TIMEOUT) || 5 * 60) * 1000;
 // Shell bookkeeping that changes between otherwise identical invocations.
 const kVolatileEnv = new Set(['_', 'PWD', 'OLDPWD', 'SHLVL', 'COLUMNS', 'LINES']);
-const kInteractiveArgs = ['--ui', '--ui-host', '--ui-port', '--debug', '--list', '-h', '--help'];
+const kInteractiveArgs = ['--ui', '--ui-host', '--ui-port', '--debug', '--list', '-h', '--help', '--watch'];
 const kBrowserMessage = '__flashwright_browser__';
 const kBrowserRequest = '__flashwright_browser_request__';
 // Asks a worker started ahead of time for its browser, which it confirms after sending it.

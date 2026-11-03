@@ -62,7 +62,8 @@ export class FSWatcher {
       if (this._throttleTimer)
         clearTimeout(this._throttleTimer);
       this._collector.push({ event, file });
-      this._throttleTimer = setTimeout(() => this._reportEventsIfAny(), 250);
+      // Flashwright: 100 ms still gathers an editor's save, which writes within milliseconds.
+      this._throttleTimer = setTimeout(() => this._reportEventsIfAny(), 100);
     });
 
     await new Promise<void>((resolve, reject) => this._fsWatcher!.once('ready', () => resolve()).once('error', reject));
