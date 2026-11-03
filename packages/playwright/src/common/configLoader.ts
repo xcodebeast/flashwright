@@ -202,6 +202,11 @@ function validateConfig(file: string, config: Config) {
     });
   }
 
+  if ('agentMode' in config && config.agentMode !== undefined) {
+    if (typeof config.agentMode !== 'boolean')
+      throw errorWithFile(file, `config.agentMode must be a boolean`);
+  }
+
   if ('quiet' in config && config.quiet !== undefined) {
     if (typeof config.quiet !== 'boolean')
       throw errorWithFile(file, `config.quiet must be a boolean`);

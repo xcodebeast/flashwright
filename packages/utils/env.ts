@@ -65,6 +65,13 @@ export function guessClientName(): string {
   return 'playwright-cli';
 }
 
+// Flashwright: variables that coding agents set in the commands they run. AI_AGENT is the
+// cross-tool convention; the rest are set by one tool each.
+export const codingAgentEnvVars = ['AI_AGENT', 'CLAUDECODE', 'CODEX_CI', 'CODEX_THREAD_ID', 'CODEX_SANDBOX', 'COPILOT_CLI', 'CURSOR_AGENT', 'GEMINI_CLI'];
+
 export function isCodingAgent(): boolean {
-  return !!process.env.CLAUDECODE || !!process.env.COPILOT_CLI;
+  return codingAgentEnvVars.some(name => {
+    const value = process.env[name];
+    return !!value && value !== '0' && value !== 'false';
+  });
 }

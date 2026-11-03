@@ -18,6 +18,7 @@
 import type { APIRequestContext, Browser, BrowserContext, BrowserContextOptions, Page, LaunchOptions, ViewportSize, Geolocation, HTTPCredentials, Locator, APIResponse, PageScreenshotOptions } from 'playwright-core';
 export * from 'playwright-core';
 
+export type AgentReporterOptions = { outputFile?: string };
 export type BlobReporterOptions = { outputDir?: string, fileName?: string };
 export type DotReporterOptions = { omitTags?: boolean };
 export type LineReporterOptions = { omitTags?: boolean };
@@ -40,6 +41,7 @@ export type HtmlReporterOptions = {
 };
 
 export type ReporterDescription = Readonly<
+  ['agent'] | ['agent', AgentReporterOptions] |
   ['blob'] | ['blob', BlobReporterOptions] |
   ['dot'] | ['dot', DotReporterOptions] |
   ['line'] | ['line', LineReporterOptions] |
@@ -961,7 +963,7 @@ interface TestConfig<TestArgs = {}, WorkerArgs = {}> {
    * ```
    *
    */
-  reporter?: LiteralUnion<'list'|'dot'|'line'|'github'|'json'|'junit'|'null'|'html'|'blob'|'perfetto', string> | ReporterDescription[];
+  reporter?: LiteralUnion<'list'|'dot'|'line'|'agent'|'github'|'json'|'junit'|'null'|'html'|'blob'|'perfetto', string> | ReporterDescription[];
   /**
    * Global options for all tests, for example
    * [testOptions.browserName](https://playwright.dev/docs/api/class-testoptions#test-options-browser-name). Learn more
@@ -1089,6 +1091,37 @@ interface TestConfig<TestArgs = {}, WorkerArgs = {}> {
    *
    */
   webServer?: TestConfigWebServer | TestConfigWebServer[];
+  /**
+   * Whether to format the run for a coding agent rather than a person. Defaults to `true` when Playwright detects a
+   * coding agent (Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot CLI, or any tool that sets the `AI_AGENT`
+   * environment variable), and `false` otherwise. The `FLASHWRIGHT_AGENT_MODE` environment variable (`1` or `0`)
+   * overrides both.
+   *
+   * In agent mode:
+   * - The `list`, `line` and `dot` reporters, including the default one, are replaced with the `agent` reporter. It
+   *   prints nothing for passing tests and no console output from them, prints each failure once with its error,
+   *   attachments and output, and ends with the counts and the command that reruns the failures. A `--reporter`
+   *   option on the command line is left as it is.
+   * - The `agent` reporter also writes `summary.json` to the output directory of the first project: the outcome, the
+   *   counts, and for each failure its title, location, error and attachment paths.
+   * - The HTML report is never opened or served.
+   *
+   * Exit codes are the same as without agent mode.
+   *
+   * **Usage**
+   *
+   * ```js
+   * // playwright.config.ts
+   * import { defineConfig } from '@playwright/test';
+   *
+   * export default defineConfig({
+   *   agentMode: false,
+   * });
+   * ```
+   *
+   */
+  agentMode?: boolean;
+
   /**
    * Playwright transpiler configuration.
    *
@@ -2168,6 +2201,11 @@ export interface FullConfig<TestArgs = {}, WorkerArgs = {}> {
    * See [testConfig.webServer](https://playwright.dev/docs/api/class-testconfig#test-config-web-server).
    */
   webServer: TestConfigWebServer | null;
+  /**
+   * See [testConfig.agentMode](https://playwright.dev/docs/api/class-testconfig#test-config-agent-mode).
+   */
+  agentMode: boolean;
+
   /**
    * Snapshot of [`process.argv`](https://nodejs.org/api/process.html#processargv) captured in the runner process.
    * Useful for reading custom command-line arguments — for example, args supplied after the `--` separator (`npx

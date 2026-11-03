@@ -93,6 +93,12 @@ See [`property: TestConfig.metadata`].
 
 See [`property: TestConfig.preserveOutput`].
 
+## property: FullConfig.agentMode
+* since: v1.64
+- type: <[boolean]>
+
+See [`property: TestConfig.agentMode`].
+
 ## property: FullConfig.testOrder
 * since: v1.64
 - type: <[TestOrder]<"longest-first"|"file">>

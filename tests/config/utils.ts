@@ -275,6 +275,16 @@ export function inheritAndCleanEnv(env: NodeJS.ProcessEnv | undefined): NodeJS.P
     NODE_OPTIONS: undefined,
     // Flashwright: the warm session is on by default outside CI; the tests of it turn it on.
     FLASHWRIGHT_SESSION: '0',
+    // Flashwright: tests run as if a person ran them; the agent mode tests set these.
+    FLASHWRIGHT_AGENT_MODE: undefined,
+    AI_AGENT: undefined,
+    CLAUDECODE: undefined,
+    CODEX_CI: undefined,
+    CODEX_THREAD_ID: undefined,
+    CODEX_SANDBOX: undefined,
+    COPILOT_CLI: undefined,
+    CURSOR_AGENT: undefined,
+    GEMINI_CLI: undefined,
     ...env,
   };
 }

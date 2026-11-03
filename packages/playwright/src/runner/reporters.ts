@@ -17,6 +17,7 @@ import fs from 'fs';
 import { calculateSha1 } from '@utils/crypto';
 
 import { loadReporter } from './loadUtils';
+import AgentReporter from '../reporters/agent';
 import { formatError } from '../reporters/base';
 import { BlobReporter } from '../reporters/blob';
 import CoverageReporter from '../reporters/coverage';
@@ -41,6 +42,7 @@ import type { TestRunOptions } from './tasks';
 
 export async function createReporters(config: FullConfigInternal, mode: 'list' | 'test' | 'merge', descriptions?: ReporterDescription[], runOptions?: TestRunOptions): Promise<ReporterV2[]> {
   const defaultReporters: { [key in commonConfig.BuiltInReporter]: new(arg: any) => ReporterV2 } = {
+    'agent': mode === 'list' ? ListModeReporter : AgentReporter,
     'blob': BlobReporter,
     'perfetto': PerfettoReporter,
     'dot': mode === 'list' ? ListModeReporter : DotReporter,
@@ -54,7 +56,14 @@ export async function createReporters(config: FullConfigInternal, mode: 'list' |
     'coverage': CoverageReporter,
   };
   const reporters: ReporterV2[] = [];
-  descriptions ??= config.config.reporter;
+  const agentMode = mode === 'test' && config.config.agentMode;
+  if (!descriptions) {
+    descriptions = config.config.reporter;
+    // Flashwright: agent mode swaps the terminal reporters for the agent one, unless the command
+    // line asked for a reporter.
+    if (agentMode && !config.configCLIOverrides.reporter)
+      descriptions = forAgents(descriptions);
+  }
   const reportOptions = reporterCommandOptions(config, mode, runOptions);
   for (const r of descriptions) {
     const [name, arg] = r;
@@ -83,9 +92,22 @@ export async function createReporters(config: FullConfigInternal, mode: 'list' |
     if (mode === 'list')
       reporters.unshift(new ListModeReporter());
     else if (mode !== 'merge')
-      reporters.unshift(!process.env.CI ? new LineReporter() : new DotReporter());
+      reporters.unshift(agentMode ? new AgentReporter(reportOptions) : !process.env.CI ? new LineReporter() : new DotReporter());
   }
   return reporters;
+}
+
+const kTerminalReporters = new Set(['list', 'line', 'dot']);
+
+function forAgents(descriptions: ReporterDescription[]): ReporterDescription[] {
+  const result: ReporterDescription[] = [];
+  for (const description of descriptions) {
+    if (!kTerminalReporters.has(description[0]))
+      result.push(description);
+    else if (!result.some(d => d[0] === 'agent'))
+      result.push(['agent']);
+  }
+  return result;
 }
 
 interface ErrorCollectingReporter extends ReporterV2 {

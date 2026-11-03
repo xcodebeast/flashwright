@@ -812,6 +812,7 @@ export class TeleTestResult implements reporterTypes.TestResult {
 export type TeleFullProject = reporterTypes.FullProject;
 
 export const baseFullConfig: reporterTypes.FullConfig = {
+  agentMode: false,
   argv: [],
   failOnFlakyTests: false,
   forbidOnly: false,

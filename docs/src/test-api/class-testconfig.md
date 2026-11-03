@@ -396,6 +396,29 @@ export default defineConfig({
 });
 ```
 
+## property: TestConfig.agentMode
+* since: v1.64
+- type: ?<[boolean]>
+
+Whether to format the run for a coding agent rather than a person. Defaults to `true` when Playwright detects a coding agent (Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot CLI, or any tool that sets the `AI_AGENT` environment variable), and `false` otherwise. The `FLASHWRIGHT_AGENT_MODE` environment variable (`1` or `0`) overrides both.
+
+In agent mode:
+* The `list`, `line` and `dot` reporters, including the default one, are replaced with the `agent` reporter. It prints nothing for passing tests and no console output from them, prints each failure once with its error, attachments and output, and ends with the counts and the command that reruns the failures. A `--reporter` option on the command line is left as it is.
+* The `agent` reporter also writes `summary.json` to the output directory of the first project: the outcome, the counts, and for each failure its title, location, error and attachment paths.
+* The HTML report is never opened or served.
+
+Exit codes are the same as without agent mode.
+
+**Usage**
+
+```js title="playwright.config.ts"
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  agentMode: false,
+});
+```
+
 ## property: TestConfig.testOrder
 * since: v1.64
 - type: ?<[TestOrder]<"longest-first"|"file">>

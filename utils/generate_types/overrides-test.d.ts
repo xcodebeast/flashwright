@@ -17,6 +17,7 @@
 import type { APIRequestContext, Browser, BrowserContext, BrowserContextOptions, Page, LaunchOptions, ViewportSize, Geolocation, HTTPCredentials, Locator, APIResponse, PageScreenshotOptions } from 'playwright-core';
 export * from 'playwright-core';
 
+export type AgentReporterOptions = { outputFile?: string };
 export type BlobReporterOptions = { outputDir?: string, fileName?: string };
 export type DotReporterOptions = { omitTags?: boolean };
 export type LineReporterOptions = { omitTags?: boolean };
@@ -39,6 +40,7 @@ export type HtmlReporterOptions = {
 };
 
 export type ReporterDescription = Readonly<
+  ['agent'] | ['agent', AgentReporterOptions] |
   ['blob'] | ['blob', BlobReporterOptions] |
   ['dot'] | ['dot', DotReporterOptions] |
   ['line'] | ['line', LineReporterOptions] |
@@ -69,7 +71,7 @@ type LiteralUnion<T extends U, U = string> = T | (U & { zz_IGNORE_ME?: never });
 
 interface TestConfig<TestArgs = {}, WorkerArgs = {}> {
   projects?: Project<TestArgs, WorkerArgs>[];
-  reporter?: LiteralUnion<'list'|'dot'|'line'|'github'|'json'|'junit'|'null'|'html'|'blob'|'perfetto', string> | ReporterDescription[];
+  reporter?: LiteralUnion<'list'|'dot'|'line'|'agent'|'github'|'json'|'junit'|'null'|'html'|'blob'|'perfetto', string> | ReporterDescription[];
   use?: UseOptions<TestArgs, WorkerArgs>;
   webServer?: TestConfigWebServer | TestConfigWebServer[];
 }

@@ -18,6 +18,8 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
+import { getAsBooleanFromENV, isCodingAgent } from '@utils/env';
+
 import { packageJSON } from '../package';
 import { getPackageJsonPath, mergeObjects, takeFirst } from '../util';
 
@@ -87,6 +89,7 @@ export class FullConfigInternal {
       argv: configCLIOverrides.argv ?? [],
       configFile: resolvedConfigFile,
       rootDir: pathResolve(configDir, userConfig.testDir) || configDir,
+      agentMode: getAsBooleanFromENV('FLASHWRIGHT_AGENT_MODE', takeFirst(userConfig.agentMode, isCodingAgent())),
       failOnFlakyTests: takeFirst(configCLIOverrides.failOnFlakyTests, userConfig.failOnFlakyTests, false),
       forbidOnly: takeFirst(configCLIOverrides.forbidOnly, userConfig.forbidOnly, false),
       fullyParallel: takeFirst(configCLIOverrides.fullyParallel, userConfig.fullyParallel, false),
@@ -295,7 +298,7 @@ export function toReporters(reporters: BuiltInReporter | ReporterDescription[] |
   return reporters;
 }
 
-export const builtInReporters = ['list', 'line', 'dot', 'json', 'junit', 'null', 'github', 'html', 'blob', 'perfetto', 'coverage'] as const;
+export const builtInReporters = ['agent', 'list', 'line', 'dot', 'json', 'junit', 'null', 'github', 'html', 'blob', 'perfetto', 'coverage'] as const;
 export type BuiltInReporter = typeof builtInReporters[number];
 
 export type ContextReuseMode = 'none' | 'when-possible';

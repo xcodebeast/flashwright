@@ -141,6 +141,18 @@ export const terminalScreen: TerminalScreen = (() => {
   };
 })();
 
+// Flashwright: what the agent reporter prints. Agents read the text, so no colors and no
+// terminal width, whatever FORCE_COLOR or the terminal say.
+export const plainTerminalScreen: TerminalScreen = {
+  resolveFiles: 'cwd',
+  isTTY: false,
+  ttyWidth: 0,
+  ttyHeight: 0,
+  colors: noColors,
+  stdout: new StripAnsiStream(originalProcessStdout) as unknown as NodeJS.WriteStream,
+  stderr: new StripAnsiStream(originalProcessStderr) as unknown as NodeJS.WriteStream,
+};
+
 // Output does not go to terminal, but colors are controlled with terminal env vars.
 export const nonTerminalScreen: Screen = {
   colors: terminalScreen.colors,
