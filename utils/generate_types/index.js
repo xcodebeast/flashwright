@@ -491,6 +491,10 @@ class TypesGenerator {
       lines.push(...member.comment.split('\n'));
     if (member.deprecated)
       lines.push('@deprecated ' + md.wrapText(member.deprecated, { flattenText: true, maxColumns: 120 - 5 }, ''));
+    // Flashwright: discouraged APIs that have a replacement are deprecated too, so that editors
+    // strike them through. `npx playwright codemod` rewrites the selector-based ones to locators.
+    else if (member.discouraged && /\b(use|prefer|see)\b/i.test(member.discouraged))
+      lines.push('@deprecated ' + md.wrapText(member.discouraged, { flattenText: true, maxColumns: 120 - 5 }, '') + (/locator-based/.test(member.discouraged) ? ' `npx playwright codemod` rewrites these calls.' : ''));
     lines.push(...member.argsArray.map(arg => {
       const paramPrefix = `@param ${arg.alias.replace(/\./g, '')} `;
       return paramPrefix + md.wrapText(arg.comment, { flattenText: true, maxColumns: 120 - 5 }, '');

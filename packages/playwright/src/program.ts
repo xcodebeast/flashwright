@@ -43,6 +43,7 @@ else
 const reportActions = () => require('./cli/reportActions') as typeof import('./cli/reportActions');
 const testBackend = () => require('./mcp/test/testBackend') as typeof import('./mcp/test/testBackend');
 const agentGenerators = () => require('./agents/generateAgents') as typeof import('./agents/generateAgents');
+const codemod = () => (require('./runner') as typeof import('./runner')).codemod;
 
 function addTestCommand(program: Command) {
   const command = program.command('test [test-filter...]');
@@ -82,6 +83,23 @@ Examples:
   $ npx playwright test some.spec.ts:42
   $ npx playwright test --headed
   $ npx playwright test --project=webkit`);
+}
+
+// Flashwright: rewrites the discouraged selector-based calls to locators.
+function addCodemodCommand(program: Command) {
+  const command = program.command('codemod [paths...]');
+  command.description('rewrite deprecated selector-based calls, such as page.click(selector), to locators');
+  command.option('--write', 'apply the changes instead of printing them as a diff');
+  command.option('--keep-first', 'add .first() to each rewritten locator, so that a selector matching several elements still acts on the first one');
+  command.addHelpText('afterAll', `
+Examples:
+
+  $ npx playwright codemod
+  $ npx playwright codemod tests --write`);
+  command.action(async (paths: string[], options: { write?: boolean, keepFirst?: boolean }) => {
+    const code = await codemod().runCodemod(paths, { write: !!options.write, keepFirst: !!options.keepFirst });
+    gracefullyProcessExitDoNotHang(code);
+  });
 }
 
 function addClearCacheCommand(program: Command) {
@@ -262,6 +280,7 @@ addTestCommand(program);
 addShowReportCommand(program);
 addMergeReportsCommand(program);
 addClearCacheCommand(program);
+addCodemodCommand(program);
 addTestMCPServerCommand(program);
 addTestServerCommand(program);
 addInitAgentsCommand(program);

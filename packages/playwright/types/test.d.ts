@@ -1778,6 +1778,9 @@ interface TestConfig<TestArgs = {}, WorkerArgs = {}> {
    * This path will serve as the base directory for each test file snapshot directory. Setting `snapshotDir` to
    * `'snapshots'`, the [testInfo.snapshotDir](https://playwright.dev/docs/api/class-testinfo#test-info-snapshot-dir)
    * would resolve to `snapshots/a.spec.js-snapshots`.
+   * @deprecated Use
+   * [testConfig.snapshotPathTemplate](https://playwright.dev/docs/api/class-testconfig#test-config-snapshot-path-template)
+   * to configure snapshot paths.
    */
   snapshotDir?: string;
 
@@ -3930,6 +3933,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
      * });
      * ```
      *
+     * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+     * the preferred way of configuring the execution mode.
      * @param title Group title.
      * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
      * details description.
@@ -3969,6 +3974,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.
@@ -4008,6 +4015,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.
@@ -4047,6 +4056,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.
@@ -4090,6 +4101,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.
@@ -4132,6 +4145,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.
@@ -4174,6 +4189,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.
@@ -4216,6 +4233,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
      * });
      * ```
      *
+     * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+     * the preferred way of configuring the execution mode.
      * @param title Group title.
      * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
      * details description.
@@ -4256,6 +4275,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.
@@ -4296,6 +4317,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.
@@ -4336,6 +4359,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.
@@ -4373,6 +4398,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.
@@ -4409,6 +4436,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.
@@ -4445,6 +4474,8 @@ export interface TestType<TestArgs extends {}, WorkerArgs extends {}> {
        * });
        * ```
        *
+       * @deprecated See [test.describe.configure([options])](https://playwright.dev/docs/api/class-test#test-describe-configure) for
+       * the preferred way of configuring the execution mode.
        * @param title Group title.
        * @param details See [test.describe([title, details, callback])](https://playwright.dev/docs/api/class-test#test-describe) for
        * details description.

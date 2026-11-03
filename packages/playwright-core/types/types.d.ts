@@ -333,6 +333,8 @@ export interface Page {
    * The method finds an element matching the specified selector within the page. If no elements match the selector, the
    * return value resolves to `null`. To wait for an element on the page, use
    * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for).
+   * @deprecated Use locator-based [page.locator(selector[, options])](https://playwright.dev/docs/api/class-page#page-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -344,6 +346,8 @@ export interface Page {
    * The method finds an element matching the specified selector within the page. If no elements match the selector, the
    * return value resolves to `null`. To wait for an element on the page, use
    * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for).
+   * @deprecated Use locator-based [page.locator(selector[, options])](https://playwright.dev/docs/api/class-page#page-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -355,6 +359,8 @@ export interface Page {
    *
    * The method finds all elements matching the specified selector within the page. If no elements match the selector,
    * the return value resolves to `[]`.
+   * @deprecated Use locator-based [page.locator(selector[, options])](https://playwright.dev/docs/api/class-page#page-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    */
   $$<K extends keyof HTMLElementTagNameMap>(selector: K): Promise<ElementHandleForTag<K>[]>;
@@ -364,6 +370,8 @@ export interface Page {
    *
    * The method finds all elements matching the specified selector within the page. If no elements match the selector,
    * the return value resolves to `[]`.
+   * @deprecated Use locator-based [page.locator(selector[, options])](https://playwright.dev/docs/api/class-page#page-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    */
   $$(selector: string): Promise<ElementHandle<SVGElement | HTMLElement>[]>;
@@ -394,6 +402,10 @@ export interface Page {
    * const preloadHrefTS = await page.$eval('link[rel=preload]', (el: HTMLLinkElement) => el.href);
    * ```
    *
+   * @deprecated This method does not wait for the element to pass actionability checks and therefore can lead to the flaky tests.
+   * Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -427,6 +439,10 @@ export interface Page {
    * const preloadHrefTS = await page.$eval('link[rel=preload]', (el: HTMLLinkElement) => el.href);
    * ```
    *
+   * @deprecated This method does not wait for the element to pass actionability checks and therefore can lead to the flaky tests.
+   * Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -460,6 +476,10 @@ export interface Page {
    * const preloadHrefTS = await page.$eval('link[rel=preload]', (el: HTMLLinkElement) => el.href);
    * ```
    *
+   * @deprecated This method does not wait for the element to pass actionability checks and therefore can lead to the flaky tests.
+   * Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -493,6 +513,10 @@ export interface Page {
    * const preloadHrefTS = await page.$eval('link[rel=preload]', (el: HTMLLinkElement) => el.href);
    * ```
    *
+   * @deprecated This method does not wait for the element to pass actionability checks and therefore can lead to the flaky tests.
+   * Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -741,6 +765,9 @@ export interface Page {
    * })();
    * ```
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. Read more
+   * about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -785,6 +812,9 @@ export interface Page {
    * })();
    * ```
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. Read more
+   * about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -829,6 +859,9 @@ export interface Page {
    * })();
    * ```
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. Read more
+   * about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -873,6 +906,9 @@ export interface Page {
    * })();
    * ```
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. Read more
+   * about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -2219,6 +2255,8 @@ export interface Page {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-page#page-check-option-timeout), this method throws a
    * [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.check([options])](https://playwright.dev/docs/api/class-locator#locator-check) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -2321,6 +2359,8 @@ export interface Page {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-page#page-click-option-timeout), this method throws a
    * [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.click([options])](https://playwright.dev/docs/api/class-locator#locator-click) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -2495,6 +2535,8 @@ export interface Page {
    *
    * **NOTE** `page.dblclick()` dispatches two `click` events and a single `dblclick` event.
    *
+   * @deprecated Use locator-based [locator.dblclick([options])](https://playwright.dev/docs/api/class-locator#locator-dblclick)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -2621,6 +2663,9 @@ export interface Page {
    * await page.dispatchEvent('#source', 'dragstart', { dataTransfer });
    * ```
    *
+   * @deprecated Use locator-based
+   * [locator.dispatchEvent(type[, eventInit, options])](https://playwright.dev/docs/api/class-locator#locator-dispatch-event)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param type DOM event type: `"click"`, `"dragstart"`, etc.
@@ -2888,6 +2933,8 @@ export interface Page {
    *
    * To send fine-grained keyboard events, use
    * [locator.pressSequentially(text[, options])](https://playwright.dev/docs/api/class-locator#locator-press-sequentially).
+   * @deprecated Use locator-based [locator.fill(value[, options])](https://playwright.dev/docs/api/class-locator#locator-fill)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param value Value to fill for the `<input>`, `<textarea>` or `[contenteditable]` element.
@@ -2939,6 +2986,8 @@ export interface Page {
    * [`selector`](https://playwright.dev/docs/api/class-page#page-focus-option-selector) and focuses it. If there's no
    * element matching [`selector`](https://playwright.dev/docs/api/class-page#page-focus-option-selector), the method
    * waits until a matching element appears in the DOM.
+   * @deprecated Use locator-based [locator.focus([options])](https://playwright.dev/docs/api/class-locator#locator-focus) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -3038,6 +3087,9 @@ export interface Page {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns element attribute value.
+   * @deprecated Use locator-based
+   * [locator.getAttribute(name[, options])](https://playwright.dev/docs/api/class-locator#locator-get-attribute)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param name Attribute name to get the value for.
@@ -3604,6 +3656,8 @@ export interface Page {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-page#page-hover-option-timeout), this method throws a
    * [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.hover([options])](https://playwright.dev/docs/api/class-locator#locator-hover) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -3684,6 +3738,8 @@ export interface Page {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns `element.innerHTML`.
+   * @deprecated Use locator-based [locator.innerHTML([options])](https://playwright.dev/docs/api/class-locator#locator-inner-html)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -3720,6 +3776,8 @@ export interface Page {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns `element.innerText`.
+   * @deprecated Use locator-based [locator.innerText([options])](https://playwright.dev/docs/api/class-locator#locator-inner-text)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -3761,6 +3819,9 @@ export interface Page {
    * Throws for non-input elements. However, if the element is inside the `<label>` element that has an associated
    * [control](https://developer.mozilla.org/en-US/docs/Web/API/HTMLLabelElement/control), returns the value of the
    * control.
+   * @deprecated Use locator-based
+   * [locator.inputValue([options])](https://playwright.dev/docs/api/class-locator#locator-input-value) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -3797,6 +3858,8 @@ export interface Page {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is checked. Throws if the element is not a checkbox or radio input.
+   * @deprecated Use locator-based [locator.isChecked([options])](https://playwright.dev/docs/api/class-locator#locator-is-checked)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -3839,6 +3902,9 @@ export interface Page {
    * more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is disabled, the opposite of [enabled](https://playwright.dev/docs/actionability#enabled).
+   * @deprecated Use locator-based
+   * [locator.isDisabled([options])](https://playwright.dev/docs/api/class-locator#locator-is-disabled) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -3876,6 +3942,9 @@ export interface Page {
    * more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is [editable](https://playwright.dev/docs/actionability#editable).
+   * @deprecated Use locator-based
+   * [locator.isEditable([options])](https://playwright.dev/docs/api/class-locator#locator-is-editable) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -3912,6 +3981,8 @@ export interface Page {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is [enabled](https://playwright.dev/docs/actionability#enabled).
+   * @deprecated Use locator-based [locator.isEnabled([options])](https://playwright.dev/docs/api/class-locator#locator-is-enabled)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -3950,6 +4021,8 @@ export interface Page {
    * Returns whether the element is hidden, the opposite of [visible](https://playwright.dev/docs/actionability#visible).
    * [`selector`](https://playwright.dev/docs/api/class-page#page-is-hidden-option-selector) that does not match any
    * elements is considered hidden.
+   * @deprecated Use locator-based [locator.isHidden([options])](https://playwright.dev/docs/api/class-locator#locator-is-hidden)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -3976,6 +4049,8 @@ export interface Page {
    * Returns whether the element is [visible](https://playwright.dev/docs/actionability#visible).
    * [`selector`](https://playwright.dev/docs/api/class-page#page-is-visible-option-selector) that does not match any
    * elements is considered not visible.
+   * @deprecated Use locator-based [locator.isVisible([options])](https://playwright.dev/docs/api/class-locator#locator-is-visible)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -4303,6 +4378,8 @@ export interface Page {
    * await browser.close();
    * ```
    *
+   * @deprecated Use locator-based [locator.press(key[, options])](https://playwright.dev/docs/api/class-locator#locator-press)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param key Name of the key to press or a character to generate, such as `ArrowLeft` or `a`.
@@ -4623,6 +4700,9 @@ export interface Page {
    *
    * ```
    *
+   * @deprecated Use locator-based
+   * [locator.selectOption(values[, options])](https://playwright.dev/docs/api/class-locator#locator-select-option)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param values Options to select. If the `<select>` has the `multiple` attribute, all matching options are selected, otherwise
@@ -4722,6 +4802,9 @@ export interface Page {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-page#page-set-checked-option-timeout), this method throws a
    * [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based
+   * [locator.setChecked(checked[, options])](https://playwright.dev/docs/api/class-locator#locator-set-checked)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param checked Whether to check or uncheck the checkbox.
@@ -4888,6 +4971,9 @@ export interface Page {
    * to point to an [input element](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input). However, if the
    * element is inside the `<label>` element that has an associated
    * [control](https://developer.mozilla.org/en-US/docs/Web/API/HTMLLabelElement/control), targets the control instead.
+   * @deprecated Use locator-based
+   * [locator.setInputFiles(files[, options])](https://playwright.dev/docs/api/class-locator#locator-set-input-files)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param files
@@ -5018,6 +5104,8 @@ export interface Page {
    * [`hasTouch`](https://playwright.dev/docs/api/class-browser#browser-new-context-option-has-touch) option of the
    * browser context is false.
    *
+   * @deprecated Use locator-based [locator.tap([options])](https://playwright.dev/docs/api/class-locator#locator-tap) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -5099,6 +5187,9 @@ export interface Page {
    * more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns `element.textContent`.
+   * @deprecated Use locator-based
+   * [locator.textContent([options])](https://playwright.dev/docs/api/class-locator#locator-text-content) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -5214,6 +5305,8 @@ export interface Page {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-page#page-uncheck-option-timeout), this method throws a
    * [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.uncheck([options])](https://playwright.dev/docs/api/class-locator#locator-uncheck)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -5770,6 +5863,8 @@ export interface Page {
    * await page.waitForTimeout(1000);
    * ```
    *
+   * @deprecated Never wait for timeout in production. Tests that wait for time are inherently flaky. Use
+   * [Locator](https://playwright.dev/docs/api/class-locator) actions and web assertions that wait automatically.
    * @param timeout A timeout to wait for
    */
   waitForTimeout(timeout: number): Promise<void>;
@@ -6164,6 +6259,8 @@ export interface Frame {
    *
    * The method finds an element matching the specified selector within the frame. If no elements match the selector,
    * returns `null`.
+   * @deprecated Use locator-based [frame.locator(selector[, options])](https://playwright.dev/docs/api/class-frame#frame-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -6179,6 +6276,8 @@ export interface Frame {
    *
    * The method finds an element matching the specified selector within the frame. If no elements match the selector,
    * returns `null`.
+   * @deprecated Use locator-based [frame.locator(selector[, options])](https://playwright.dev/docs/api/class-frame#frame-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -6195,6 +6294,8 @@ export interface Frame {
    *
    * The method finds all elements matching the specified selector within the frame. If no elements match the selector,
    * returns empty array.
+   * @deprecated Use locator-based [frame.locator(selector[, options])](https://playwright.dev/docs/api/class-frame#frame-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    */
   $$<K extends keyof HTMLElementTagNameMap>(selector: K): Promise<ElementHandleForTag<K>[]>;
@@ -6209,6 +6310,8 @@ export interface Frame {
    *
    * The method finds all elements matching the specified selector within the frame. If no elements match the selector,
    * returns empty array.
+   * @deprecated Use locator-based [frame.locator(selector[, options])](https://playwright.dev/docs/api/class-frame#frame-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    */
   $$(selector: string): Promise<ElementHandle<SVGElement | HTMLElement>[]>;
@@ -6239,6 +6342,10 @@ export interface Frame {
    * const html = await frame.$eval('.main-container', (e, suffix) => e.outerHTML + suffix, 'hello');
    * ```
    *
+   * @deprecated This method does not wait for the element to pass the actionability checks and therefore can lead to the flaky
+   * tests. Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -6272,6 +6379,10 @@ export interface Frame {
    * const html = await frame.$eval('.main-container', (e, suffix) => e.outerHTML + suffix, 'hello');
    * ```
    *
+   * @deprecated This method does not wait for the element to pass the actionability checks and therefore can lead to the flaky
+   * tests. Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -6305,6 +6416,10 @@ export interface Frame {
    * const html = await frame.$eval('.main-container', (e, suffix) => e.outerHTML + suffix, 'hello');
    * ```
    *
+   * @deprecated This method does not wait for the element to pass the actionability checks and therefore can lead to the flaky
+   * tests. Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -6338,6 +6453,10 @@ export interface Frame {
    * const html = await frame.$eval('.main-container', (e, suffix) => e.outerHTML + suffix, 'hello');
    * ```
    *
+   * @deprecated This method does not wait for the element to pass the actionability checks and therefore can lead to the flaky
+   * tests. Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -6582,6 +6701,9 @@ export interface Frame {
    * })();
    * ```
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. Read more
+   * about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -6626,6 +6748,9 @@ export interface Frame {
    * })();
    * ```
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. Read more
+   * about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -6670,6 +6795,9 @@ export interface Frame {
    * })();
    * ```
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. Read more
+   * about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -6714,6 +6842,9 @@ export interface Frame {
    * })();
    * ```
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. Read more
+   * about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -6796,6 +6927,8 @@ export interface Frame {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-frame#frame-check-option-timeout), this method throws a
    * [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.check([options])](https://playwright.dev/docs/api/class-locator#locator-check) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -6887,6 +7020,8 @@ export interface Frame {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-frame#frame-click-option-timeout), this method throws a
    * [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.click([options])](https://playwright.dev/docs/api/class-locator#locator-click) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -7018,6 +7153,8 @@ export interface Frame {
    *
    * **NOTE** `frame.dblclick()` dispatches two `click` events and a single `dblclick` event.
    *
+   * @deprecated Use locator-based [locator.dblclick([options])](https://playwright.dev/docs/api/class-locator#locator-dblclick)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -7144,6 +7281,9 @@ export interface Frame {
    * await frame.dispatchEvent('#source', 'dragstart', { dataTransfer });
    * ```
    *
+   * @deprecated Use locator-based
+   * [locator.dispatchEvent(type[, eventInit, options])](https://playwright.dev/docs/api/class-locator#locator-dispatch-event)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param type DOM event type: `"click"`, `"dragstart"`, etc.
@@ -7278,6 +7418,8 @@ export interface Frame {
    *
    * To send fine-grained keyboard events, use
    * [locator.pressSequentially(text[, options])](https://playwright.dev/docs/api/class-locator#locator-press-sequentially).
+   * @deprecated Use locator-based [locator.fill(value[, options])](https://playwright.dev/docs/api/class-locator#locator-fill)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param value Value to fill for the `<input>`, `<textarea>` or `[contenteditable]` element.
@@ -7329,6 +7471,8 @@ export interface Frame {
    * [`selector`](https://playwright.dev/docs/api/class-frame#frame-focus-option-selector) and focuses it. If there's no
    * element matching [`selector`](https://playwright.dev/docs/api/class-frame#frame-focus-option-selector), the method
    * waits until a matching element appears in the DOM.
+   * @deprecated Use locator-based [locator.focus([options])](https://playwright.dev/docs/api/class-locator#locator-focus) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -7417,6 +7561,9 @@ export interface Frame {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns element attribute value.
+   * @deprecated Use locator-based
+   * [locator.getAttribute(name[, options])](https://playwright.dev/docs/api/class-locator#locator-get-attribute)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param name Attribute name to get the value for.
@@ -7860,6 +8007,8 @@ export interface Frame {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-frame#frame-hover-option-timeout), this method throws a
    * [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.hover([options])](https://playwright.dev/docs/api/class-locator#locator-hover) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -7940,6 +8089,8 @@ export interface Frame {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns `element.innerHTML`.
+   * @deprecated Use locator-based [locator.innerHTML([options])](https://playwright.dev/docs/api/class-locator#locator-inner-html)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -7976,6 +8127,8 @@ export interface Frame {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns `element.innerText`.
+   * @deprecated Use locator-based [locator.innerText([options])](https://playwright.dev/docs/api/class-locator#locator-inner-text)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -8017,6 +8170,9 @@ export interface Frame {
    * Throws for non-input elements. However, if the element is inside the `<label>` element that has an associated
    * [control](https://developer.mozilla.org/en-US/docs/Web/API/HTMLLabelElement/control), returns the value of the
    * control.
+   * @deprecated Use locator-based
+   * [locator.inputValue([options])](https://playwright.dev/docs/api/class-locator#locator-input-value) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -8053,6 +8209,8 @@ export interface Frame {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is checked. Throws if the element is not a checkbox or radio input.
+   * @deprecated Use locator-based [locator.isChecked([options])](https://playwright.dev/docs/api/class-locator#locator-is-checked)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -8095,6 +8253,9 @@ export interface Frame {
    * more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is disabled, the opposite of [enabled](https://playwright.dev/docs/actionability#enabled).
+   * @deprecated Use locator-based
+   * [locator.isDisabled([options])](https://playwright.dev/docs/api/class-locator#locator-is-disabled) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -8132,6 +8293,9 @@ export interface Frame {
    * more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is [editable](https://playwright.dev/docs/actionability#editable).
+   * @deprecated Use locator-based
+   * [locator.isEditable([options])](https://playwright.dev/docs/api/class-locator#locator-is-editable) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -8203,6 +8367,8 @@ export interface Frame {
    * Returns whether the element is hidden, the opposite of [visible](https://playwright.dev/docs/actionability#visible).
    * [`selector`](https://playwright.dev/docs/api/class-frame#frame-is-hidden-option-selector) that does not match any
    * elements is considered hidden.
+   * @deprecated Use locator-based [locator.isHidden([options])](https://playwright.dev/docs/api/class-locator#locator-is-hidden)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -8229,6 +8395,8 @@ export interface Frame {
    * Returns whether the element is [visible](https://playwright.dev/docs/actionability#visible).
    * [`selector`](https://playwright.dev/docs/api/class-frame#frame-is-visible-option-selector) that does not match any
    * elements is considered not visible.
+   * @deprecated Use locator-based [locator.isVisible([options])](https://playwright.dev/docs/api/class-locator#locator-is-visible)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -8343,6 +8511,8 @@ export interface Frame {
    *
    * Shortcuts such as `key: "Control+o"`, `key: "Control++` or `key: "Control+Shift+T"` are supported as well. When
    * specified with the modifier, modifier is pressed and being held while the subsequent key is being pressed.
+   * @deprecated Use locator-based [locator.press(key[, options])](https://playwright.dev/docs/api/class-locator#locator-press)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param key Name of the key to press or a character to generate, such as `ArrowLeft` or `a`.
@@ -8420,6 +8590,9 @@ export interface Frame {
    * frame.selectOption('select#colors', 'red', 'green', 'blue');
    * ```
    *
+   * @deprecated Use locator-based
+   * [locator.selectOption(values[, options])](https://playwright.dev/docs/api/class-locator#locator-select-option)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param values Options to select. If the `<select>` has the `multiple` attribute, all matching options are selected, otherwise
    * only the first option matching one of the passed options is selected. String values are matching both values and
@@ -8518,6 +8691,9 @@ export interface Frame {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-frame#frame-set-checked-option-timeout), this method throws a
    * [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based
+   * [locator.setChecked(checked[, options])](https://playwright.dev/docs/api/class-locator#locator-set-checked)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param checked Whether to check or uncheck the checkbox.
@@ -8637,6 +8813,9 @@ export interface Frame {
    * to point to an [input element](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input). However, if the
    * element is inside the `<label>` element that has an associated
    * [control](https://developer.mozilla.org/en-US/docs/Web/API/HTMLLabelElement/control), targets the control instead.
+   * @deprecated Use locator-based
+   * [locator.setInputFiles(files[, options])](https://playwright.dev/docs/api/class-locator#locator-set-input-files)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param files
@@ -8728,6 +8907,8 @@ export interface Frame {
    *
    * **NOTE** `frame.tap()` requires that the `hasTouch` option of the browser context be set to true.
    *
+   * @deprecated Use locator-based [locator.tap([options])](https://playwright.dev/docs/api/class-locator#locator-tap) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -8809,6 +8990,9 @@ export interface Frame {
    * more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns `element.textContent`.
+   * @deprecated Use locator-based
+   * [locator.textContent([options])](https://playwright.dev/docs/api/class-locator#locator-text-content) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -8924,6 +9108,8 @@ export interface Frame {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-frame#frame-uncheck-option-timeout), this method throws a
    * [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.uncheck([options])](https://playwright.dev/docs/api/class-locator#locator-uncheck)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to search for an element. If there are multiple elements satisfying the selector, the first will be
    * used.
    * @param options
@@ -9115,6 +9301,8 @@ export interface Frame {
    *
    * Note that `frame.waitForTimeout()` should only be used for debugging. Tests using the timer in production are going
    * to be flaky. Use signals such as network events, selectors becoming visible and others instead.
+   * @deprecated Never wait for timeout in production. Tests that wait for time are inherently flaky. Use
+   * [Locator](https://playwright.dev/docs/api/class-locator) actions and web assertions that wait automatically.
    * @param timeout A timeout to wait for
    */
   waitForTimeout(timeout: number): Promise<void>;
@@ -12514,6 +12702,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    *
    * The method finds an element matching the specified selector in the `ElementHandle`'s subtree. If no elements match
    * the selector, returns `null`.
+   * @deprecated Use locator-based [page.locator(selector[, options])](https://playwright.dev/docs/api/class-page#page-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    */
   $<K extends keyof HTMLElementTagNameMap>(selector: K, options?: { strict: boolean }): Promise<ElementHandleForTag<K> | null>;
@@ -12523,6 +12713,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    *
    * The method finds an element matching the specified selector in the `ElementHandle`'s subtree. If no elements match
    * the selector, returns `null`.
+   * @deprecated Use locator-based [page.locator(selector[, options])](https://playwright.dev/docs/api/class-page#page-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    */
   $(selector: string, options?: { strict: boolean }): Promise<ElementHandle<SVGElement | HTMLElement> | null>;
@@ -12533,6 +12725,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    *
    * The method finds all elements matching the specified selector in the `ElementHandle`s subtree. If no elements match
    * the selector, returns empty array.
+   * @deprecated Use locator-based [page.locator(selector[, options])](https://playwright.dev/docs/api/class-page#page-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    */
   $$<K extends keyof HTMLElementTagNameMap>(selector: K): Promise<ElementHandleForTag<K>[]>;
@@ -12542,6 +12736,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    *
    * The method finds all elements matching the specified selector in the `ElementHandle`s subtree. If no elements match
    * the selector, returns empty array.
+   * @deprecated Use locator-based [page.locator(selector[, options])](https://playwright.dev/docs/api/class-page#page-locator)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    */
   $$(selector: string): Promise<ElementHandle<SVGElement | HTMLElement>[]>;
@@ -12574,6 +12770,10 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * expect(await tweetHandle.$eval('.retweets', node => node.innerText)).toBe('10');
    * ```
    *
+   * @deprecated This method does not wait for the element to pass actionability checks and therefore can lead to the flaky tests.
+   * Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -12608,6 +12808,10 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * expect(await tweetHandle.$eval('.retweets', node => node.innerText)).toBe('10');
    * ```
    *
+   * @deprecated This method does not wait for the element to pass actionability checks and therefore can lead to the flaky tests.
+   * Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -12642,6 +12846,10 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * expect(await tweetHandle.$eval('.retweets', node => node.innerText)).toBe('10');
    * ```
    *
+   * @deprecated This method does not wait for the element to pass actionability checks and therefore can lead to the flaky tests.
+   * Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -12676,6 +12884,10 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * expect(await tweetHandle.$eval('.retweets', node => node.innerText)).toBe('10');
    * ```
    *
+   * @deprecated This method does not wait for the element to pass actionability checks and therefore can lead to the flaky tests.
+   * Use
+   * [locator.evaluate(pageFunction[, arg, options])](https://playwright.dev/docs/api/class-locator#locator-evaluate),
+   * other [Locator](https://playwright.dev/docs/api/class-locator) helper methods or web-first assertions instead.
    * @param selector A selector to query for.
    * @param pageFunction Function to be evaluated in the page context.
    * @param arg Optional argument to pass to
@@ -12880,6 +13092,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * [page.waitForSelector(selector[, options])](https://playwright.dev/docs/api/class-page#page-wait-for-selector)
    * instead.
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -12916,6 +13130,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * [page.waitForSelector(selector[, options])](https://playwright.dev/docs/api/class-page#page-wait-for-selector)
    * instead.
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -12952,6 +13168,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * [page.waitForSelector(selector[, options])](https://playwright.dev/docs/api/class-page#page-wait-for-selector)
    * instead.
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -12988,6 +13206,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * [page.waitForSelector(selector[, options])](https://playwright.dev/docs/api/class-page#page-wait-for-selector)
    * instead.
    *
+   * @deprecated Use web assertions that assert visibility or a locator-based
+   * [locator.waitFor([options])](https://playwright.dev/docs/api/class-locator#locator-wait-for) instead. `npx playwright codemod` rewrites these calls.
    * @param selector A selector to query for.
    * @param options
    */
@@ -13056,6 +13276,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-elementhandle#element-handle-check-option-timeout), this method
    * throws a [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.check([options])](https://playwright.dev/docs/api/class-locator#locator-check) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param options
    */
   check(options?: {
@@ -13135,6 +13357,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-elementhandle#element-handle-click-option-timeout), this method
    * throws a [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.click([options])](https://playwright.dev/docs/api/class-locator#locator-click) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param options
    */
   click(options?: {
@@ -13250,6 +13474,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    *
    * **NOTE** `elementHandle.dblclick()` dispatches two `click` events and a single `dblclick` event.
    *
+   * @deprecated Use locator-based [locator.dblclick([options])](https://playwright.dev/docs/api/class-locator#locator-dblclick)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param options
    */
   dblclick(options?: {
@@ -13374,6 +13600,9 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * await elementHandle.dispatchEvent('dragstart', { dataTransfer });
    * ```
    *
+   * @deprecated Use locator-based
+   * [locator.dispatchEvent(type[, eventInit, options])](https://playwright.dev/docs/api/class-locator#locator-dispatch-event)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param type DOM event type: `"click"`, `"dragstart"`, etc.
    * @param eventInit Optional event-specific initialization properties.
    */
@@ -13393,6 +13622,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    *
    * To send fine-grained keyboard events, use
    * [locator.pressSequentially(text[, options])](https://playwright.dev/docs/api/class-locator#locator-press-sequentially).
+   * @deprecated Use locator-based [locator.fill(value[, options])](https://playwright.dev/docs/api/class-locator#locator-fill)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param value Value to set for the `<input>`, `<textarea>` or `[contenteditable]` element.
    * @param options
    */
@@ -13433,6 +13664,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Calls [focus](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus) on the element.
+   * @deprecated Use locator-based [locator.focus([options])](https://playwright.dev/docs/api/class-locator#locator-focus) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    */
   focus(): Promise<void>;
 
@@ -13442,6 +13675,9 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns element attribute value.
+   * @deprecated Use locator-based
+   * [locator.getAttribute(name[, options])](https://playwright.dev/docs/api/class-locator#locator-get-attribute)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param name Attribute name to get the value for.
    */
   getAttribute(name: string): Promise<null|string>;
@@ -13464,6 +13700,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-elementhandle#element-handle-hover-option-timeout), this method
    * throws a [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.hover([options])](https://playwright.dev/docs/api/class-locator#locator-hover) instead.
+   * Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param options
    */
   hover(options?: {
@@ -13534,6 +13772,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns the `element.innerHTML`.
+   * @deprecated Use locator-based [locator.innerHTML([options])](https://playwright.dev/docs/api/class-locator#locator-inner-html)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    */
   innerHTML(): Promise<string>;
 
@@ -13542,6 +13782,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns the `element.innerText`.
+   * @deprecated Use locator-based [locator.innerText([options])](https://playwright.dev/docs/api/class-locator#locator-inner-text)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    */
   innerText(): Promise<string>;
 
@@ -13555,6 +13797,9 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * Throws for non-input elements. However, if the element is inside the `<label>` element that has an associated
    * [control](https://developer.mozilla.org/en-US/docs/Web/API/HTMLLabelElement/control), returns the value of the
    * control.
+   * @deprecated Use locator-based
+   * [locator.inputValue([options])](https://playwright.dev/docs/api/class-locator#locator-input-value) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param options
    */
   inputValue(options?: {
@@ -13569,6 +13814,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is checked. Throws if the element is not a checkbox or radio input.
+   * @deprecated Use locator-based [locator.isChecked([options])](https://playwright.dev/docs/api/class-locator#locator-is-checked)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    */
   isChecked(): Promise<boolean>;
 
@@ -13578,6 +13825,9 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is disabled, the opposite of [enabled](https://playwright.dev/docs/actionability#enabled).
+   * @deprecated Use locator-based
+   * [locator.isDisabled([options])](https://playwright.dev/docs/api/class-locator#locator-is-disabled) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    */
   isDisabled(): Promise<boolean>;
 
@@ -13587,6 +13837,9 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is [editable](https://playwright.dev/docs/actionability#editable).
+   * @deprecated Use locator-based
+   * [locator.isEditable([options])](https://playwright.dev/docs/api/class-locator#locator-is-editable) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    */
   isEditable(): Promise<boolean>;
 
@@ -13595,6 +13848,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is [enabled](https://playwright.dev/docs/actionability#enabled).
+   * @deprecated Use locator-based [locator.isEnabled([options])](https://playwright.dev/docs/api/class-locator#locator-is-enabled)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    */
   isEnabled(): Promise<boolean>;
 
@@ -13603,6 +13858,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is hidden, the opposite of [visible](https://playwright.dev/docs/actionability#visible).
+   * @deprecated Use locator-based [locator.isHidden([options])](https://playwright.dev/docs/api/class-locator#locator-is-hidden)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    */
   isHidden(): Promise<boolean>;
 
@@ -13611,6 +13868,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * instead. Read more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns whether the element is [visible](https://playwright.dev/docs/actionability#visible).
+   * @deprecated Use locator-based [locator.isVisible([options])](https://playwright.dev/docs/api/class-locator#locator-is-visible)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    */
   isVisible(): Promise<boolean>;
 
@@ -13648,6 +13907,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    *
    * Shortcuts such as `key: "Control+o"`, `key: "Control++` or `key: "Control+Shift+T"` are supported as well. When
    * specified with the modifier, modifier is pressed and being held while the subsequent key is being pressed.
+   * @deprecated Use locator-based [locator.press(key[, options])](https://playwright.dev/docs/api/class-locator#locator-press)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param key Name of the key to press or a character to generate, such as `ArrowLeft` or `a`.
    * @param options
    */
@@ -13697,6 +13958,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * a screenshot. If the element is detached from DOM, the method throws an error.
    *
    * Returns the buffer with the captured screenshot.
+   * @deprecated Use locator-based [locator.screenshot([options])](https://playwright.dev/docs/api/class-locator#locator-screenshot)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param options
    */
   screenshot(options?: {
@@ -13805,6 +14068,9 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * [connected](https://developer.mozilla.org/en-US/docs/Web/API/Node/isConnected) to a Document or a ShadowRoot.
    *
    * See [scrolling](https://playwright.dev/docs/input#scrolling) for alternative ways to scroll.
+   * @deprecated Use locator-based
+   * [locator.scrollIntoViewIfNeeded([options])](https://playwright.dev/docs/api/class-locator#locator-scroll-into-view-if-needed)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param options
    */
   scrollIntoViewIfNeeded(options?: {
@@ -13858,6 +14124,9 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * handle.selectOption(['red', 'green', 'blue']);
    * ```
    *
+   * @deprecated Use locator-based
+   * [locator.selectOption(values[, options])](https://playwright.dev/docs/api/class-locator#locator-select-option)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param values Options to select. If the `<select>` has the `multiple` attribute, all matching options are selected, otherwise
    * only the first option matching one of the passed options is selected. String values are matching both values and
    * labels. Option is considered matching if all specified properties match.
@@ -13936,6 +14205,9 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * If the element is inside the `<label>` element that has an associated
    * [control](https://developer.mozilla.org/en-US/docs/Web/API/HTMLLabelElement/control), focuses and selects text in
    * the control instead.
+   * @deprecated Use locator-based
+   * [locator.selectText([options])](https://playwright.dev/docs/api/class-locator#locator-select-text) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param options
    */
   selectText(options?: {
@@ -13984,6 +14256,9 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * [`timeout`](https://playwright.dev/docs/api/class-elementhandle#element-handle-set-checked-option-timeout), this
    * method throws a [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables
    * this.
+   * @deprecated Use locator-based
+   * [locator.setChecked(checked[, options])](https://playwright.dev/docs/api/class-locator#locator-set-checked)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param checked Whether to check or uncheck the checkbox.
    * @param options
    */
@@ -14056,6 +14331,9 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * [input element](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input). However, if the element is inside
    * the `<label>` element that has an associated
    * [control](https://developer.mozilla.org/en-US/docs/Web/API/HTMLLabelElement/control), targets the control instead.
+   * @deprecated Use locator-based
+   * [locator.setInputFiles(files[, options])](https://playwright.dev/docs/api/class-locator#locator-set-input-files)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param files
    * @param options
    */
@@ -14136,6 +14414,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    *
    * **NOTE** `elementHandle.tap()` requires that the `hasTouch` option of the browser context be set to true.
    *
+   * @deprecated Use locator-based [locator.tap([options])](https://playwright.dev/docs/api/class-locator#locator-tap) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param options
    */
   tap(options?: {
@@ -14207,6 +14487,9 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * more about [locators](https://playwright.dev/docs/locators).
    *
    * Returns the `node.textContent`.
+   * @deprecated Use locator-based
+   * [locator.textContent([options])](https://playwright.dev/docs/api/class-locator#locator-text-content) instead. Read
+   * more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    */
   textContent(): Promise<null|string>;
 
@@ -14277,6 +14560,8 @@ export interface ElementHandle<T=Node> extends JSHandle<T> {
    * When all steps combined have not finished during the specified
    * [`timeout`](https://playwright.dev/docs/api/class-elementhandle#element-handle-uncheck-option-timeout), this method
    * throws a [TimeoutError](https://playwright.dev/docs/api/class-timeouterror). Passing zero timeout disables this.
+   * @deprecated Use locator-based [locator.uncheck([options])](https://playwright.dev/docs/api/class-locator#locator-uncheck)
+   * instead. Read more about [locators](https://playwright.dev/docs/locators). `npx playwright codemod` rewrites these calls.
    * @param options
    */
   uncheck(options?: {
@@ -14530,6 +14815,8 @@ export interface Locator {
    *
    * Resolves given locator to the first matching DOM element. If there are no matching elements, waits for one. If
    * multiple elements match the locator, throws.
+   * @deprecated Always prefer using [Locator](https://playwright.dev/docs/api/class-locator)s and web assertions over
+   * [ElementHandle](https://playwright.dev/docs/api/class-elementhandle)s because latter are inherently racy.
    * @param options
    */
   elementHandle(options?: { timeout?: number, signal?: AbortSignal }): Promise<ElementHandle<SVGElement | HTMLElement>>;
@@ -15579,6 +15866,8 @@ export interface Locator {
    * [ElementHandle](https://playwright.dev/docs/api/class-elementhandle)s because latter are inherently racy.
    *
    * Resolves given locator to all matching DOM elements. If there are no matching elements, returns an empty list.
+   * @deprecated Always prefer using [Locator](https://playwright.dev/docs/api/class-locator)s and web assertions over
+   * [ElementHandle](https://playwright.dev/docs/api/class-elementhandle)s because latter are inherently racy.
    */
   elementHandles(): Promise<Array<ElementHandle>>;
 
