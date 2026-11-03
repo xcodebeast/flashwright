@@ -25,6 +25,7 @@ import { generateAriaTree, getAllElementsMatchingExpectAriaTemplate, matchesExpe
 import { beginDOMCaches, enclosingShadowRootOrDocument, endDOMCaches, isElementVisible, isInsideScope, parentElementOrShadowHost, setGlobalOptions } from './domUtils';
 import { Highlight } from './highlight';
 import { kLayoutSelectorNames, layoutSelectorScore } from './layoutSelectorUtils';
+import { explainNoMatch } from './noMatchExplainer';
 import { createRoleEngine } from './roleSelectorEngine';
 import { beginAriaCaches, endAriaCaches, getAriaDisabled, getAriaRole, getCheckedAllowMixed, getCheckedWithoutMixed, getElementAccessibleDescription, getElementAccessibleErrorMessage, getElementAccessibleNameText, getReadonly } from './roleUtils';
 import { SelectorEvaluatorImpl, sortInDOMOrder } from './selectorEvaluator';
@@ -1446,6 +1447,10 @@ export class InjectedScript {
       endAriaCaches();
       this._evaluator.end();
     }
+  }
+
+  explainNoMatch(selector: ParsedSelector, root: Node): string[] {
+    return explainNoMatch(this, this._sdkLanguage, selector, root);
   }
 
   strictModeViolationError(selector: ParsedSelector, matches: Element[]): Error {

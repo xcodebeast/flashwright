@@ -122,6 +122,13 @@ Playwright's own options combine with these: `javaScriptEnabled: false`, `servic
 - **Re-running one test** takes about 75 ms instead of 673 ms, in the [warm session](#warm-session) that the first run starts; that first run takes 240 ms. `playwright cli` commands start in ~45 ms instead of ~260 ms.
 - **Screenshots** take about half the time, and `toHaveScreenshot()` returns immediately when nothing changed.
 - **Agent mode**: when Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot CLI or any tool that sets `AI_AGENT` runs `playwright test`, the output is the failures and nothing else, and the outcome is also written as JSON. See [agent mode](#agent-mode).
+- **Failures say what the page has instead.** When an action or assertion waits for an element that never appears, the call log says which part of the locator stopped matching, whether a hidden element matches, and which elements are close, as locators to copy:
+  ```
+  - waiting for getByRole('button', { name: 'Logout' })
+    - no element matched
+      - similar buttons: getByRole('button', { name: 'Log out' })
+  ```
+  It covers role names, text, labels, placeholders, test ids, `nth()` and chains, and points at iframes when nothing is close.
 - **The MCP server** can answer as soon as the page has settled instead of after a fixed 500 ms: `playwright mcp --adaptive-settle` (or `timeouts.adaptiveSettle: true`). A click that saves through an API returns in 234 ms instead of 1014 ms.
 
 ### Agent mode
@@ -166,6 +173,7 @@ Playwright still ships about 95 methods its documentation discourages: the selec
 - **Process lifecycle**: worker processes and a headless browser may start before the config is read (unused ones close), and a finished worker's browser is killed rather than closed gracefully once no context is left open.
 - **Warm session** (outside CI; `FLASHWRIGHT_SESSION=0` turns it off): after `playwright test` exits, a session process, the next run's runner and workers, and the run's browsers keep running, for up to 5 minutes after the last run. A test can see a browser process that an earlier run used, with its context reset as between two tests of one run.
 - **Agent mode**: under a coding agent, the default terminal reporter is the `agent` one (see [agent mode](#agent-mode)); `agentMode: false` gives Playwright's.
+- **Call logs** of an action or assertion whose element never appeared end with what the page has instead; finding it takes at most 500 ms, after the call has failed.
 - **Types**: the methods the documentation discourages are marked `@deprecated`, so editors strike them through; they work as before.
 - **Screenshot files** have identical pixels but are 1.6–1.9× larger PNGs. `toHaveScreenshot()` baselines are unchanged.
 - **Temporary files**: worker counts, per-test durations, the context options and the headless browser launch options each config used last (never storage state, credentials, headers, a proxy, certificates, environment variables, browser preferences or arguments with values other than a few harmless ones; readable only by you) and a V8 code cache live in the system temp directory. `PW_DISABLE_WORKER_STANDBY=1` and `FLASHWRIGHT_DISABLE_CODE_CACHE=1` turn off the first and the last.

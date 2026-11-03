@@ -1297,6 +1297,7 @@ export class Frame extends SdkObject<FrameEventMap> {
     progress.log(`waiting for ${this._asLocator(target.selector)}`);
     const performActionPreChecks = !options.skipActionPreChecks && !options.force;
     const waitForFrameVisible = options.waitForFrameVisible && !options.force;
+    let everResolved = false;
     return this.retryWithProgressAndBackoff(progress, async (progress, continuePolling) => {
       if (performActionPreChecks)
         await this._page.performActionPreChecks(progress);
@@ -1319,6 +1320,7 @@ export class Frame extends SdkObject<FrameEventMap> {
       }));
       if (!resolved)
         return continuePolling;
+      everResolved = true;
       const element = resolved.result as dom.ElementHandle<Element>;
       try {
         // Taken after the answer when the command behind was not sent (several frames matched) or
@@ -1340,7 +1342,41 @@ export class Frame extends SdkObject<FrameEventMap> {
       } finally {
         element.dispose();
       }
+    }).catch(async e => {
+      if (!everResolved && isAbortError(e))
+        await this._explainNoMatch(progress.metadata.log, target);
+      throw e;
     });
+  }
+
+  // Flashwright: after a wait for an element that never appeared, one more look at the page says
+  // what it has instead: which part of the locator matched, hidden matches, similar elements.
+  // Bounded, and after the failure, so a passing call never pays for it.
+  private async _explainNoMatch(log: string[], target: types.SelectorTarget) {
+    // The progress has already failed, so the race below bounds this instead.
+    const explain = async () => {
+      const resolved = await this.selectors.resolveFramesForSelector(target);
+      if (resolved.length !== 1)
+        return [];
+      const { frame, info, scope } = resolved[0];
+      const context = frame.existingContext(info.world);
+      if (!context)
+        return [];
+      const injected = await context.injectedScript();
+      return await injected.evaluate((injected, { parsed, scope }) => injected.explainNoMatch(parsed, scope || document), { parsed: info.parsed, scope });
+    };
+    let timer: NodeJS.Timeout | undefined;
+    const lines = await Promise.race([
+      explain().catch(() => [] as string[]),
+      new Promise<string[]>(f => timer = setTimeout(() => f([]), 500)),
+    ]).finally(() => clearTimeout(timer));
+    if (!lines.length)
+      return;
+    // Before the line that says the call was aborted, if there is one, to stay under the wait.
+    let index = log.length;
+    while (index > 0 && log[index - 1].startsWith('operation was aborted'))
+      --index;
+    log.splice(index, 0, `  no element matched`, ...lines.map(line => `    ${line}`));
   }
 
   async rafrafTimeoutScreenshotElementWithProgress(progress: Progress, selector: string, timeout: number, options: ScreenshotOptions): Promise<Buffer> {
@@ -1635,6 +1671,9 @@ export class Frame extends SdkObject<FrameEventMap> {
       }
       if (e instanceof TimeoutError)
         details.timedOut = true;
+      if (selector && lastIntermediateResult.errorMessage === 'element(s) not found' && isAbortError(e))
+        // eslint-disable-next-line progress/await-must-use-progress -- the progress has failed; this bounds itself.
+        await this._explainNoMatch(progress.metadata.log, { selector, strict: true });
       throw new ExpectError(details);
     }
   }
