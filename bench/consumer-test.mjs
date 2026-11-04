@@ -1,16 +1,19 @@
 // Drop-in check: installs this fork's packed packages into a fresh project in place of
-// @playwright/test and runs the unmodified upstream TodoMVC suite with a TypeScript config.
+// @playwright/test and runs the unmodified upstream TodoMVC suite with a TypeScript config, on
+// Node and, when it is installed, on Bun.
 // Usage: node bench/consumer-test.mjs [--npm | --registry]
 // --npm installs the flashwright-* packages that utils/flashwright/pack.mjs made (run it first),
 // under their npm names, the way `npm i -D @playwright/test@npm:flashwright-test@<version>` would.
 // --registry installs the published packages from npm with exactly that command.
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { applicationCorpusDirectory, loadApplicationCorpus, startApplicationServer } from './application-corpus.mjs';
 
 const root = resolve(import.meta.dirname, '..');
-const work = resolve(root, 'workbench/consumer');
+// Outside the repository, like a real project: Bun would otherwise apply the repository's tsconfig paths.
+const work = join(tmpdir(), 'flashwright-consumer');
 rmSync(work, { recursive: true, force: true });
 mkdirSync(join(work, 'packs'), { recursive: true });
 
@@ -61,14 +64,41 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });
 `);
-// The app server runs in this process, so the test run must not block the event loop.
-const started = performance.now();
-const child = spawn('npx', ['playwright', 'test'], { cwd: project });
-let output = '';
-child.stdout.on('data', chunk => output += chunk);
-child.stderr.on('data', chunk => output += chunk);
-const status = await new Promise(f => child.on('close', f));
+writeFileSync(join(project, 'timeouts.ts'), `export type Timeout = number;
+export const timeout: Timeout = 30000;
+`);
+writeFileSync(join(project, 'bun.config.ts'), `import { defineConfig, devices } from '@playwright/test';
+import { type Timeout, timeout } from './timeouts';
+
+const testTimeout: Timeout = timeout;
+export default defineConfig({
+  testDir: './tests',
+  fullyParallel: true,
+  reporter: 'list',
+  timeout: testTimeout,
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+});
+`);
+
+// The app server runs in this process, so the test runs must not block the event loop.
+async function runSuite(command, args) {
+  const started = performance.now();
+  const child = spawn(command, args, { cwd: project });
+  let output = '';
+  child.stdout.on('data', chunk => output += chunk);
+  child.stderr.on('data', chunk => output += chunk);
+  const status = await new Promise(f => child.on('close', f));
+  console.log(output.split('\n').slice(-6).join('\n'));
+  console.log(`${command} exit=${status} in ${(performance.now() - started).toFixed(0)} ms`);
+  return status ?? 1;
+}
+
+const nodeStatus = await runSuite('npx', ['playwright', 'test']);
+// Bun runs TypeScript with its own loader, which Node's code paths must leave alone.
+const hasBun = spawnSync('bun', ['--version']).status === 0;
+const bunStatus = hasBun ? await runSuite('bunx', ['--bun', 'playwright', 'test', '--config=bun.config.ts']) : 0;
+if (!hasBun)
+  console.log('Bun is not installed: skipped the run on Bun.');
 await server.close();
-console.log(output.split('\n').slice(-6).join('\n'));
-console.log(`exit=${status} in ${(performance.now() - started).toFixed(0)} ms; installed: ${readdirSync(join(project, 'node_modules')).join(', ')}`);
-process.exitCode = status ?? 1;
+console.log(`installed: ${readdirSync(join(project, 'node_modules')).join(', ')}`);
+process.exitCode = nodeStatus || bunStatus;

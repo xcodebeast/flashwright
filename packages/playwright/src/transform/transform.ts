@@ -317,6 +317,11 @@ function installTransformIfNeeded() {
   registerESMLoader();
   cc.installSourceMapSupport();
 
+  // Flashwright: Bun transpiles TypeScript itself. Pointing its .ts loader at .js below would
+  // parse every TypeScript file as JavaScript.
+  if ('Bun' in globalThis)
+    return;
+
   // Async ESM loader ony covers "import", so install CJS hooks to cover "require".
   if (loaderChannel) {
     installCJSHooks();
