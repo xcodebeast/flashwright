@@ -398,7 +398,32 @@ ffmpeg -hide_banner -loglevel error -y -f lavfi -i anullsrc=r=22050:cl=mono -t 0
   expect(probe(test.info().outputPath('test-results', 'video.mp4')).codecs).toEqual(['h264', 'aac', 'mov_text']);
 });
 
+test('the voice of this system speaks', async ({ runInlineTest }) => {
+  test.skip(process.platform === 'linux' && spawnSync('espeak-ng', ['--version']).status !== 0 && spawnSync('espeak', ['--version']).status !== 0, 'no system voice here');
+  const result = await runInlineTest({
+    'playwright.config.js': `
+      process.env.FLASHWRIGHT_VOICE_CACHE = require('path').join(__dirname, 'voice-cache');
+      module.exports = { narratedVideo: { voice: 'system' } };
+    `,
+    'a.spec.ts': `
+      import { test } from '@playwright/test';
+      test('a', async ({ page, narrate }) => {
+        await page.setContent('<div>Hello</div>');
+        await narrate('This sentence is read aloud by the voice of the operating system.');
+      });
+    `,
+  }, { video: true, reporter: 'line' });
+  expect(result.exitCode).toBe(0);
+  expect(result.output).not.toContain('the voice failed');
+  const video = test.info().outputPath('test-results', 'video.mp4');
+  expect(probe(video).codecs).toEqual(['h264', 'aac', 'mov_text']);
+  const { stderr } = spawnSync('ffmpeg', ['-hide_banner', '-i', video, '-map', '0:a', '-af', 'volumedetect', '-f', 'null', '-'], { encoding: 'utf8' });
+  const loudest = +stderr.match(/max_volume: (-?[\d.]+) dB/)![1];
+  expect(loudest).toBeGreaterThan(-40);
+});
+
 test('without a voice it says how to get one', async ({ runInlineTest }) => {
+  test.skip(process.platform !== 'linux', 'macOS and Windows always have one');
   const emptyBin = fs.mkdtempSync(path.join(os.tmpdir(), 'no-voice-'));
   for (const tool of ['ffmpeg', 'ffprobe'])
     fs.symlinkSync(execFileSync('which', [tool], { encoding: 'utf8' }).trim(), path.join(emptyBin, tool));
@@ -414,7 +439,6 @@ test('without a voice it says how to get one', async ({ runInlineTest }) => {
     `,
   }, { video: true }, { PATH: emptyBin });
   fs.rmSync(emptyBin, { recursive: true, force: true });
-  test.skip(process.platform !== 'linux', 'macOS and Windows always have one');
   expect(result.exitCode).toBe(0);
   expect(result.output).toContain('This system has no voice, so the video only has captions. For a free, natural voice: npx playwright install-voice');
   expect(result.output).toContain('Video: test-results');

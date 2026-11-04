@@ -62,3 +62,34 @@ jobs:
       - run: npx playwright install chromium
       - name: Test runner changes
         run: npm run ttest -- flashwright-options prepared-context test-ordering session.spec code-cache.spec
+
+  video:
+    name: Narrated video with the system voice (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            ffmpeg: brew install ffmpeg
+          - os: windows-2025
+            ffmpeg: choco install ffmpeg --no-progress -y
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22
+      - run: ${{ matrix.ffmpeg }}
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install chromium
+      - name: Video tests
+        run: npm run ttest -- flashwright-narrated-video
+      - name: A sample to listen to
+        if: ${{ !cancelled() }}
+        run: npx playwright test --config=tests/playwright-test/assets/narrated-video-sample/playwright.config.ts --video --output=video-sample
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: video-${{ matrix.os }}
+          path: video-sample/video.*
