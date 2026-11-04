@@ -231,7 +231,7 @@ export default defineConfig({
 });
 ```
 
-A caption shows the text typed into a field, unless the field's name suggests a secret such as a password; the page itself shows what your app shows, so use test data you are happy to share. Recording replaces the `video` option, turns off the screenshots of `trace` and gives each test a new context, and a test cannot use `page.screencast` itself in that run. `summary.json` in [agent mode](#agent-mode) has the video's path.
+Captions show the text that tests type, including passwords, and the page shows what your app shows, so use test data you are happy to share. Recording replaces the `video` option, turns off the screenshots of `trace` and gives each test a new context, and a test cannot use `page.screencast` itself in that run. `summary.json` in [agent mode](#agent-mode) has the video's path.
 
 ## Additions
 

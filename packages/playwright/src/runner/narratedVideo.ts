@@ -64,7 +64,6 @@ const kCameraZoom = 1.55;
 
 const kInputMethods = new Set(['click', 'dblclick', 'tap', 'fill', 'press', 'type', 'check', 'uncheck', 'setChecked', 'selectOption', 'hover', 'keyboardPress', 'keyboardType', 'keyboardInsertText', 'mouseClick', 'goto']);
 const kPointerMethods = new Set(['click', 'dblclick', 'tap', 'fill', 'check', 'uncheck', 'setChecked', 'selectOption', 'mouseClick']);
-const kSecretName = /pass|secret|token|\bkey\b|api.?key|\botp\b|\bpin\b|credential|\bcvv\b|\bcvc\b|card.?number/i;
 
 const quote = (text: string) => `\u201c${text}\u201d`;
 
@@ -92,15 +91,12 @@ export function describeAction(step: Recording['steps'][0]): string {
       return where && where !== '/' ? `Open ${where}` : 'Open the page';
     }
     case 'fill':
-    case 'type': {
-      // A caption is read by whoever gets the video; the field itself may hide what is typed.
-      const secret = kSecretName.test(params.selector ?? '') || !params.value;
-      return secret ? `Fill in ${target.text}` : `Type ${quote(params.value!.slice(0, 80))} into ${target.text}`;
-    }
+    case 'type':
+      return params.value ? `Type ${quote(params.value.slice(0, 80))} into ${target.text}` : `Clear ${target.text}`;
     case 'press': return `Press ${params.key} in ${target.text}`;
     case 'keyboardPress': return `Press ${params.key}`;
     case 'keyboardType':
-    case 'keyboardInsertText': return 'Type on the keyboard';
+    case 'keyboardInsertText': return `Type ${quote((params.text ?? '').slice(0, 80))}`;
     case 'check': return `Check ${target.text}`;
     case 'uncheck': return `Uncheck ${target.text}`;
     case 'selectOption': return `Choose an option in ${target.text}`;

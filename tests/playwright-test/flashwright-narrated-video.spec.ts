@@ -433,13 +433,13 @@ test('the summary of agent mode has the video', async ({ runInlineTest }) => {
   expect(summary.video).toBe(path.join('test-results', 'video.mp4'));
 });
 
-test('captions do not show what is typed into a secret field', async () => {
+test('captions say what is typed', async () => {
   const { narratedVideo } = require('../../packages/playwright/lib/runner/index.js');
-  const fill = (selector: string, value: string) => narratedVideo.describeAction({ order: 0, title: '', category: 'pw:api', start: 0, method: 'fill', params: { selector, value } });
-  expect(fill('internal:role=textbox[name="Email"i]', 'ann@example.com')).toBe('Type “ann@example.com” into “Email”');
-  for (const selector of ['internal:label="Password"i', 'internal:attr=[placeholder="Your API key"i]', '#secret', 'internal:testid=[data-testid="token-field"s]'])
-    expect(fill(selector, 'hunter2')).not.toContain('hunter2');
-  expect(narratedVideo.describeAction({ order: 0, title: '', category: 'pw:api', start: 0, method: 'keyboardType', params: { text: 'hunter2' } })).not.toContain('hunter2');
+  const describe = (method: string, params: any) => narratedVideo.describeAction({ order: 0, title: '', category: 'pw:api', start: 0, method, params });
+  expect(describe('fill', { selector: 'internal:role=textbox[name="Email"i]', value: 'ann@example.com' })).toBe('Type \u201cann@example.com\u201d into \u201cEmail\u201d');
+  expect(describe('fill', { selector: 'internal:label="Password"i', value: 'hunter2' })).toBe('Type \u201chunter2\u201d into \u201cPassword\u201d');
+  expect(describe('fill', { selector: 'internal:label="Email"i', value: '' })).toBe('Clear \u201cEmail\u201d');
+  expect(describe('keyboardType', { text: 'hello' })).toBe('Type \u201chello\u201d');
 });
 
 test('types', async ({ runTSC }) => {

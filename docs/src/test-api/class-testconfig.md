@@ -432,7 +432,7 @@ Turns the run into one finished video with a voice, captions, a moving cursor an
 
 In `'on'` mode the video also shows each test's title and result, and what it clicks, types and asserts. In `'demo'` mode it shows only the page and what [`property: Fixtures.narrate`] said, and it leaves out tests that failed.
 
-Recording replaces [`property: TestOptions.video`], turns off the screenshots of [`property: TestOptions.trace`], and gives each test a new context. A caption shows the text typed into a field, unless the field's name suggests a secret, such as a password.
+Recording replaces [`property: TestOptions.video`], turns off the screenshots of [`property: TestOptions.trace`], and gives each test a new context. Captions show the text that tests type, including passwords, so use test data you are happy to share.
 
 **Usage**
 
