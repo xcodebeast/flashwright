@@ -354,7 +354,7 @@ test('a video replaces the video option and works with a trace that has screensh
 
 test('it says when ffmpeg is missing, before running the tests', async ({ runInlineTest }) => {
   const emptyPath = fs.mkdtempSync(path.join(os.tmpdir(), 'no-ffmpeg-'));
-  fs.symlinkSync(process.execPath, path.join(emptyPath, 'node'));
+  fs.symlinkSync(process.execPath, path.join(emptyPath, process.platform === 'win32' ? 'node.exe' : 'node'));
   const result = await runInlineTest({
     'a.spec.ts': `
       import { test } from '@playwright/test';
