@@ -28,7 +28,7 @@ export class ZipTraceLoaderBackend implements TraceLoaderBackend {
   private _entriesPromise: Promise<Map<string, zip.Entry>>;
 
   constructor(traceUri: string, progress: Progress) {
-    zipjs.configure({ baseURL: self.location.href } as any);
+    zipjs.configure({ baseURI: self.location.href });
 
     this._zipReader = new zipjs.ZipReader(
         new zipjs.HttpReader(this._resolveTraceURI(traceUri), { mode: 'cors', preventHeadRequest: true } as any),
