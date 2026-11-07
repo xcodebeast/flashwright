@@ -347,6 +347,12 @@ class EsbuildStep extends Step {
       options.alias = { ...vendorAliases(), ...options.alias };
       this._watchPaths = [...watchPaths, filePath('vendor')];
     }
+    // Flashwright: published bundles drop whitespace and simplify syntax. Names stay: functions sent to
+    // the browser as source must keep working there, and error messages keep their class names.
+    if (options.bundle && !watchMode && options.minify === undefined) {
+      options.minifyWhitespace = true;
+      options.minifySyntax = true;
+    }
     if (options.bundle) {
       // For bundled outputs we always want a metafile so we can emit a
       // sidecar report next to each output.
