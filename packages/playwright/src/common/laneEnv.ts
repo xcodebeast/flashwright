@@ -20,6 +20,9 @@
 // its worker sets, stay the lane's, also for the processes its tests start. What the environment
 // changes outside JavaScript stays the process's: a time zone set in TZ applies to every lane.
 
+import childProcess from 'child_process';
+import { syncBuiltinESMExports } from 'module';
+
 import { currentLane } from '../globals';
 
 import type { LaneEnv } from '../globals';
@@ -120,4 +123,36 @@ export function installLaneEnv() {
     },
   });
   Object.defineProperty(process, 'env', { get: () => view, set: replace, configurable: true, enumerable: true });
+  passLaneEnvToChildProcesses(view);
+}
+
+// Node 26 starts child processes with the process environment even when process.env is replaced, so
+// pass the lane's environment explicitly to processes started without an env option.
+function passLaneEnvToChildProcesses(view: NodeJS.ProcessEnv) {
+  const module = childProcess as unknown as Record<string, Function>;
+  for (const name of ['spawn', 'spawnSync', 'exec', 'execSync', 'execFile', 'execFileSync', 'fork']) {
+    const original = module[name];
+    module[name] = function(this: unknown, ...args: unknown[]) {
+      if (currentLane()?.env)
+        args = withEnvOption(args, () => ({ ...view }));
+      return original.apply(this, args);
+    };
+  }
+  syncBuiltinESMExports();
+}
+
+// Arguments are (command, [args], [options], [callback]); options are the first object after command.
+function withEnvOption(args: unknown[], env: () => NodeJS.ProcessEnv): unknown[] {
+  const isOptions = (value: unknown) => !!value && typeof value === 'object' && !Array.isArray(value);
+  const index = args.findIndex((value, i) => i > 0 && isOptions(value));
+  if (index !== -1) {
+    const options = args[index] as { env?: NodeJS.ProcessEnv };
+    if (options.env !== undefined)
+      return args;
+    return args.map((value, i) => i === index ? { ...options, env: env() } : value);
+  }
+  const insertAt = Array.isArray(args[1]) ? 2 : 1;
+  if (args.length < insertAt)
+    return args;
+  return [...args.slice(0, insertAt), { env: env() }, ...args.slice(insertAt)];
 }
