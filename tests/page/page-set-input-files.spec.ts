@@ -21,6 +21,11 @@ import path from 'path';
 import fs from 'fs';
 import formidable from 'formidable';
 
+// formidable gives every field and file as an array of values.
+function firstValues<T>(record: Record<string, T[] | undefined>): Record<string, T> {
+  return Object.fromEntries(Object.entries(record).map(([key, values]) => [key, values?.[0]])) as Record<string, T>;
+}
+
 test('should upload the file', async ({ page, server, asset }) => {
   await page.goto(server.PREFIX + '/input/fileupload.html');
   const filePath = path.relative(process.cwd(), asset('file-to-upload.txt'));
@@ -177,7 +182,7 @@ test('should upload large file', async ({ page, server, isAndroid, mode }, testI
       const form = new formidable.IncomingForm({ uploadDir: testInfo.outputPath() });
       form.parse(req, function(err, fields, f) {
         res.end();
-        const files = f as Record<string, formidable.File>;
+        const files = firstValues(f);
         fulfill(files.file1);
       });
     });
@@ -235,7 +240,7 @@ test('should upload large file with relative path', async ({ page, server, isAnd
       const form = new formidable.IncomingForm({ uploadDir: testInfo.outputPath() });
       form.parse(req, function(err, fields, f) {
         res.end();
-        const files = f as Record<string, formidable.File>;
+        const files = firstValues(f);
         fulfill(files.file1);
       });
     });
@@ -298,7 +303,7 @@ test('should detect mime type', async ({ page, server, asset }) => {
   server.setRoute('/upload', async (req, res) => {
     const form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, f) {
-      files = f as Record<string, formidable.File>;
+      files = firstValues(f);
       res.end();
     });
   });
@@ -333,7 +338,7 @@ test('should not trim big uploaded files', async ({ page, server }) => {
   server.setRoute('/upload', async (req, res) => {
     const form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, f) {
-      files = f as Record<string, formidable.File>;
+      files = firstValues(f);
       res.end();
     });
   });

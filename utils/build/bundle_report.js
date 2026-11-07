@@ -27,10 +27,14 @@ const _licenseCache = new Map();
 
 /**
  * @param {*} pkg
- * @returns {string}
+ * @returns {string | undefined}
  */
 function normalizeRepositoryUrlToGitHub(pkg) {
   let url = typeof pkg.repository === 'object' ? pkg.repository.url : pkg.repository;
+  // Note: this list ensures we do not accidentally miss a repository for some package.
+  const knownPackagesWithoutRepository = ['@isaacs/nonrecursive-glob-match'];
+  if (url === undefined && knownPackagesWithoutRepository.includes(pkg.name))
+    return undefined;
   if (typeof url !== 'string')
     throw new Error(`Malformed repository for ${pkg.name}@${pkg.version}: ${JSON.stringify(pkg.repository)}`);
   url = url.replace(/^git@github\.com:/, 'https://github.com/');

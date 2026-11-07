@@ -35,6 +35,7 @@ export type APIRequest = ConnectRequest | PassthroughRequest | EnsureOpenedReque
 
 type GlobalThis = typeof globalThis;
 
+// eslint-disable-next-line no-shadow-restricted-names -- the injected function receives the page global to patch.
 export function inject(globalThis: GlobalThis) {
   if ((globalThis as any).__pwWebSocketDispatch)
     return;

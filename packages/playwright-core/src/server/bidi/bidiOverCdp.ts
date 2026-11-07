@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import * as bidiMapper from 'chromium-bidi/lib/cjs/bidiMapper/BidiMapper';
-import * as bidiCdpConnection from 'chromium-bidi/lib/cjs/cdp/CdpConnection';
+import * as bidiMapper from 'chromium-bidi/out/Default/gen/src/bidiMapper/BidiMapper';
+import * as bidiCdpConnection from 'chromium-bidi/out/Default/gen/src/cdp/CdpConnection';
 
 import { debugLogger } from '@utils/debugLogger';
 
 import type { ConnectionTransport, ProtocolRequest, ProtocolResponse } from '../transport';
-import type { ChromiumBidi } from 'chromium-bidi/lib/cjs/protocol/protocol';
-import type * as bidiTransport from 'chromium-bidi/lib/cjs/utils/transport';
+import type { ChromiumBidi } from 'chromium-bidi/out/Default/gen/src/protocol/protocol';
+import type * as bidiTransport from 'chromium-bidi/out/Default/gen/src/utils/transport';
 
-const bidiServerLogger = (prefix: string, ...args: unknown[]): void => {
+const bidiServerLogger = (prefix: string) => (...args: unknown[]): void => {
   debugLogger.log(prefix as any, args);
 };
 

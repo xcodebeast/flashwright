@@ -21,8 +21,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import stylistic from "@stylistic/eslint-plugin";
 import importRules from "eslint-plugin-import";
+import reactHooks from "eslint-plugin-react-hooks";
 import progressPlugin from "./utils/eslint-plugin-progress/index.js";
-import { fixupConfigRules } from "@eslint/compat";
+import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
 
@@ -32,8 +33,9 @@ const __dirname = path.dirname(__filename);
 const plugins = {
   "@stylistic": stylistic,
   "@typescript-eslint": typescriptEslint,
-  notice,
-  import: importRules,
+  // These two still call context methods ESLint 10 removed.
+  notice: fixupPluginRules(notice),
+  import: fixupPluginRules(importRules),
 };
 
 const ignores = [
@@ -46,6 +48,9 @@ const ignores = [
   "node_modules/",
   "output/",
   "workbench/",
+  ".claude/",
+  ".workbench/",
+  ".tools/",
   // Benchmark corpora: copies of third-party apps and their test suites, kept as their projects have them.
   "bench/apps/",
   // Tests and configs generated for other frameworks by bench/competitors/generate.mjs.
@@ -286,9 +291,17 @@ const compat = new FlatCompat({
   recommendedConfig: js.configs.recommended,
   allConfig: js.configs.all,
 });
-const reactBaseConfig = fixupConfigRules(
-  compat.extends("plugin:react/recommended", "plugin:react-hooks/recommended")
-);
+const reactBaseConfig = [
+  ...fixupConfigRules(compat.extends("plugin:react/recommended")),
+  // Only the two classic hooks rules: recommended now also adds the React Compiler rules.
+  {
+    plugins: { "react-hooks": fixupPluginRules(reactHooks) },
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+    },
+  },
+];
 const reactFiles = [
   `packages/html-reporter/src/**/*.ts`,
   `packages/html-reporter/src/**/*.tsx`,

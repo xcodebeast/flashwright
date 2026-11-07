@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 // @ts-ignore
-import * as zipImport from '@zip.js/zip.js/lib/zip-no-worker-inflate.js';
+import * as zipImport from '@zip.js/zip.js/lib/zip-core.js';
 
 import type * as zip from '@zip.js/zip.js';
 import type { TraceLoaderBackend } from '@isomorphic/trace/traceLoader';
@@ -67,7 +67,7 @@ export class ZipTraceLoaderBackend implements TraceLoaderBackend {
     if (!entry)
       return;
     const writer = new zipjs.TextWriter();
-    await entry.getData?.(writer);
+    await (entry as zip.FileEntry).getData(writer);
     return writer.getData();
   }
 
@@ -77,7 +77,7 @@ export class ZipTraceLoaderBackend implements TraceLoaderBackend {
     if (!entry)
       return;
     const writer = new zipjs.BlobWriter() as zip.BlobWriter;
-    await entry.getData!(writer);
+    await (entry as zip.FileEntry).getData(writer);
     return writer.getData();
   }
 }

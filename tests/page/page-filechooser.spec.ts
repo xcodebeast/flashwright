@@ -21,6 +21,11 @@ import { attachFrame } from '../config/utils';
 import fs from 'fs';
 import formidable from 'formidable';
 
+// formidable gives every field and file as an array of values.
+function firstValues<T>(record: Record<string, T[] | undefined>): Record<string, T> {
+  return Object.fromEntries(Object.entries(record).map(([key, values]) => [key, values?.[0]])) as Record<string, T>;
+}
+
 test('should upload multiple large files', async ({ page, server, isAndroid, mode }, testInfo) => {
   test.skip(isAndroid);
   test.slow();
@@ -256,7 +261,7 @@ test('should not trim big uploaded files', async ({ page, server }) => {
   server.setRoute('/upload', async (req, res) => {
     const form = new formidable.IncomingForm();
     form.parse(req, function(err, fields, f) {
-      files = f as Record<string, formidable.File>;
+      files = firstValues(f);
       res.end();
     });
   });

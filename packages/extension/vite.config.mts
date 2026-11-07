@@ -26,11 +26,13 @@ export default defineConfig({
       targets: [
         {
           src: '../../icons/*',
-          dest: 'icons'
+          dest: 'icons',
+          rename: { stripBase: true }
         },
         {
           src: '../../manifest.json',
-          dest: '.'
+          dest: '.',
+          rename: { stripBase: true }
         }
       ]
     })

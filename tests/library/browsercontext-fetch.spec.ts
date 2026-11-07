@@ -27,6 +27,11 @@ import { suppressCertificateWarning } from '../config/utils';
 import { kTargetClosedErrorMessage } from '../config/errors';
 import { TestServer } from '../config/testserver';
 
+// formidable gives every field and file as an array of values.
+function firstValues<T>(record: Record<string, T[] | undefined>): Record<string, T> {
+  return Object.fromEntries(Object.entries(record).map(([key, values]) => [key, values?.[0]])) as Record<string, T>;
+}
+
 it.skip(({ mode }) => mode !== 'default');
 
 const __testHookLookup = (hostname: string): LookupAddress[] => {
@@ -1156,12 +1161,12 @@ it('should encode to application/json by default', async function({ context, pag
 });
 
 it('should support multipart/form-data', async function({ context, server }) {
-  const formReceived = new Promise<{error: any, fields: formidable.Fields, files: Record<string, formidable.File>, serverRequest: IncomingMessage}>(resolve => {
+  const formReceived = new Promise<{error: any, fields: Record<string, string>, files: Record<string, formidable.File>, serverRequest: IncomingMessage}>(resolve => {
     server.setRoute('/empty.html', async (serverRequest, res) => {
       const form = new formidable.IncomingForm();
       form.parse(serverRequest, (error, fields, files) => {
         server.serveFile(serverRequest, res);
-        resolve({ error, fields, files: files as Record<string, formidable.File>, serverRequest });
+        resolve({ error, fields: firstValues(fields), files: firstValues(files), serverRequest });
       });
     });
   });
@@ -1195,12 +1200,12 @@ it('should support multipart/form-data', async function({ context, server }) {
 });
 
 it('should support multipart/form-data with ReadStream values', async function({ context, page, asset, server }) {
-  const formReceived = new Promise<{error: any, fields: formidable.Fields, files: Record<string, formidable.File>, serverRequest: IncomingMessage}>(resolve => {
+  const formReceived = new Promise<{error: any, fields: Record<string, string>, files: Record<string, formidable.File>, serverRequest: IncomingMessage}>(resolve => {
     server.setRoute('/empty.html', async (serverRequest, res) => {
       const form = new formidable.IncomingForm();
       form.parse(serverRequest, (error, fields, files) => {
         server.serveFile(serverRequest, res);
-        resolve({ error, fields, files: files as Record<string, formidable.File>, serverRequest });
+        resolve({ error, fields: firstValues(fields), files: firstValues(files), serverRequest });
       });
     });
   });

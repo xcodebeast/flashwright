@@ -30,6 +30,11 @@ const { createHttpServer } = utils;
 import { kTargetClosedErrorMessage } from '../config/errors';
 import { RunServer } from '../config/remoteServer';
 
+// formidable gives every field and file as an array of values.
+function firstValues<T>(record: Record<string, T[] | undefined>): Record<string, T> {
+  return Object.fromEntries(Object.entries(record).map(([key, values]) => [key, values?.[0]])) as Record<string, T>;
+}
+
 type ConnectTestOptions = {
   redirectPortForTest?: number;
   launchOptions?: Record<string, any>;
@@ -796,7 +801,7 @@ for (const kind of ['launchServer', 'run-server'] as const) {
           const form = new formidable.IncomingForm({ uploadDir: testInfo.outputPath() });
           form.parse(req, function(err, fields, f) {
             res.end();
-            const files = f as Record<string, formidable.File>;
+            const files = firstValues(f);
             fulfill(files.file1);
           });
         });
