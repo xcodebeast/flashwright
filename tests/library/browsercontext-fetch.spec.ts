@@ -1163,7 +1163,7 @@ it('should encode to application/json by default', async function({ context, pag
 it('should support multipart/form-data', async function({ context, server }) {
   const formReceived = new Promise<{error: any, fields: Record<string, string>, files: Record<string, formidable.File>, serverRequest: IncomingMessage}>(resolve => {
     server.setRoute('/empty.html', async (serverRequest, res) => {
-      const form = new formidable.IncomingForm();
+      const form = formidable();
       form.parse(serverRequest, (error, fields, files) => {
         server.serveFile(serverRequest, res);
         resolve({ error, fields: firstValues(fields), files: firstValues(files), serverRequest });
@@ -1202,7 +1202,7 @@ it('should support multipart/form-data', async function({ context, server }) {
 it('should support multipart/form-data with ReadStream values', async function({ context, page, asset, server }) {
   const formReceived = new Promise<{error: any, fields: Record<string, string>, files: Record<string, formidable.File>, serverRequest: IncomingMessage}>(resolve => {
     server.setRoute('/empty.html', async (serverRequest, res) => {
-      const form = new formidable.IncomingForm();
+      const form = formidable();
       form.parse(serverRequest, (error, fields, files) => {
         server.serveFile(serverRequest, res);
         resolve({ error, fields: firstValues(fields), files: firstValues(files), serverRequest });
@@ -1242,7 +1242,7 @@ it('should support multipart/form-data and keep the order', async function({ con
   const givenKeys = Object.keys(given);
   const formReceived = new Promise<{error: any, fields: formidable.Fields}>(resolve => {
     server.setRoute('/empty.html', async (serverRequest, res) => {
-      const form = new formidable.IncomingForm();
+      const form = formidable();
       form.parse(serverRequest, (error, fields, files) => {
         server.serveFile(serverRequest, res);
         resolve({ error, fields });

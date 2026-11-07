@@ -259,7 +259,7 @@ test('should not trim big uploaded files', async ({ page, server }) => {
 
   let files: Record<string, formidable.File>;
   server.setRoute('/upload', async (req, res) => {
-    const form = new formidable.IncomingForm();
+    const form = formidable();
     form.parse(req, function(err, fields, f) {
       files = firstValues(f);
       res.end();

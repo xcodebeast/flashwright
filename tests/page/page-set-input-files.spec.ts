@@ -179,7 +179,7 @@ test('should upload large file', async ({ page, server, isAndroid, mode }, testI
   expect(await events.evaluate(e => e)).toEqual(['input', 'change']);
   const serverFilePromise = new Promise<formidable.File>(fulfill => {
     server.setRoute('/upload', async (req, res) => {
-      const form = new formidable.IncomingForm({ uploadDir: testInfo.outputPath() });
+      const form = formidable({ uploadDir: testInfo.outputPath() });
       form.parse(req, function(err, fields, f) {
         res.end();
         const files = firstValues(f);
@@ -237,7 +237,7 @@ test('should upload large file with relative path', async ({ page, server, isAnd
   expect(await events.evaluate(e => e)).toEqual(['input', 'change']);
   const serverFilePromise = new Promise<formidable.File>(fulfill => {
     server.setRoute('/upload', async (req, res) => {
-      const form = new formidable.IncomingForm({ uploadDir: testInfo.outputPath() });
+      const form = formidable({ uploadDir: testInfo.outputPath() });
       form.parse(req, function(err, fields, f) {
         res.end();
         const files = firstValues(f);
@@ -301,7 +301,7 @@ test('should detect mime type', async ({ page, server, asset }) => {
 
   let files: Record<string, formidable.File>;
   server.setRoute('/upload', async (req, res) => {
-    const form = new formidable.IncomingForm();
+    const form = formidable();
     form.parse(req, function(err, fields, f) {
       files = firstValues(f);
       res.end();
@@ -336,7 +336,7 @@ test('should not trim big uploaded files', async ({ page, server }) => {
 
   let files: Record<string, formidable.File>;
   server.setRoute('/upload', async (req, res) => {
-    const form = new formidable.IncomingForm();
+    const form = formidable();
     form.parse(req, function(err, fields, f) {
       files = firstValues(f);
       res.end();

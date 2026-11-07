@@ -798,7 +798,7 @@ for (const kind of ['launchServer', 'run-server'] as const) {
       expect(await events.evaluate(e => e)).toEqual(['input', 'change']);
       const serverFilePromise = new Promise<formidable.File>(fulfill => {
         server.setRoute('/upload', async (req, res) => {
-          const form = new formidable.IncomingForm({ uploadDir: testInfo.outputPath() });
+          const form = formidable({ uploadDir: testInfo.outputPath() });
           form.parse(req, function(err, fields, f) {
             res.end();
             const files = firstValues(f);

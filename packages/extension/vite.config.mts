@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import fs from 'fs';
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -29,13 +30,15 @@ export default defineConfig({
           dest: 'icons',
           rename: { stripBase: true }
         },
-        {
-          src: '../../manifest.json',
-          dest: '.',
-          rename: { stripBase: true }
-        }
       ]
-    })
+    }),
+    {
+      // vite-plugin-static-copy 4 resolves a file above the root to the wrong folder.
+      name: 'copy-manifest',
+      closeBundle() {
+        fs.copyFileSync(resolve(__dirname, 'manifest.json'), resolve(__dirname, 'dist/manifest.json'));
+      },
+    },
   ],
   root: resolve(__dirname, 'src/ui'),
   builder: {},
