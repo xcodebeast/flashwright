@@ -16,7 +16,7 @@ import { cp } from 'node:fs/promises';
 const [app = 'todomvc', workersArg = '1', iterationsArg = '3', enginesArg = 'stock,fork'] = process.argv.slice(2);
 const workers = Number(workersArg), iterations = Number(iterationsArg), engines = enginesArg.split(',');
 const root = resolve('.');
-const node = process.env.NODE_BIN ?? join(root, '.tools/node-v24.15.0-linux-x64/bin/node');
+const node = process.env.NODE_BIN ?? join(root, '.tools/node-v26.13.0-linux-x64/bin/node');
 const stockTest = resolve('workbench/pw-stock/node_modules/@playwright/test');
 const forkTest = resolve(process.env.FORK_DIR ?? '.', 'packages/playwright-test');
 // BASE_DIR=<checkout> adds the engine `base`: the fork as built in another checkout, for A/B runs.

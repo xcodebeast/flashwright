@@ -16,6 +16,8 @@
 
 // @ts-ignore
 import * as zipImport from '@zip.js/zip.js/lib/zip-core.js';
+// @ts-ignore
+import { ZipWriter } from '@zip.js/zip.js/lib/zip-core-writer.js';
 
 import type * as zip from '@zip.js/zip.js';
 import type { SubmittedAnnotationFrame } from './dashboardChannel';
@@ -24,7 +26,7 @@ const zipjs = zipImport as typeof zip;
 
 export async function buildAnnotationZip(frames: SubmittedAnnotationFrame[], feedback: string): Promise<Blob> {
   zipjs.configure({ useWebWorkers: false } as any);
-  const writer = new zipjs.ZipWriter(new zipjs.BlobWriter('application/zip'));
+  const writer: zip.ZipWriter<Blob> = new ZipWriter(new zipjs.BlobWriter('application/zip'));
 
   const mdLines: string[] = [];
   if (feedback)

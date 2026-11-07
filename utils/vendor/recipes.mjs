@@ -131,13 +131,15 @@ export class Server extends Protocol {`],
     package: '@zip.js/zip.js',
     version: '2.24.0',
     dir: 'zip.js',
-    // Reading and writing in the page itself, with the browser's compression streams.
-    entries: ['lib/zip-core.js'],
+    // Reading and writing in the page itself, with the browser's compression streams. The writer is
+    // imported on its own, so that the HTML report and the trace viewer, which only read, leave it out.
+    entries: ['lib/zip-core.js', 'lib/zip-core-writer.js'],
     types: ['index.d.ts'],
     patches: {
       // The trace viewer's service worker is a classic script, where import.meta does not parse.
       // The base URI only locates the worker and WebAssembly files, which Flashwright turns off.
       'lib/zip-core-base.js': [
+        removeLine('export * from "./zip-core-writer.js";'),
         [`try {
 	setDefaultConfiguration({ baseURI: import.meta.url });
 } catch {
@@ -157,6 +159,7 @@ import { ZipReader, getEntryDataDescriptorLength } from "./zip-reader.js";
     },
     aliases: {
       '@zip.js/zip.js/lib/zip-core.js': 'lib/zip-core.js',
+      '@zip.js/zip.js/lib/zip-core-writer.js': 'lib/zip-core-writer.js',
     },
     typeAliases: {
       '@zip.js/zip.js': 'index.d.ts',

@@ -31,7 +31,6 @@ import { setDefaultConfiguration } from "./core/configuration.js";
 
 
 export * from "./zip-core-reader.js";
-export * from "./zip-core-writer.js";
 export {
 	Reader,
 	Writer,
