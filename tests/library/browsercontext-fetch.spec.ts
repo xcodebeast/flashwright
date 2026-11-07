@@ -16,6 +16,7 @@
 
 import type { LookupAddress } from 'dns';
 import formidable from 'formidable';
+import { Readable } from 'stream';
 import fs from 'fs';
 import http from 'http';
 import type { IncomingMessage } from 'http';
@@ -26,6 +27,13 @@ import { contextTest as it, expect } from '../config/browserTest';
 import { suppressCertificateWarning } from '../config/utils';
 import { kTargetClosedErrorMessage } from '../config/errors';
 import { TestServer } from '../config/testserver';
+
+// The test server reads request bodies as they arrive, before formidable 3 starts listening:
+// give formidable the body the server buffered, with the request's headers.
+function bufferedRequest(request: IncomingMessage & { postBody?: Promise<Buffer> }): IncomingMessage {
+  const stream = Readable.from((async function*() { yield await request.postBody!; })());
+  return Object.assign(stream, { headers: request.headers }) as unknown as IncomingMessage;
+}
 
 // formidable gives every field and file as an array of values.
 function firstValues<T>(record: Record<string, T[] | undefined>): Record<string, T> {
@@ -1164,7 +1172,7 @@ it('should support multipart/form-data', async function({ context, server }) {
   const formReceived = new Promise<{error: any, fields: Record<string, string>, files: Record<string, formidable.File>, serverRequest: IncomingMessage}>(resolve => {
     server.setRoute('/empty.html', async (serverRequest, res) => {
       const form = formidable();
-      form.parse(serverRequest, (error, fields, files) => {
+      form.parse(bufferedRequest(serverRequest), (error, fields, files) => {
         server.serveFile(serverRequest, res);
         resolve({ error, fields: firstValues(fields), files: firstValues(files), serverRequest });
       });
@@ -1203,7 +1211,7 @@ it('should support multipart/form-data with ReadStream values', async function({
   const formReceived = new Promise<{error: any, fields: Record<string, string>, files: Record<string, formidable.File>, serverRequest: IncomingMessage}>(resolve => {
     server.setRoute('/empty.html', async (serverRequest, res) => {
       const form = formidable();
-      form.parse(serverRequest, (error, fields, files) => {
+      form.parse(bufferedRequest(serverRequest), (error, fields, files) => {
         server.serveFile(serverRequest, res);
         resolve({ error, fields: firstValues(fields), files: firstValues(files), serverRequest });
       });
@@ -1243,7 +1251,7 @@ it('should support multipart/form-data and keep the order', async function({ con
   const formReceived = new Promise<{error: any, fields: formidable.Fields}>(resolve => {
     server.setRoute('/empty.html', async (serverRequest, res) => {
       const form = formidable();
-      form.parse(serverRequest, (error, fields, files) => {
+      form.parse(bufferedRequest(serverRequest), (error, fields, files) => {
         server.serveFile(serverRequest, res);
         resolve({ error, fields });
       });
