@@ -821,6 +821,9 @@ steps.push(new EsbuildStep({
   external: [
     '../package',
   ],
+  // Babel 8 is ES modules and calls createRequire(import.meta.url) when it loads.
+  define: { 'import.meta.url': '__babelBundleUrl' },
+  banner: { js: `const __babelBundleUrl = require('url').pathToFileURL(__filename).href;` },
   plugins: [dynamicImportToRequirePlugin],
 }, [filePath('packages/playwright/src'), ...commonUtilsSrc]));
 

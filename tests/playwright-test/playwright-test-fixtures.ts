@@ -309,7 +309,8 @@ export const test = base
         await use(async files => {
           const baseDir = await writeFiles(testInfo, { 'tsconfig.json': JSON.stringify(TSCONFIG), ...files }, true);
           const tsc = childProcess({
-            command: ['npx', 'tsc', '-p', baseDir],
+            // TypeScript 6: these scenarios include options that TypeScript 7 removed, such as baseUrl.
+            command: [process.execPath, require.resolve('typescript/bin/tsc'), '-p', baseDir],
             cwd: baseDir,
             shell: true,
           });
