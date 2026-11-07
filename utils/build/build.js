@@ -342,6 +342,11 @@ class EsbuildStep extends Step {
       ...options,
     };
     this._watchPaths = watchPaths;
+    // Flashwright: bundles take the hard forks in vendor/ instead of the npm packages.
+    if (options.bundle && options.platform === 'node') {
+      options.alias = { ...vendorAliases(), ...options.alias };
+      this._watchPaths = [...watchPaths, filePath('vendor')];
+    }
     if (options.bundle) {
       // For bundled outputs we always want a metafile so we can emit a
       // sidecar report next to each output.
@@ -705,6 +710,12 @@ function lazyExportsFooter(sourceFile) {
   return { js: `// Annotate the CommonJS export names for ESM import in node:\n0 && (module.exports = { ${names.join(', ')} });` };
 }
 
+// Flashwright: imports of the hard forks in vendor/ (see vendor/README.md) resolve to them.
+function vendorAliases() {
+  const aliases = JSON.parse(fs.readFileSync(filePath('vendor/aliases.json'), 'utf8'));
+  return Object.fromEntries(Object.entries(aliases).map(([specifier, target]) => [specifier, filePath(path.join('vendor', target))]));
+}
+
 // playwright-core/lib/utilsBundle.js — bundled npm utilities barrel.
 steps.push(new EsbuildStep({
   bundle: true,
@@ -823,6 +834,7 @@ steps.push(new EsbuildStep({
   ],
   // Babel 8 is ES modules and calls createRequire(import.meta.url) when it loads.
   define: { 'import.meta.url': '__babelBundleUrl' },
+  alias: { 'browserslist': filePath('vendor/stubs/browserslist.js') },
   banner: { js: `const __babelBundleUrl = require('url').pathToFileURL(__filename).href;` },
   plugins: [dynamicImportToRequirePlugin],
 }, [filePath('packages/playwright/src'), ...commonUtilsSrc]));
@@ -980,7 +992,7 @@ function copyXdgOpen() {
     fs.mkdirSync(outdir, { recursive: true });
 
   // 'open' package requires 'xdg-open' binary to be present, which does not get bundled by esbuild.
-  fs.copyFileSync(filePath('node_modules/open/xdg-open'), path.join(outdir, 'xdg-open'));
+  fs.copyFileSync(filePath('vendor/open/xdg-open'), path.join(outdir, 'xdg-open'));
   console.log('==== Copied xdg-open to', path.join(outdir, 'xdg-open'));
 }
 

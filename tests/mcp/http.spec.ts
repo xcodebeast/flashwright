@@ -25,7 +25,7 @@ import { test as baseTest, expect, mcpServerPath, formatLog } from './fixtures';
 import { inheritAndCleanEnv } from '../config/utils';
 
 import type { Config } from '../../packages/playwright-core/src/tools/mcp/config.d';
-import { ListRootsRequestSchema, PingRequestSchema } from 'playwright-core/lib/utilsBundle';
+import { ListRootsRequestSchema, PingRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 
 const test = baseTest.extend<{ serverEndpoint: (options?: { args?: string[], noPort?: boolean, env?: Record<string, string> }) => Promise<{ url: URL, stderr: () => string }> }>({
   serverEndpoint: async ({ mcpHeadless }, use, testInfo) => {

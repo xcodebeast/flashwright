@@ -26,6 +26,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      // Flashwright: the hard fork in vendor/.
+      '@zip.js/zip.js/lib/zip-core.js': path.resolve(__dirname, '../../vendor/zip.js/lib/zip-core.js'),
       '@isomorphic': path.resolve(__dirname, '../isomorphic'),
       '@web': path.resolve(__dirname, '../web/src'),
       '@trace-viewer': path.resolve(__dirname, '../trace-viewer/src'),

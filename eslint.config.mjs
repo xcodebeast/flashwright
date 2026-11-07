@@ -46,6 +46,8 @@ const ignores = [
   "coverage/",
   "index.d.ts",
   "node_modules/",
+  // Hard forks of npm packages, kept as upstream wrote them.
+  "vendor/",
   "output/",
   "workbench/",
   ".claude/",

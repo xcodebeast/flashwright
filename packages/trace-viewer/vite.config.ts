@@ -36,6 +36,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      // Flashwright: the hard fork in vendor/.
+      '@zip.js/zip.js/lib/zip-core.js': path.resolve(__dirname, '../../vendor/zip.js/lib/zip-core.js'),
       '@injected': path.resolve(__dirname, '../injected/src'),
       '@isomorphic': path.resolve(__dirname, '../isomorphic'),
       '@testIsomorphic': path.resolve(__dirname, '../playwright/src/isomorphic'),
@@ -65,6 +67,8 @@ export default defineConfig({
     sw: {
       consumer: 'client',
       build: {
+        // The service worker is a classic script: no import.meta from Vite's preload helper.
+        modulePreload: false,
         outDir: path.resolve(__dirname, '../playwright-core/lib/vite/traceViewer'),
         emptyOutDir: false,
         rollupOptions: {

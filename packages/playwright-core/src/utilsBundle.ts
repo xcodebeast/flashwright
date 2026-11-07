@@ -51,20 +51,12 @@ import type getStreamModule from 'get-stream';
 import type { HttpsProxyAgent as httpProxyAgentModule } from 'https-proxy-agent';
 import type { SocksProxyAgent as socksProxyAgentModule } from 'socks-proxy-agent';
 import type * as zModule from 'zod';
-import type { Client as ClientModule } from '@modelcontextprotocol/sdk/client/index.js';
 import type { Server as ServerModule } from '@modelcontextprotocol/sdk/server/index.js';
-import type { SSEClientTransport as SSEClientTransportModule } from '@modelcontextprotocol/sdk/client/sse.js';
 import type { SSEServerTransport as SSEServerTransportModule } from '@modelcontextprotocol/sdk/server/sse.js';
-import type { StdioClientTransport as StdioClientTransportModule } from '@modelcontextprotocol/sdk/client/stdio.js';
 import type { StdioServerTransport as StdioServerTransportModule } from '@modelcontextprotocol/sdk/server/stdio.js';
 import type { StreamableHTTPServerTransport as StreamableHTTPServerTransportModule } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import type { StreamableHTTPClientTransport as StreamableHTTPClientTransportModule } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { CallToolRequestSchema as CallToolRequestSchemaModule } from '@modelcontextprotocol/sdk/types.js';
-import type { ListRootsRequestSchema as ListRootsRequestSchemaModule } from '@modelcontextprotocol/sdk/types.js';
 import type { ListToolsRequestSchema as ListToolsRequestSchemaModule } from '@modelcontextprotocol/sdk/types.js';
-import type { PingRequestSchema as PingRequestSchemaModule } from '@modelcontextprotocol/sdk/types.js';
-import type { ProgressNotificationSchema as ProgressNotificationSchemaModule } from '@modelcontextprotocol/sdk/types.js';
-import type { zodToJsonSchema as zodToJsonSchemaModule } from 'zod-to-json-schema';
 
 
 // Mirrors esbuild's interop for `import x from 'pkg'`.
@@ -228,20 +220,11 @@ lazy('socksProxyAgent', () => require('socks-proxy-agent').SocksProxyAgent);
 export declare const z: typeof zModule;
 lazy('z', () => require('zod'));
 
-export declare const Client: typeof ClientModule;
-lazy('Client', () => require('@modelcontextprotocol/sdk/client/index.js').Client);
-
 export declare const Server: typeof ServerModule;
 lazy('Server', () => require('@modelcontextprotocol/sdk/server/index.js').Server);
 
-export declare const SSEClientTransport: typeof SSEClientTransportModule;
-lazy('SSEClientTransport', () => require('@modelcontextprotocol/sdk/client/sse.js').SSEClientTransport);
-
 export declare const SSEServerTransport: typeof SSEServerTransportModule;
 lazy('SSEServerTransport', () => require('@modelcontextprotocol/sdk/server/sse.js').SSEServerTransport);
-
-export declare const StdioClientTransport: typeof StdioClientTransportModule;
-lazy('StdioClientTransport', () => require('@modelcontextprotocol/sdk/client/stdio.js').StdioClientTransport);
 
 export declare const StdioServerTransport: typeof StdioServerTransportModule;
 lazy('StdioServerTransport', () => require('@modelcontextprotocol/sdk/server/stdio.js').StdioServerTransport);
@@ -249,23 +232,8 @@ lazy('StdioServerTransport', () => require('@modelcontextprotocol/sdk/server/std
 export declare const StreamableHTTPServerTransport: typeof StreamableHTTPServerTransportModule;
 lazy('StreamableHTTPServerTransport', () => require('@modelcontextprotocol/sdk/server/streamableHttp.js').StreamableHTTPServerTransport);
 
-export declare const StreamableHTTPClientTransport: typeof StreamableHTTPClientTransportModule;
-lazy('StreamableHTTPClientTransport', () => require('@modelcontextprotocol/sdk/client/streamableHttp.js').StreamableHTTPClientTransport);
-
 export declare const CallToolRequestSchema: typeof CallToolRequestSchemaModule;
 lazy('CallToolRequestSchema', () => require('@modelcontextprotocol/sdk/types.js').CallToolRequestSchema);
 
-export declare const ListRootsRequestSchema: typeof ListRootsRequestSchemaModule;
-lazy('ListRootsRequestSchema', () => require('@modelcontextprotocol/sdk/types.js').ListRootsRequestSchema);
-
 export declare const ListToolsRequestSchema: typeof ListToolsRequestSchemaModule;
 lazy('ListToolsRequestSchema', () => require('@modelcontextprotocol/sdk/types.js').ListToolsRequestSchema);
-
-export declare const PingRequestSchema: typeof PingRequestSchemaModule;
-lazy('PingRequestSchema', () => require('@modelcontextprotocol/sdk/types.js').PingRequestSchema);
-
-export declare const ProgressNotificationSchema: typeof ProgressNotificationSchemaModule;
-lazy('ProgressNotificationSchema', () => require('@modelcontextprotocol/sdk/types.js').ProgressNotificationSchema);
-
-export declare const zodToJsonSchema: typeof zodToJsonSchemaModule;
-lazy('zodToJsonSchema', () => require('zod-to-json-schema').zodToJsonSchema);

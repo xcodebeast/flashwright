@@ -101,6 +101,13 @@ function licenseInfoForDir(dir) {
  *  "packages/x/node_modules/@scope/foo/lib/x.js". */
 function packageDirForInput(inputPath) {
   const segments = inputPath.split('/');
+  // Flashwright: the hard forks in vendor/<name>, with their inlined helpers in vendor/<name>/deps/<helper>.
+  if (segments[0] === 'vendor' && segments.length > 2) {
+    const depsIdx = segments.indexOf('deps', 2);
+    const nameIdx = depsIdx === -1 ? 1 : depsIdx + 1;
+    const length = segments[nameIdx].startsWith('@') ? 2 : 1;
+    return path.join(ROOT, ...segments.slice(0, nameIdx + length));
+  }
   const nmIdx = segments.lastIndexOf('node_modules');
   if (nmIdx === -1)
     return null;
