@@ -93,3 +93,24 @@ jobs:
         with:
           name: video-${{ matrix.os }}
           path: video-sample/video.*
+
+  readme-video:
+    name: Record README video examples
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 26
+      - run: brew install ffmpeg
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install chromium
+      - run: node bench/media/narrated-video/render.mjs
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: readme-video
+          path: |
+            docs/media/narrated-video.mp4
+            docs/media/narrated-demo.mp4
+            docs/media/narrated-comparison.gif
