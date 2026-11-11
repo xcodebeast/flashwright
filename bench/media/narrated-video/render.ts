@@ -1,5 +1,7 @@
+// Copyright (c) Flashwright contributors. Licensed under Apache-2.0.
+
 // Record the same test in both modes, then make a silent side-by-side README preview.
-// Run from the repository root: node bench/media/narrated-video/render.mjs
+// Run from the repository root: node bench/media/narrated-video/render.ts
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync } from 'node:fs';
 

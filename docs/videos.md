@@ -47,7 +47,7 @@ Captions show the text that tests type, including passwords, and the page shows 
 The [launch-checklist test](../bench/media/narrated-video/checklist.spec.ts) runs the same actions in both modes. From a built checkout with Chromium and `ffmpeg` installed:
 
 ```bash
-node bench/media/narrated-video/render.mjs
+node bench/media/narrated-video/render.ts
 ```
 
 This writes `docs/media/narrated-video.mp4`, `docs/media/narrated-demo.mp4` and a silent side-by-side GIF. The MP4 files retain narration from the available voice engine. Install Kokoro with `npx playwright install-voice` if your system has no voice.
