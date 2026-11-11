@@ -2,20 +2,24 @@
 
 # Flashwright
 
-**The fastest end-to-end testing framework.** A drop-in Playwright: same API, same test runner, same `npx playwright test`. Your existing Playwright suite runs unmodified and finishes 2–4× sooner, and the same tests run faster than in Cypress, WebdriverIO, Selenium, Puppeteer, TestCafe, Nightwatch and Bun. [flashwright.dev](https://flashwright.dev)
+**The fastest end-to-end testing framework.** Flashwright is a fork of Playwright 1.64.1 that spends less time running your tests. Same API, same test runner, same `npx playwright test`. Replace the package and keep your existing tests.
+
+In the benchmark matrix below, complete test runs take one-quarter to one-half as long as stock Playwright. There are some behavior differences behind those numbers, including recycled browser contexts and shorter waits. They're documented [below](#differences-from-playwright), with options to turn them off.
+
+[flashwright.dev](https://flashwright.dev)
 
 ![Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.65 s, Flashwright 1.05 s](docs/media/race.gif)
 
 <sub>Playwright's own TodoMVC example suite, run by both on the same machine. The recorded output of real runs, played back in real time ([MP4](docs/media/race.mp4)).</sub>
 
-- **The fastest e2e framework**: in a benchmark of 9 browser testing tools, the same 24 tests run 1.8× faster than the runner-up and 1.9–2× faster than Playwright, and 3–11× faster than WebdriverIO, TestCafe and Cypress. [Compared to other frameworks](#compared-to-other-frameworks).
-- **At least 2× faster than Playwright on every scenario we measure**, 2.86× on average: real example suites, a sign-in app with a setup project, an admin page of 8,500 elements, failing tests, screenshots, visual comparisons. [Benchmarks](#benchmarks).
-- **A drop-in replacement.** Flashwright is a fork of Playwright 1.64.1 that changes only where time goes. Playwright's own test suites are its regression bar.
-- **Made for agents that check their own work.** A single test re-runs in under 0.1 s instead of 0.6–0.7 s, because a [warm session](#warm-session) keeps the browser between runs; screenshots take half the time, and the MCP server can return as soon as the page settles.
+- The [framework comparison](#compared-to-other-frameworks) runs the same 24 TodoMVC tests in nine tools. Flashwright is 1.8× faster than the runner-up, 1.9–2× faster than Playwright, and 3–11× faster than WebdriverIO, TestCafe and Cypress in the grouped runs.
+- The [Playwright benchmark matrix](#benchmarks) covers example suites, a sign-in app with a setup project, an admin page with 8,500 elements, failures, screenshots and visual comparisons. Flashwright is at least 2× faster in every measured scenario, with a reported average of 2.86×.
+- Compatibility is checked against Playwright's own test suites. The [results and remaining differences](#compatibility) are below.
+- For agents re-running a test after an edit, a [warm session](#warm-session) keeps the browser around. A single test can re-run in under 0.1 s instead of 0.6–0.7 s. Screenshots take about half the time, and the MCP server can return when the page settles.
 
 ## Install
 
-Flashwright is published as three npm packages that stand in for Playwright's. Replace `@playwright/test` and keep everything else, imports and commands included:
+Flashwright publishes three npm packages under aliases for Playwright's packages. For the test runner, replace `@playwright/test`. Your imports and commands stay the same:
 
 ```bash
 npm i -D @playwright/test@npm:flashwright-test
@@ -23,7 +27,7 @@ npx playwright install chromium
 npx playwright test
 ```
 
-It also runs on Bun, with TypeScript configs and tests: `bunx --bun playwright test`. Playwright 1.64.1 parses TypeScript as JavaScript there and fails on the first type annotation.
+You can also run TypeScript configs and tests on Bun with `bunx --bun playwright test`. Stock Playwright 1.64.1 parses TypeScript as JavaScript there and fails at the first type annotation.
 
 Projects that use the library without the test runner replace `playwright` the same way (`npm i playwright@npm:flashwright`), and `playwright-core` is `flashwright-core`. Browsers, configs, reporters, the trace viewer, codegen and the VS Code extension are Playwright's.
 
@@ -34,240 +38,84 @@ Projects that use the library without the test runner replace `playwright` the s
   <img alt="The same 24 TodoMVC tests in 9 frameworks. With 1 worker: Flashwright 2.41 s, Bun test with Bun.WebView 4.39 s, Playwright 4.63 s, Selenium 5.48 s, Puppeteer 6.29 s, Nightwatch 6.45 s, WebdriverIO 10.57 s, Cypress 17.29 s, TestCafe 22.55 s. With 4 workers: Flashwright 1.54 s, Selenium 2.77 s, Bun 2.80 s, Puppeteer 2.98 s, Playwright 3.12 s, Nightwatch 3.38 s, WebdriverIO 4.91 s, TestCafe 9.28 s, Cypress 17.37 s." src="docs/media/competitors.svg">
 </picture>
 
-Playwright's TodoMVC example suite, ported to each tool from one shared description of its 24 tests, so every tool runs the same actions and assertions with the same CSS selectors. Every tool drives the same Chromium 156 on the same machine with its own recommended waits (no fixed sleeps) and its default isolation between tests, and a run counts only when all 24 tests pass. Each number is the whole test command, median of 15 runs.
+The same 24 TodoMVC tests, ported to nine tools with the same actions, assertions and CSS selectors. Each tool drives Chromium 156 on the same machine, using its recommended waits and default test isolation. Numbers are the complete test command, median of 15 passing runs.
 
-Tools that start something for every spec file (Cypress bundles each spec; WebdriverIO, Selenium and Nightwatch start a browser session per file) fall further behind when each test has a file of its own, the layout of Playwright's example:
-
-| Tool | Grouped, 1 worker | Grouped, 4 workers | One test per file, 1 worker | One test per file, 4 workers |
-| --- | ---: | ---: | ---: | ---: |
-| **Flashwright** | **2.41 s** | **1.54 s** | **2.41 s** | **1.47 s** |
-| Bun test + Bun.WebView | 4.39 s | 2.80 s | 4.41 s | 3.99 s |
-| Playwright | 4.63 s | 3.12 s | 4.70 s | 2.92 s |
-| Selenium + Mocha | 5.48 s | 2.77 s | 10.27 s | 4.81 s |
-| Puppeteer + Jest | 6.29 s | 2.98 s | 6.14 s | 2.77 s |
-| Nightwatch | 6.45 s | 3.38 s | 11.48 s | 5.44 s |
-| WebdriverIO | 10.57 s | 4.91 s | 23.67 s | 9.21 s |
-| TestCafe | 22.55 s | 9.28 s | 22.61 s | 9.32 s |
-| Cypress | 17.29 s | 17.37 s¹ | 38.44 s | 38.41 s¹ |
-
-<sub>¹ Cypress runs one spec file at a time: parallel runs need Cypress Cloud. Versions: Flashwright 1.64.1-flashwright.8, Playwright 1.64.1, Cypress 16.2.1, WebdriverIO 10.1.0, selenium-webdriver 4.52.0, Puppeteer 25.16.0, TestCafe 3.7.7, Nightwatch 3.16.0, Bun 1.4.4. `Bun.WebView` is an experimental browser API without assertions or text locators; its port waits with a small helper. Bun failed 1 of its 60 runs (not counted). Setup, every port and how to reproduce: [bench/competitors](bench/competitors). Found a faster setting for a tool, or a port its users wouldn't write that way? Issues and pull requests are welcome.</sub>
+Cypress runs one spec at a time without Cypress Cloud. Bun's experimental `Bun.WebView` needs a helper for waits and failed one of its 60 runs, which was excluded. [Full results, versions and reproduction steps](docs/benchmarks.md#compared-to-other-frameworks).
 
 ## Benchmarks
 
 ![Bar chart: wall-clock time of 18 scenarios, Playwright vs Flashwright; Flashwright is 2.04× to 4.01× faster in each](docs/media/benchmarks.svg)
 
-Each bar is the complete `test` command, from launch to exit, median of 15 alternating runs on the same machine (6 CPUs, Linux), with Chromium's headless shell. Flashwright runs with its defaults apart from the [warm session](#warm-session), which is off, as in CI; nothing in the test code changes. The TodoMVC and SVGOMG suites are Playwright's own examples, the shop is a small single-page app with a sign-in setup project and 40 ms API latency, the admin app is a page of 8,500 elements whose 19 tests find them by role, label and text, and the other rows are 15-test files that each exercise one thing. Reproduce with `node bench/matrix.mjs 15`.
+Complete test commands, from launch to exit, median of 15 alternating runs on the same 6-CPU Linux machine with Chromium's headless shell. The tests are unchanged, and the warm session is off, as in CI. The matrix covers Playwright's TodoMVC and SVGOMG examples, shop and admin apps, failures, screenshots and visual comparisons.
 
-<details>
-<summary>All 28 runs of the matrix, and how much of each run is the framework</summary>
+[Full results and methodology](docs/benchmarks.md#compared-to-playwright). Reproduce with `node bench/matrix.mjs 15`.
 
-| Scenario | Tests | Workers | Playwright | Flashwright | Speedup |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| TodoMVC example suite | 24 | 1 | 3670 ms | 1011 ms | 3.63× |
-| TodoMVC example suite | 24 | 4 | 1812 ms | 734 ms | 2.47× |
-| SVGOMG example suite | 6 | 1 | 1738 ms | 511 ms | 3.40× |
-| SVGOMG example suite | 6 | 4 | 1253 ms | 498 ms | 2.52× |
-| Shop app (setup project, 40 ms API latency) | 18 | 1 | 6297 ms | 2967 ms | 2.12× |
-| Shop app | 18 | 4 | 2599 ms | 1194 ms | 2.18× |
-| Admin app (8,500 elements, role, label and text locators) | 19 | 1 | 6805 ms | 3031 ms | 2.25× |
-| Admin app | 19 | 4 | 2699 ms | 1320 ms | 2.04× |
-| Trivial tests | 15 | 1 | 1024 ms | 341 ms | 3.00× |
-| Click + assertion | 15 | 1 | 1611 ms | 402 ms | 4.01× |
-| Assertion on a delayed update | 15 | 1 | 1191 ms | 473 ms | 2.52× |
-| Navigation | 15 | 1 | 1266 ms | 415 ms | 3.05× |
-| Fixture setup only | 15 | 1 | 1170 ms | 351 ms | 3.33× |
-| Form submit to a backend (20 ms API) | 15 | 1 | 1983 ms | 729 ms | 2.72× |
-| `toHaveScreenshot()` against a baseline | 15 | 1 | 2333 ms | 963 ms | 2.42× |
-| `page.screenshot()` to a file | 15 | 1 | 1915 ms | 765 ms | 2.50× |
-| Suite with real failures (every third test) | 15 | 1 | 4334 ms | 1154 ms | 3.76× |
-| Expected failures (250 ms timeout each) | 15 | 1 | 4757 ms | 1498 ms | 3.18× |
-| A single test, as an agent re-runs it | 1 | 1 | 593 ms | 184 ms | 3.22× |
-| A single TodoMVC test | 1 | 1 | 666 ms | 240 ms | 2.77× |
+## How is it so fast?
 
-The one-file scenarios run in a single worker whatever the setting, so their 4-worker runs (2.49×–4.16×) match the ones above.
+Flashwright spends less time starting browsers, compiling the same JavaScript and waiting between checks:
 
-Part of some runs is the application itself: its delays and its server's response time, which no framework can remove. Without it, Flashwright spends 3.0×–4.5× less time than Playwright:
+- **Reuse the browser context.** Each worker keeps a context and gives each test a new tab, then resets storage, permissions, routes and the other state a test can change. Firefox and WebKit reuse the tab too. Use `isolation: 'strict'` for a new context per test.
+- **React when the page changes.** Actions and assertions re-check on page changes instead of waiting through a 20–500 ms backoff. Assertions fail early when nothing can change the page before their timeout.
+- **Skip animation-frame waits before input.** Pointer actions don't wait for elements to stop moving. Playwright's hit-target check still verifies that the element receives the input.
+- **Start work early.** Workers and browsers start while the CLI reads the config, and the longest tests run first. Code caching, lazy loading and fewer browser round trips reduce startup and per-call overhead.
+- **Do less work per locator and screenshot.** Locator queries avoid repeated style and accessible-name calculations. Screenshots use faster PNG encoding with the same pixels, and visual comparisons have fast paths for unchanged images.
 
-| Scenario | Workers | The application's waits | Playwright adds | Flashwright adds | |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Form submit to a backend | 1 | 15 × 20 ms | 1683 ms | 429 ms | 3.92× |
-| Assertion on a delayed update | 1 | 15 × 8 ms | 1071 ms | 353 ms | 3.03× |
-| Shop app | 1 | ~2.1 s of API time | 4181 ms | 924 ms | 4.52× |
-| Shop app | 4 | ~1.16 s / ~0.83 s of API time | 1435 ms | 361 ms | 3.98× |
-
-</details>
-
-## Where the time goes
-
-Flashwright keeps Playwright's observable behavior; [Differences from Playwright](#differences-from-playwright) lists what remains.
-
-- **Warm browsers, fresh contexts.** Compiling the application's JavaScript in a new renderer dominates many suites. Flashwright keeps one browser context per worker and gives each test a brand-new tab in it, then resets everything a test can change: options, permissions, cookies, every visited origin's storage (local, session, IndexedDB, Cache Storage, service workers), caches, routes, init scripts, bindings, downloads and clock, and re-applies `storageState`. The previous test's pages are stopped before anything is cleared, so a late script cannot leak state into the next test. See `tests/page/recycle-isolation.spec.ts`.
-- **Waits that react to the page.** Auto-waiting actions and assertions re-check as soon as the page changes instead of after a 20–500 ms backoff. An assertion that cannot pass any more, because nothing can change the page before its timeout, fails right away.
-- **No frame waits before input.** Clicks, hovers, taps and drags don't wait for animation frames or for moving elements to stop. Playwright's hit-target check still makes sure the element receives the input.
-- **Workers and browsers ready before they're needed.** Worker processes and their browsers start while the CLI is still reading the config (the browser that all of the config's tests launched last time, with its launch options; it is used only if the config leaves the environment unchanged), a spare stands by once tests fail, and an idle spare already holds the context its first test will ask for. A worker whose tests use no browser closes the one it started: with 4 workers of API tests, the run peaks at 330 MB instead of 550. The longest tests start first.
-- **A faster start.** A V8 code cache for Playwright's own bundles, lazy loading of everything a run doesn't use, and less work per call: lazy stack formatting, fewer browser round trips per action, minified page scripts the browser compiles once, and Chromium's DevTools protocol in the browser's own binary encoding (CBOR), so that it no longer converts every message to JSON and back: up to 9% faster on short tests, 4% on the TodoMVC suite with 4 workers (`FLASHWRIGHT_CDP_JSON=1` goes back to JSON).
-- **Locators on large pages.** A named `getByRole()` first rules out, from their content, the elements whose accessible name cannot contain the one asked for, and computes only the others' names; role, label and text locators read each element's styles, role and labels once per query. On the admin app's 8,500 elements: a named `getByRole()` takes 14 ms instead of 41, `getByRole('row')` 2.3 ms instead of 7.8, `getByLabel()` 2.0 ms instead of 3.3.
-- **Faster screenshots.** Speed-optimized PNG encoding for `page.screenshot()` (same pixels), and pixel comparison with fast paths for `toHaveScreenshot()`, whose baselines stay byte-identical to Playwright's. With `screenshot: 'only-on-failure'`, a recycled context's pages stand still when the test's context closes and are captured only if the test then fails, instead of every test taking a screenshot in case it does (TodoMVC: 1484 -> 1055 ms, screenshots off: 1051). A page waits at most 20 ms (the outcome normally comes within a millisecond), so what moves by itself, like a blinking caret or an animated image, moves no further than in the frame a screenshot waits for. A page that could still change otherwise (a call or request in flight, a WebSocket, a worker, a dialog, a loading image or font, playing media, styles for the `scripting` media feature) is captured right away, as before.
+These choices have [observable differences from Playwright](#differences-from-playwright). The [configuration reference](docs/configuration.md) explains the options and their tradeoffs.
 
 ## Speed options
 
-Flashwright defaults to speed, and each project, file or `describe` block can turn off what it doesn't need, or turn Playwright's behavior back on:
+Change the defaults per project, file or `describe` block. Options cover isolation, animation waits, resource blocking, worker sharing, page preloading and locator policy.
 
-```ts
-// playwright.config.ts: Playwright's behavior, for a suite that relies on it
-export default defineConfig({
-  testOrder: 'file',          // run tests in Playwright's order
-  use: {
-    waitForAnimations: true,  // wait for elements to stop moving before input
-    failFastWhenIdle: false,  // let failing assertions wait out their timeout
-  },
-});
-
-// a file or describe block that needs less
-test.use({
-  instantAnimations: true,                     // CSS and Web Animations end within a frame
-  blockResources: ['image', 'font', 'media'],  // never load these
-});
-```
-
-| Option | Default | What it does |
-| --- | --- | --- |
-| `waitForAnimations` | `false` | `true` makes pointer actions wait for CSS and Web Animations that move the element, like Playwright, for apps that ignore input while they animate. Electron windows keep Playwright's wait. |
-| `failFastWhenIdle` | `true` | An assertion that hasn't passed fails once nothing can change the page before its timeout: no timer due, no request, socket, navigation, animation or worker, and no other call on the page. A test that changes the page from a timer in its own code while an assertion waits sets `false` (8 of Playwright's 2610 page tests do). |
-| `isolation` | `'recycled'` | Each worker keeps one browser context and gives every test a new tab in it, reset between tests (on Firefox and WebKit, the same tab). `'strict'` gives every test a new context, like Playwright: slower, but nothing a reset could miss carries over. |
-| `testOrder` | `'longest-first'` | With several workers, the tests that took longest last time start first. `'file'` keeps Playwright's order. |
-| `workersPerProcess` | `1` | Workers that share one worker process (`--workers-per-process`). Each worker runs one test at a time; the workers of a process share Node.js, the code it loaded and the browser, where each worker's tests get contexts of their own. With 4 workers on TodoMVC, `2` takes a run from 795 to 590 MB and `4` to 493 MB, and makes it 1.08× and 1.12× faster. Each worker keeps its own `process.env`; tests that run at the same time in one process share global variables, the process and the browser: a crash, `process.exit()` or `browser.close()` ends them all. |
-| `instantAnimations` | `false` | The page's CSS transitions, CSS animations and Web Animations run 1000× faster, so fades and slides end at once (Chromium). On a page with a fading dialog: 2.3× faster than without. |
-| `blockResources` | none | Requests for these types (`image`, `media`, `font`, `stylesheet`, `script`) fail before any route sees them. On a 24-image product page: 1.4× faster, 6.8× with `instantAnimations`. |
-| `locatorPolicy` | `'any'` | `'test-id'` lets only `getByTestId()` locators, and the methods that combine them, select elements; any other locator or selector fails right away. A test id is one attribute lookup, while role, label and text locators work out the role and text of the page's elements: on the 8,500 elements of the `inventory` benchmark, a named `getByRole()` takes 14 ms and a test id lookup 0.7 ms. |
-| `webSecurity` | `true` | `false` launches Chromium without the same-origin policy and mixed-content blocking, for a front end whose API sends no CORS headers in tests. |
-| `preloadPages` | `false` | While a test runs, the next test's page loads in a second context, and that test's first `goto` returns at once. Until then the test sees a blank tab; any other call first, or another URL, gets a reset tab as without the option. Takes effect with one worker, or workers fewer than half the CPU cores. With one worker: TodoMVC 1.26×, a suite waiting on its API 1.40× faster. Not for tests that change the server from Node before their `goto` (the page loaded before that change) or watch the requests it receives (the next test's page loads meanwhile). |
-
-Playwright's own options combine with these: `javaScriptEnabled: false`, `serviceWorkers: 'block'`, `bypassCSP`.
+[Configuration reference and examples](docs/configuration.md#speed-options).
 
 ## For agents
 
-- **Re-running one test** takes about 75 ms instead of 673 ms, in the [warm session](#warm-session) that the first run starts; that first run takes 240 ms. `playwright cli` commands start in ~45 ms instead of ~260 ms.
-- **Screenshots** take about half the time, and `toHaveScreenshot()` returns immediately when nothing changed.
-- **Agent mode**: when Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot CLI or any tool that sets `AI_AGENT` runs `playwright test`, the output is the failures and nothing else, and the outcome is also written as JSON. See [agent mode](#agent-mode).
-- **Failures say what the page has instead.** When an action or assertion waits for an element that never appears, the call log says which part of the locator stopped matching, whether a hidden element matches, and which elements are close, as locators to copy:
-  ```
-  - waiting for getByRole('button', { name: 'Logout' })
-    - no element matched
-      - similar buttons: getByRole('button', { name: 'Log out' })
-  ```
-  It covers role names, text, labels, placeholders, test ids, `nth()` and chains, and points at iframes when nothing is close.
-- **`npx playwright doctor`** checks, without changing anything, what a run needs: Node, a single copy of Playwright, a config that loads, test files for each project, each project's browser and its system libraries, and a display for headed projects. It also says whether agent mode and the warm session are on. `--json` prints the checks for a script or an agent; it exits with 1 when something would stop a run.
-- **The MCP server** can answer as soon as the page has settled instead of after a fixed 500 ms: `playwright mcp --adaptive-settle` (or `timeouts.adaptiveSettle: true`). A click that saves through an API returns in 234 ms instead of 1014 ms.
+A warm session can re-run one TodoMVC test in 76 ms instead of 673 ms. Agent mode prints failures and a summary, writes `test-results/summary.json`, and keeps passing-test output out of the way. Failed locators also suggest what the page actually has.
 
-### Agent mode
+- `npx playwright test --watch` re-runs affected tests when you save a file.
+- `npx playwright doctor` checks whether the project is ready to run; `--json` makes the results available to scripts.
+- `playwright mcp --adaptive-settle` lets the MCP server return when the page settles instead of waiting a fixed 500 ms.
 
-When a coding agent runs the tests, the `list`, `line` and `dot` reporters give way to an `agent` reporter. It prints nothing for passing tests or their console output, prints each failure once (its last attempt, with the test's output), and ends with the counts and `npx playwright test --last-failed`. No colors, no rules of dashes, and the HTML report is never opened or served. 201 tests with one failure print 26 lines (888 bytes) instead of 425 (17.5 KB).
+[Agent mode, watch mode and warm sessions](docs/agents.md).
 
-It also writes `test-results/summary.json`, with an `outcome` that tells apart failed tests (`failed`), errors outside tests such as a file that does not load (`error`), `no-tests`, `timedout` and `interrupted`; the counts; and for each failure its location, error, attachment paths and the command that reruns it. Exit codes stay the same.
+## Warm session
 
-`agentMode: true` or `false` in the config sets it, and `FLASHWRIGHT_AGENT_MODE=1` or `0` overrides both. A `--reporter` on the command line and file reporters (`html`, `json`, `junit`, `blob`) are kept. `reporter: 'agent'` works outside agent mode too, with `outputFile` to move the JSON.
+Outside CI, the first test run starts a background session that keeps browsers ready for the next run. Test, config and environment changes are still picked up through fresh runner and worker processes.
 
-### Watch mode
-
-`npx playwright test --watch` runs, in the terminal, the tests of each test file you save and of the test files that import a file you save, with the command's filters. It is Playwright's terminal watch mode, which Playwright keeps behind an environment variable; `h` lists its other commands: run all, run the failures, repeat, change the project, file or title filter, show the browser.
-
-A saved file's tests report 255 ms after the save instead of 1065 ms (4.2×; one test that opens a page, medians of 9): the changed files run right away instead of after listing every test, and while you read the results the next run's worker starts with its browser, and so does the process that loads test files, with babel already loaded.
-
-### Warm session
-
-Outside CI, the first `playwright test` in a project starts a session in the background. The session keeps the next run's runner process and workers started, and it keeps the browsers: a worker that exits hands its browser to the session instead of closing it, with the context reset as between two tests and with the renderer that has already compiled the application. The next run's first test starts as warm as the second test of a run.
-
-| Run, 1.5 s after the previous one | Playwright | Flashwright | Flashwright, warm session |
-| --- | ---: | ---: | ---: |
-| One TodoMVC test | 673 ms | 240 ms | 76 ms (8.9×) |
-| TodoMVC suite, 1 worker | 3648 ms | 1023 ms | 900 ms (4.1×) |
-| TodoMVC suite, 4 workers | 1804 ms | 728 ms | 508 ms (3.6×) |
-| SVGOMG suite, 1 worker | 1725 ms | 510 ms | 377 ms (4.6×) |
-| SVGOMG suite, 4 workers | 1257 ms | 476 ms | 278 ms (4.5×) |
-| Shop app, 1 worker | 6321 ms | 2969 ms | 2839 ms (2.2×) |
-| Shop app, 4 workers | 2593 ms | 1194 ms | 1003 ms (2.6×) |
-
-<sub>Medians of 15 (one test) or 9 alternating runs with a 1.5 s pause before each, like an agent that edits between runs; the session prepares the next run during that pause. Reproduce with `BENCH_PAUSE=1500 node bench/run.mjs todomvc 4 9 stock,fork,fork:FLASHWRIGHT_SESSION=1`.</sub>
-
-Every run still gets new runner and worker processes, so changed tests, configs and environment variables are picked up as usual. A run whose environment, terminal or Flashwright install differs from the session's runs on its own, like without the session. A run returns once its results are reported; its workers hand their browsers over afterwards, unless a worker fixture of the project still has to tear down.
-
-- **When it is on:** by default, except when the `CI` environment variable is set, when a debugger is attached, with `PWDEBUG`, `--ui` or `--debug`, and on Windows. A CI job usually runs its tests once, so a session would only hold memory there. `FLASHWRIGHT_SESSION=0` turns it off and `FLASHWRIGHT_SESSION=1` turns it on in CI.
-- **What it holds:** one session per project directory, until 5 minutes after its last run (`FLASHWRIGHT_SESSION_TIMEOUT=<seconds>` changes that) or until Flashwright is reinstalled. While it waits, it keeps a runner, a worker for each kept browser and the browsers: about 0.4 GB after one-test runs and 1 GB after a 4-worker suite. Headed browsers are closed, not kept.
+The session stays for up to five minutes after the last run and holds about 0.4 GB after a one-test run or 1 GB after a four-worker suite. It's off by default on Windows, in CI and while debugging. Set `FLASHWRIGHT_SESSION=0` to disable it. [Details and benchmarks](docs/agents.md#warm-session).
 
 ## Videos of your tests
 
-`npx playwright test --video` turns a run into one finished video, with a voice, captions, a moving cursor and a camera that follows the action:
+![The same launch-checklist test recorded with --video on the left and --demo on the right](docs/media/narrated-comparison.gif)
 
-```ts
-test('keeps the schedule after a reload', async ({ page, narrate }) => {
-  await narrate('Choose the timezone and save the schedule.');
-  await page.getByLabel('Timezone').fill('Europe/Oslo');
-  await page.getByRole('button', { name: 'Save' }).click();
-  await page.reload();
-  await expect(page.getByLabel('Timezone')).toHaveValue('Europe/Oslo');
-  await narrate('The timezone stays selected after a reload.');
-});
-```
+The same test, recorded twice. `--video` includes the test title, action captions and results; `--demo` keeps the page and narration. The preview is silent: watch [the test video with sound](docs/media/narrated-video.mp4) or [the demo with sound](docs/media/narrated-demo.mp4).
 
-`narrate` does nothing in other runs, and tests without it still get a video, with captions made from what they click, type and assert. It is one video however many tests run, in the order they are written and with a chapter for each, in `test-results/video.mp4`, and a clip of each test in the test's folder. It needs `ffmpeg`.
+`npx playwright test --video` makes a narrated video of your tests with captions, a moving cursor and a camera that follows the action. Use `--demo` for a version without test names and results. Add `narrate()` calls to explain what's happening, or let Flashwright generate captions from the actions and assertions.
 
-- **`--video`** is for your team: each test's title, a caption for each action and assertion, the error of a test that failed, and how many passed.
-- **`--demo`** is for everyone else: only the page and what `narrate` said, without test names or results. Tests that failed are left out, and the run says which.
-
-**The video is made after the tests, which keep their timing.** It holds real frames of the page for as long as a viewer needs: while the voice speaks, while the cursor moves. It does not make a test wait for the voice. A test recording does wait a moment after each action for the browser to show the result, otherwise a fast test would move on before its result was painted: TodoMVC's filter test takes 0.6 s with `--video` and 0.14 s without. Rendering then takes about half as long as the video lasts on 6 cores. The timing you see in a video is not the test's, so it says nothing about how fast your app is.
-
-**The voice** is the system's by default: `say` on macOS, Windows' speech engine, or `espeak-ng` on Linux. Without one, the video has captions only. `npx playwright install-voice` downloads Kokoro, a free and much more natural voice that runs on your machine (about 500 MB, outside the project), and runs use it from then on. Sentences are kept between runs, so reruns do not read them again (`FLASHWRIGHT_VOICE_CACHE` sets the folder, for CI).
-
-```ts
-export default defineConfig({
-  narratedVideo: {
-    mode: 'on',        // 'off' (default), 'on' like --video, 'demo' like --demo
-    zoom: true,        // the camera; --no-video-zoom turns it off
-    captions: true,    // --no-video-captions; the subtitle track stays, off unless a player asks for it
-    voice: 'auto',     // 'auto', 'system', 'kokoro', false (--no-video-voice), or a function that returns the audio, for a paid voice
-    voiceName: 'Samantha',
-  },
-});
-```
-
-Captions show the text that tests type, including passwords, and the page shows what your app shows, so use test data you are happy to share. Recording replaces the `video` option, turns off the screenshots of `trace` and gives each test a new context, and a test cannot use `page.screencast` itself in that run. `summary.json` in [agent mode](#agent-mode) has the video's path.
+It needs `ffmpeg`. Recording adds waits for the page to paint, and captions include typed text, including passwords, so use test data you're happy to share. [Examples, voice setup and recording options](docs/videos.md).
 
 ## Additions
 
-Features that Playwright users asked for and Playwright did not add. They are additive: configs and tests written for Playwright work as before.
+Flashwright also supports a web server per project, `use` options on individual tests, pruning stale snapshots with `--prune-snapshots`, and accepting changed snapshots without a rerun with `npx playwright accept-snapshots`.
 
-- **A web server per project**: `projects: [{ name: 'admin', webServer: { command: 'npm run start:admin', url: 'http://localhost:3001' }, use: { baseURL: 'http://localhost:3001' } }]`, with the options of the top-level `webServer`. A project's servers start before the first of its tests runs, only when the run has tests of the project (`--project shop` does not start the admin server), and stop at the end of the run.
-- **Options for one test**: `test('fits a phone', { use: { viewport: { width: 390, height: 844 } } }, async ({ page }) => {})`, next to `tag` and `annotation`, instead of a `describe` group around the test. `test.describe()` takes `use` too. Like `test.use()` in a group, it cannot set the options of worker fixtures, such as `browserName`.
-- **Stale snapshots**: `npx playwright test --prune-snapshots` deletes the snapshot files that no test used, and lists them: renamed or removed screenshots, and the folders of deleted test files. It only prunes after a complete run that passes, with no filter, shard or `.only`, and keeps all the snapshots of a test file with a skipped test. Only files that match a project's snapshot path template with this machine's platform count, so other platforms' screenshots stay.
-- **Accept changed screenshots without a rerun**: when screenshots or snapshots no longer match, the run says so, and `npx playwright accept-snapshots` copies what the run produced over the expected files, instead of running everything again with `--update-snapshots`. It takes each test's last attempt, so a retry that matched leaves nothing to accept, and it works on a `test-results` folder copied from CI.
-
-## Deprecated APIs
-
-Playwright still ships about 95 methods its documentation discourages: the selector-based ones such as `page.click(selector)` and `page.fill(selector, value)`, element handles, `waitForNavigation`, `waitForTimeout`. Flashwright keeps them working and marks them `@deprecated` in its types, so that editors strike them through. `npx playwright codemod` shows, as a diff, how it rewrites the selector-based calls to locators (`page.click('#go')` becomes `page.locator('#go').click()`), `--write` applies it, and it lists with their location the calls to change by hand: element handles, `$eval`, `waitForNavigation`, `waitForTimeout`, `networkidle`. Locators are strict: where a selector matched several elements, the old call used the first one and the rewritten call fails; `--keep-first` adds `.first()` to keep the old behavior.
+[Examples and limitations](docs/configuration.md#additions).
 
 ## Differences from Playwright
 
-- **Recycled contexts.** Tests get a fresh context, in a browser context the worker keeps between tests (Chromium launched by the test runner). Tests that record video get a recycled context too, whose tab starts recording when the test gets it (TodoMVC with `video: 'retain-on-failure'`: 2850 -> 1312 ms); with video on some attempts only, such as `on-first-retry`, those attempts get a new context, as they always do on Firefox and WebKit. Contexts that were paused or debugged, or visited a non-http origin are closed instead. `isolation: 'strict'` (or `FLASHWRIGHT_ISOLATION=strict`) creates a new context for every test, like Playwright. The browser behind recycled contexts runs a context's pages in one renderer process, so a crash or a busy script affects all of them. Firefox and WebKit cannot clear an origin's storage without navigating, and opening a page there costs most of a short test (about 90 ms on Firefox): their tests reuse one context and its tab, which goes back to a blank page between tests with the same things reset, apart from the tab's history, which keeps the earlier tests' pages (`page.goBack()` at the start of a test can go to one of them). TodoMVC on Firefox: 6520 -> 3868 ms (1.69×). `isolation: 'strict'` gives them a new context per test.
-- **Pointer actions on moving elements** are dispatched without waiting for the element to stop, unless `waitForAnimations` is set; the hit-target check still verifies them.
-- **Assertions on an idle page** fail before their timeout unless `failFastWhenIdle: false`; the call log says so. The test runner adds a small script to its pages for this, which wraps the timer, animation frame and message functions. `browser.newContext()` outside the test runner is unaffected.
-- **Test order**: with several workers, the longest tests start first unless `testOrder: 'file'`.
-- **Process lifecycle**: worker processes and a headless browser may start before the config is read (unused ones close), and a finished worker's browser is killed rather than closed gracefully once no context is left open.
-- **Warm session** (outside CI; `FLASHWRIGHT_SESSION=0` turns it off): after `playwright test` exits, a session process, the next run's runner and workers, and the run's browsers keep running, for up to 5 minutes after the last run. A test can see a browser process that an earlier run used, with its context reset as between two tests of one run.
-- **Agent mode**: under a coding agent, the default terminal reporter is the `agent` one (see [agent mode](#agent-mode)); `agentMode: false` gives Playwright's.
-- **Call logs** of an action or assertion whose element never appeared end with what the page has instead; finding it takes at most 500 ms, after the call has failed.
-- **File watching** (`--watch` and UI mode) reacts 100 ms after the last change to a file instead of 250 ms.
-- **Actions** wait for the browser's next frame, up to 140 ms, only in a run with `--video` or `--demo`.
-- **Types**: the methods the documentation discourages are marked `@deprecated`, so editors strike them through; they work as before.
-- **Screenshot files** have identical pixels but are 1.6–1.9× larger PNGs. `toHaveScreenshot()` baselines are unchanged.
-- **Temporary files**: worker counts, per-test durations, the context options and the headless browser launch options each config used last (never storage state, credentials, headers, a proxy, certificates, environment variables, browser preferences or arguments with values other than a few harmless ones; readable only by you) and a V8 code cache live in the system temp directory. `PW_DISABLE_WORKER_STANDBY=1` and `FLASHWRIGHT_DISABLE_CODE_CACHE=1` turn off the first and the last.
-- **Firefox and WebKit** keep Playwright's behavior, apart from reusing one tab per worker (see recycled contexts above) and the options above that apply to them, and **Electron** windows keep Playwright's waits for animations and assertion timeouts.
+The API is compatible, but some defaults change what tests can observe:
 
-Flashwright runs Playwright's own browser builds. Playwright already launches them without what tests never see (sandbox, Safe Browsing, background networking, updates, extensions, sync, crash reporting); further switches such as `--disable-gpu` measured no faster, so there is no custom browser to install or trust.
+- **Isolation:** contexts are reset and reused. Firefox and WebKit also reuse the tab, including its history. Set `isolation: 'strict'` or `FLASHWRIGHT_ISOLATION=strict` for a new context per test.
+- **Moving elements:** pointer actions skip animation waits. Set `waitForAnimations: true` if your app ignores input while animating.
+- **Assertion timeouts:** assertions can fail early on an idle page. Set `failFastWhenIdle: false` if the test changes the page from a Node.js timer while an assertion waits.
+- **Test order:** the longest tests start first with multiple workers. Set `testOrder: 'file'` for Playwright's order.
+- **Background processes:** the [warm session](#warm-session) keeps processes and browsers running after a local test command exits. Set `FLASHWRIGHT_SESSION=0` to turn it off.
+- **Screenshots:** PNGs contain identical pixels but are 1.6–1.9× larger. `toHaveScreenshot()` baselines are unchanged.
+
+[All behavior differences and migration tools](docs/migration.md), including reporter defaults, process lifecycle and deprecated APIs. Flashwright uses Playwright's own browser builds.
 
 ## Compatibility
 
-Playwright's own test suites are the bar, compared with pristine Playwright 1.64.1 on the same machine (Chromium unless noted):
+Compatibility is checked with Playwright's own test suites against pristine Playwright 1.64.1 on the same machine. These are the reported results, using Chromium unless noted:
 
 | Suite | Result |
 | --- | --- |
@@ -278,7 +126,7 @@ Playwright's own test suites are the bar, compared with pristine Playwright 1.64
 | `tests/mcp`, `tests/electron`, `tests/extension` | same as pristine |
 | `tests/stress` | 1100/1100, in 20 s instead of 49 s |
 
-Timing-sensitive tests can differ from run to run in both.
+Timing-sensitive tests can produce different results between runs in both versions.
 
 ## Building from source
 
