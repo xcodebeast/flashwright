@@ -1,3 +1,5 @@
+// Copyright (c) Flashwright contributors. Licensed under Apache-2.0.
+
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({

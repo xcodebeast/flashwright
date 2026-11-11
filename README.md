@@ -2,7 +2,7 @@
 
 # Flashwright
 
-Flashwright is a fork of Playwright 1.64.1 that spends less time running your tests. Same API, same test runner, same `npx playwright test`. Replace the package and keep your existing tests.
+**The fastest end-to-end testing framework.** Flashwright is a fork of Playwright 1.64.1 that spends less time running your tests. Same API, same test runner, same `npx playwright test`. Replace the package and keep your existing tests.
 
 In the benchmark matrix below, complete test runs take one-quarter to one-half as long as stock Playwright. There are some behavior differences behind those numbers, including recycled browser contexts and shorter waits. They're documented [below](#differences-from-playwright), with options to turn them off.
 
@@ -85,6 +85,10 @@ Outside CI, the first test run starts a background session that keeps browsers r
 The session stays for up to five minutes after the last run and holds about 0.4 GB after a one-test run or 1 GB after a four-worker suite. It's off by default on Windows, in CI and while debugging. Set `FLASHWRIGHT_SESSION=0` to disable it. [Details and benchmarks](docs/agents.md#warm-session).
 
 ## Videos of your tests
+
+![The same launch-checklist test recorded with --video on the left and --demo on the right](docs/media/narrated-comparison.gif)
+
+The same test, recorded twice. `--video` includes the test title, action captions and results; `--demo` keeps the page and narration. The preview is silent: watch [the test video with sound](docs/media/narrated-video.mp4) or [the demo with sound](docs/media/narrated-demo.mp4).
 
 `npx playwright test --video` makes a narrated video of your tests with captions, a moving cursor and a camera that follows the action. Use `--demo` for a version without test names and results. Add `narrate()` calls to explain what's happening, or let Flashwright generate captions from the actions and assertions.
 

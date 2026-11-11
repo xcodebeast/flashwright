@@ -2,6 +2,10 @@
 
 [Back to the README](../README.md)
 
+![The same launch-checklist test recorded with --video on the left and --demo on the right](media/narrated-comparison.gif)
+
+The same test, recorded twice. `--video` includes the test title, action captions and results; `--demo` keeps the page and narration. The preview is silent: watch [the test video with sound](media/narrated-video.mp4) or [the demo with sound](media/narrated-demo.mp4).
+
 `npx playwright test --video` makes a video of the run with narration, captions, a moving cursor and a camera that follows the action. Use `narrate` when you want to explain what's happening:
 
 ```ts
@@ -37,3 +41,13 @@ export default defineConfig({
 ```
 
 Captions show the text that tests type, including passwords, and the page shows what your app shows, so use test data you are happy to share. Recording replaces the `video` option, turns off the screenshots of `trace` and gives each test a new context, and a test cannot use `page.screencast` itself in that run. `summary.json` in [agent mode](agents.md#agent-mode) has the video's path.
+
+## Reproduce the README example
+
+The [launch-checklist test](../bench/media/narrated-video/checklist.spec.ts) runs the same actions in both modes. From a built checkout with Chromium and `ffmpeg` installed:
+
+```bash
+node bench/media/narrated-video/render.mjs
+```
+
+This writes `docs/media/narrated-video.mp4`, `docs/media/narrated-demo.mp4` and a silent side-by-side GIF. The MP4 files retain narration from the available voice engine. Install Kokoro with `npx playwright install-voice` if your system has no voice.

@@ -17,7 +17,7 @@ for (const mode of ['video', 'demo']) {
 const common = ['-hide_banner', '-loglevel', 'error', '-y'];
 execFileSync('ffmpeg', [...common,
   '-i', 'docs/media/narrated-video.mp4', '-i', 'docs/media/narrated-demo.mp4',
-  '-filter_complex', '[0:v]scale=640:-2,setsar=1,tpad=stop_mode=clone:stop_duration=60[left];[1:v]scale=640:-2,setsar=1,tpad=stop_mode=clone:stop_duration=60[right];[left][right]hstack=inputs=2[v]',
+  '-filter_complex', '[0:v]scale=640:-2,setsar=1,pad=640:400:0:40:color=0x101521,drawtext=font=Arial:text=--video:fontcolor=white:fontsize=22:x=(w-tw)/2:y=8,tpad=stop_mode=clone:stop_duration=60[left];[1:v]scale=640:-2,setsar=1,pad=640:400:0:40:color=0x101521,drawtext=font=Arial:text=--demo:fontcolor=white:fontsize=22:x=(w-tw)/2:y=8,tpad=stop_mode=clone:stop_duration=60[right];[left][right]hstack=inputs=2[v]',
   '-map', '[v]', '-t', '22', '-an', '-c:v', 'libx264', '-crf', '23', '-pix_fmt', 'yuv420p',
   '-movflags', '+faststart', 'workbench/narrated-comparison.mp4',
 ], { stdio: 'inherit' });

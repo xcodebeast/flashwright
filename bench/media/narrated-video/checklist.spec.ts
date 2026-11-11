@@ -1,3 +1,5 @@
+// Copyright (c) Flashwright contributors. Licensed under Apache-2.0.
+
 import { test, expect } from '@playwright/test';
 
 const app = `<!doctype html>
