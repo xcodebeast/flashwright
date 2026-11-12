@@ -23,4 +23,16 @@ Flashwright runs Playwright's own browser builds. Playwright already launches th
 
 ## Deprecated APIs
 
-Playwright still ships about 95 methods its documentation discourages: the selector-based ones such as `page.click(selector)` and `page.fill(selector, value)`, element handles, `waitForNavigation`, `waitForTimeout`. Flashwright keeps them working and marks them `@deprecated` in its types, so that editors strike them through. `npx playwright codemod` shows, as a diff, how it rewrites the selector-based calls to locators (`page.click('#go')` becomes `page.locator('#go').click()`), `--write` applies it, and it lists with their location the calls to change by hand: element handles, `$eval`, `waitForNavigation`, `waitForTimeout`, `networkidle`. Locators are strict: where a selector matched several elements, the old call used the first one and the rewritten call fails; `--keep-first` adds `.first()` to keep the old behavior.
+Playwright still ships about 95 methods its documentation discourages: the selector-based ones such as `page.click(selector)` and `page.fill(selector, value)`, element handles, `waitForNavigation`, `waitForTimeout`. Flashwright keeps them working and marks them `@deprecated` in its types, so that editors strike them through.
+
+## Migrate selector-based calls
+
+`npx playwright codemod` shows, as a diff, how it rewrites the selector-based calls to locators (`page.click('#go')` becomes `page.locator('#go').click()`), `--write` applies it, and it lists with their location the calls to change by hand: element handles, `$eval`, `waitForNavigation`, `waitForTimeout`, `networkidle`. Locators are strict: where a selector matched several elements, the old call used the first one and the rewritten call fails; `--keep-first` adds `.first()` to keep the old behavior.
+
+## Run on Bun
+
+```bash
+bunx --bun playwright test
+```
+
+Flashwright handles TypeScript configs and tests on Bun. Stock Playwright 1.64.1 parses TypeScript as JavaScript there and fails at the first type annotation. For the Node.js requirement and installation commands, see [Install](../README.md#install).
