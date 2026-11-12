@@ -42,7 +42,7 @@ Outside CI, the first `playwright test` in a project starts a session in the bac
 | Shop app, 1 worker | 6321 ms | 2969 ms | 2839 ms (2.2×) |
 | Shop app, 4 workers | 2593 ms | 1194 ms | 1003 ms (2.6×) |
 
-<sub>Medians of 15 (one test) or 9 alternating runs with a 1.5 s pause before each, like an agent that edits between runs; the session prepares the next run during that pause. Reproduce with `BENCH_PAUSE=1500 node bench/run.mjs todomvc 4 9 stock,fork,fork:FLASHWRIGHT_SESSION=1`.</sub>
+<sub>Medians from alternating runs with a 1.5 s pause before each, like an agent that edits between runs; the session prepares the next run during that pause. [Run counts](benchmarks.md#how-many-runs). Reproduce with `BENCH_PAUSE=1500 node bench/run.mjs todomvc 4 9 stock,fork,fork:FLASHWRIGHT_SESSION=1`.</sub>
 
 Every run still gets new runner and worker processes, so changed tests, configs and environment variables are picked up as usual. A run whose environment, terminal or Flashwright install differs from the session's runs on its own, like without the session. A run returns once its results are reported; its workers hand their browsers over afterwards, unless a worker fixture of the project still has to tear down.
 

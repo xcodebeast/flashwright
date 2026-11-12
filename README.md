@@ -39,7 +39,7 @@ Projects that use the library without the test runner replace `playwright` the s
 - [Agent workflows](docs/agents.md): reporters, JSON summaries, watch mode, warm sessions and MCP.
 - [Videos and demos](docs/videos.md): recording, narration and voices.
 - [Migration](docs/migration.md): behaviour differences, deprecated APIs, codemod and Bun.
-- [Benchmarks](docs/benchmarks.md#how-many-runs): run counts, methodology and full results.
+- [Benchmarks](docs/benchmarks.md): methodology, reproduction steps and full results.
 
 ## Compared to other frameworks
 
@@ -48,7 +48,7 @@ Projects that use the library without the test runner replace `playwright` the s
   <img alt="The same 24 TodoMVC tests in 9 frameworks. With 1 worker: Flashwright 2.41 s, Bun test with Bun.WebView 4.39 s, Playwright 4.63 s, Selenium 5.48 s, Puppeteer 6.29 s, Nightwatch 6.45 s, WebdriverIO 10.57 s, Cypress 17.29 s, TestCafe 22.55 s. With 4 workers: Flashwright 1.54 s, Selenium 2.77 s, Bun 2.80 s, Puppeteer 2.98 s, Playwright 3.12 s, Nightwatch 3.38 s, WebdriverIO 4.91 s, TestCafe 9.28 s, Cypress 17.37 s." src="docs/media/competitors.svg">
 </picture>
 
-The same 24 TodoMVC tests, ported to nine tools with the same actions, assertions and CSS selectors. Each tool drives Chromium 156 on the same machine, using its recommended waits and default test isolation. Numbers are the complete test command, median of 15 attempted runs per tool and setting, with failed runs excluded.
+The same 24 TodoMVC tests, ported to nine tools with the same actions, assertions and CSS selectors. Each tool drives Chromium 156 on the same machine, using its recommended waits and default test isolation. Numbers are median times for the complete test command.
 
 Cypress runs one spec at a time without Cypress Cloud. Bun's experimental `Bun.WebView` needs a helper for waits and failed one of its 60 runs, which was excluded. [Full results, versions and reproduction steps](docs/benchmarks.md#compared-to-other-frameworks).
 
@@ -56,9 +56,9 @@ Cypress runs one spec at a time without Cypress Cloud. Bun's experimental `Bun.W
 
 ![Bar chart: wall-clock time of 18 scenarios, Playwright vs Flashwright; Flashwright is 2.04× to 4.01× faster in each](docs/media/benchmarks.svg)
 
-Complete test commands, from launch to exit, median of 15 runs per implementation, alternating their order, on the same 6-CPU Linux machine with Chromium's headless shell. The tests are unchanged, and the warm session is off, as in CI. The matrix covers Playwright's TodoMVC and SVGOMG examples, shop and admin apps, failures, screenshots and visual comparisons.
+Median times for complete test commands, from launch to exit, on the same 6-CPU Linux machine with Chromium's headless shell. The tests are unchanged, and the warm session is off, as in CI. The matrix covers Playwright's TodoMVC and SVGOMG examples, shop and admin apps, failures, screenshots and visual comparisons.
 
-[Full results and methodology](docs/benchmarks.md#compared-to-playwright). Reproduce with `node bench/matrix.mjs 15`.
+[Full results, methodology and reproduction steps](docs/benchmarks.md).
 
 ## How is it so fast?
 

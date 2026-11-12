@@ -11,7 +11,7 @@
 | Warm session, single test | 15 per implementation or session variant | Median complete-command time |
 | Warm session, suites | 9 per implementation or session variant | Median complete-command time |
 
-For a matrix setting comparing stock Playwright with Flashwright, that is 30 measured commands: 15 for each. The warm-session runs pause for 1.5 seconds before each command; the pause is not timed. The framework comparison had one failed Bun run out of its 60 attempts across the four settings, as noted below.
+Warm-session runs pause for 1.5 seconds before each command; the pause is not timed.
 
 The main matrix has the warm session off, as in CI. [Warm-session results and reproduction](agents.md#warm-session) are documented separately. These counts describe the published results, rather than the scripts' default iteration counts.
 
@@ -22,7 +22,7 @@ The main matrix has the warm session off, as in CI. [Warm-session results and re
   <img alt="The same 24 TodoMVC tests in 9 frameworks. With 1 worker: Flashwright 2.41 s, Bun test with Bun.WebView 4.39 s, Playwright 4.63 s, Selenium 5.48 s, Puppeteer 6.29 s, Nightwatch 6.45 s, WebdriverIO 10.57 s, Cypress 17.29 s, TestCafe 22.55 s. With 4 workers: Flashwright 1.54 s, Selenium 2.77 s, Bun 2.80 s, Puppeteer 2.98 s, Playwright 3.12 s, Nightwatch 3.38 s, WebdriverIO 4.91 s, TestCafe 9.28 s, Cypress 17.37 s." src="media/competitors.svg">
 </picture>
 
-Playwright's TodoMVC example suite, ported to each tool from one shared description of its 24 tests, so every tool runs the same actions and assertions with the same CSS selectors. Every tool drives the same Chromium 156 on the same machine with its own recommended waits (no fixed sleeps) and its default isolation between tests, and a run counts only when all 24 tests pass. Each number is the whole test command, median of 15 attempted runs per tool and setting, excluding failed runs.
+Playwright's TodoMVC example suite, ported to each tool from one shared description of its 24 tests, so every tool runs the same actions and assertions with the same CSS selectors. Every tool drives the same Chromium 156 on the same machine with its own recommended waits (no fixed sleeps) and its default isolation between tests, and a run counts only when all 24 tests pass. Each number is the median time for the whole test command.
 
 File layout matters too. Cypress bundles each spec, and WebdriverIO, Selenium and Nightwatch start a browser session per file. That adds up when every test has its own file, which is how Playwright's example is laid out:
 
@@ -44,7 +44,7 @@ File layout matters too. Cypress bundles each spec, and WebdriverIO, Selenium an
 
 ![Bar chart: wall-clock time of 18 scenarios, Playwright vs Flashwright; Flashwright is 2.04× to 4.01× faster in each](media/benchmarks.svg)
 
-Each bar is the complete `test` command, from launch to exit, median of 15 runs per implementation with alternating order, on the same machine (6 CPUs, Linux), with Chromium's headless shell. Flashwright runs with its defaults apart from the [warm session](agents.md#warm-session), which is off, as in CI; nothing in the test code changes. The TodoMVC and SVGOMG suites are Playwright's own examples, the shop is a small single-page app with a sign-in setup project and 40 ms API latency, the admin app is a page of 8,500 elements whose 19 tests find them by role, label and text, and the other rows are 15-test files that each exercise one thing. Reproduce with `node bench/matrix.mjs 15`.
+Each bar shows the median time for the complete `test` command, from launch to exit, on the same machine (6 CPUs, Linux) with Chromium's headless shell. Flashwright runs with its defaults apart from the [warm session](agents.md#warm-session), which is off, as in CI; nothing in the test code changes. The TodoMVC and SVGOMG suites are Playwright's own examples, the shop is a small single-page app with a sign-in setup project and 40 ms API latency, the admin app is a page of 8,500 elements whose 19 tests find them by role, label and text, and the other rows are 15-test files that each exercise one thing. Reproduce with `node bench/matrix.mjs 15`.
 
 ### Full results
 
