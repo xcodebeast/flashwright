@@ -31,6 +31,16 @@ Flashwright needs Node.js 22.18 or newer. You can also run TypeScript configs an
 
 Projects that use the library without the test runner replace `playwright` the same way (`npm i playwright@npm:flashwright`), and `playwright-core` is `flashwright-core`. Browsers, configs, reporters, the trace viewer, codegen and the VS Code extension are Playwright's.
 
+## Documentation
+
+- [Performance](docs/performance.md): optimisations, defaults, opt-in settings and implementation details.
+- [Quality-of-life features](docs/features.md): videos, diagnostics, snapshots, project servers and migration tools.
+- [Configuration](docs/configuration.md): options, examples and limitations.
+- [Agent workflows](docs/agents.md): reporters, JSON summaries, watch mode, warm sessions and MCP.
+- [Videos and demos](docs/videos.md): recording, narration and voices.
+- [Migration](docs/migration.md): behaviour differences, deprecated APIs, codemod and Bun.
+- [Benchmarks](docs/benchmarks.md#how-many-runs): run counts, methodology and full results.
+
 ## Compared to other frameworks
 
 <picture>
@@ -38,7 +48,7 @@ Projects that use the library without the test runner replace `playwright` the s
   <img alt="The same 24 TodoMVC tests in 9 frameworks. With 1 worker: Flashwright 2.41 s, Bun test with Bun.WebView 4.39 s, Playwright 4.63 s, Selenium 5.48 s, Puppeteer 6.29 s, Nightwatch 6.45 s, WebdriverIO 10.57 s, Cypress 17.29 s, TestCafe 22.55 s. With 4 workers: Flashwright 1.54 s, Selenium 2.77 s, Bun 2.80 s, Puppeteer 2.98 s, Playwright 3.12 s, Nightwatch 3.38 s, WebdriverIO 4.91 s, TestCafe 9.28 s, Cypress 17.37 s." src="docs/media/competitors.svg">
 </picture>
 
-The same 24 TodoMVC tests, ported to nine tools with the same actions, assertions and CSS selectors. Each tool drives Chromium 156 on the same machine, using its recommended waits and default test isolation. Numbers are the complete test command, median of 15 passing runs.
+The same 24 TodoMVC tests, ported to nine tools with the same actions, assertions and CSS selectors. Each tool drives Chromium 156 on the same machine, using its recommended waits and default test isolation. Numbers are the complete test command, median of 15 attempted runs per tool and setting, with failed runs excluded.
 
 Cypress runs one spec at a time without Cypress Cloud. Bun's experimental `Bun.WebView` needs a helper for waits and failed one of its 60 runs, which was excluded. [Full results, versions and reproduction steps](docs/benchmarks.md#compared-to-other-frameworks).
 
@@ -46,7 +56,7 @@ Cypress runs one spec at a time without Cypress Cloud. Bun's experimental `Bun.W
 
 ![Bar chart: wall-clock time of 18 scenarios, Playwright vs Flashwright; Flashwright is 2.04× to 4.01× faster in each](docs/media/benchmarks.svg)
 
-Complete test commands, from launch to exit, median of 15 alternating runs on the same 6-CPU Linux machine with Chromium's headless shell. The tests are unchanged, and the warm session is off, as in CI. The matrix covers Playwright's TodoMVC and SVGOMG examples, shop and admin apps, failures, screenshots and visual comparisons.
+Complete test commands, from launch to exit, median of 15 runs per implementation, alternating their order, on the same 6-CPU Linux machine with Chromium's headless shell. The tests are unchanged, and the warm session is off, as in CI. The matrix covers Playwright's TodoMVC and SVGOMG examples, shop and admin apps, failures, screenshots and visual comparisons.
 
 [Full results and methodology](docs/benchmarks.md#compared-to-playwright). Reproduce with `node bench/matrix.mjs 15`.
 
@@ -60,7 +70,7 @@ Flashwright spends less time starting browsers, compiling the same JavaScript an
 - **Start work early.** Workers and browsers start while the CLI reads the config, and the longest tests run first. Code caching, lazy loading and fewer browser round trips reduce startup and per-call overhead.
 - **Do less work per locator and screenshot.** Locator queries avoid repeated style and accessible-name calculations. Screenshots use faster PNG encoding with the same pixels, and visual comparisons have fast paths for unchanged images.
 
-These choices have [observable differences from Playwright](#differences-from-playwright). The [configuration reference](docs/configuration.md) explains the options and their tradeoffs.
+See [all optimisations and how they work](docs/performance.md), including defaults, local workflows and optional settings. These choices have [observable differences from Playwright](#differences-from-playwright); the [configuration reference](docs/configuration.md) explains the options and tradeoffs.
 
 ## Speed options
 
@@ -94,11 +104,11 @@ The same test, recorded twice. `--video` includes the test title, action caption
 
 It needs `ffmpeg`. Recording adds waits for the page to paint, and captions include typed text, including passwords, so use test data you're happy to share. [Examples, voice setup and recording options](docs/videos.md).
 
-## Additions
+## Quality-of-life features
 
 Flashwright also supports a web server per project, `use` options on individual tests, pruning stale snapshots with `--prune-snapshots`, and accepting changed snapshots without a rerun with `npx playwright accept-snapshots`.
 
-[Examples and limitations](docs/configuration.md#additions).
+[All quality-of-life features](docs/features.md), with links to examples and limitations.
 
 ## Differences from Playwright
 

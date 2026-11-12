@@ -4,34 +4,31 @@
 
 Short test runs matter when an agent checks its work after every edit. Flashwright reduces startup time and keeps passing-test output out of the way:
 
-- **Re-running one test** takes about 75 ms instead of 673 ms, in the [warm session](#warm-session) that the first run starts; that first run takes 240 ms. `playwright cli` commands start in ~45 ms instead of ~260 ms.
-- **Screenshots** take about half the time, and `toHaveScreenshot()` returns immediately when nothing changed.
-- **Agent mode**: when Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot CLI or any tool that sets `AI_AGENT` runs `playwright test`, the output is the failures and nothing else, and the outcome is also written as JSON. See [agent mode](#agent-mode).
-- **Failures say what the page has instead.** When an action or assertion waits for an element that never appears, the call log says which part of the locator stopped matching, whether a hidden element matches, and which elements are close, as locators to copy:
-  ```
-  - waiting for getByRole('button', { name: 'Logout' })
-    - no element matched
-      - similar buttons: getByRole('button', { name: 'Log out' })
-  ```
-  It covers role names, text, labels, placeholders, test ids, `nth()` and chains, and points at iframes when nothing is close.
-- **`npx playwright doctor`** checks, without changing anything, what a run needs: Node, a single copy of Playwright, a config that loads, test files for each project, each project's browser and its system libraries, and a display for headed projects. It also says whether agent mode and the warm session are on. `--json` prints the checks for a script or an agent; it exits with 1 when something would stop a run.
-- **The MCP server** can answer as soon as the page has settled instead of after a fixed 500 ms: `playwright mcp --adaptive-settle` (or `timeouts.adaptiveSettle: true`). A click that saves through an API returns in 234 ms instead of 1014 ms.
+- [Agent mode](#agent-mode) prints failures and a short summary instead of passing-test noise.
+- [Structured summaries](#structured-test-summary) expose outcomes, errors, attachments and rerun commands as JSON.
+- [Watch mode](#watch-mode) re-runs affected tests on save and prepares the next run in advance.
+- [Warm sessions](#warm-session) keep browsers ready between commands; one measured TodoMVC test re-runs in 76 ms instead of 673 ms.
+- [Locator diagnostics](#locator-diagnostics) suggest what the page actually contains when an element never appears.
+- [Doctor](#check-the-project-setup) checks whether the project is ready to run without changing it.
+- [Adaptive MCP settling](#adaptive-mcp-settling) returns when the page settles instead of after a fixed delay.
 
-### Agent mode
+## Agent mode
 
-When a coding agent runs the tests, an `agent` reporter replaces `list`, `line` and `dot`. It prints nothing for passing tests or their console output, prints each failure once (its last attempt, with the test's output), and ends with the counts and `npx playwright test --last-failed`. No colors, no rules of dashes, and the HTML report is never opened or served. 201 tests with one failure print 26 lines (888 bytes) instead of 425 (17.5 KB).
-
-It also writes `test-results/summary.json`, with an `outcome` that tells apart failed tests (`failed`), errors outside tests such as a file that does not load (`error`), `no-tests`, `timedout` and `interrupted`; the counts; and for each failure its location, error, attachment paths and the command that reruns it. Exit codes stay the same.
+When Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot CLI or a tool that sets `AI_AGENT` runs the tests, an `agent` reporter replaces `list`, `line` and `dot`. It prints nothing for passing tests or their console output, prints each failure once (its last attempt, with the test's output), and ends with the counts and `npx playwright test --last-failed`. No colors, no rules of dashes, and the HTML report is never opened or served. 201 tests with one failure print 26 lines (888 bytes) instead of 425 (17.5 KB).
 
 `agentMode: true` or `false` in the config sets it, and `FLASHWRIGHT_AGENT_MODE=1` or `0` overrides both. A `--reporter` on the command line and file reporters (`html`, `json`, `junit`, `blob`) are kept. `reporter: 'agent'` works outside agent mode too, with `outputFile` to move the JSON.
 
-### Watch mode
+### Structured test summary
+
+It also writes `test-results/summary.json`, with an `outcome` that tells apart failed tests (`failed`), errors outside tests such as a file that does not load (`error`), `no-tests`, `timedout` and `interrupted`; the counts; and for each failure its location, error, attachment paths and the command that reruns it. Exit codes stay the same.
+
+## Watch mode
 
 `npx playwright test --watch` runs, in the terminal, the tests of each test file you save and of the test files that import a file you save, with the command's filters. This is Playwright's terminal watch mode, exposed without its environment-variable switch. Press `h` for the other commands: run everything, run failures, repeat, change the project, file or title filter, or show the browser.
 
 A saved file's tests report 255 ms after the save instead of 1065 ms (4.2×; one test that opens a page, medians of 9): the changed files run right away instead of after listing every test, and while you read the results the next run's worker starts with its browser, and so does the process that loads test files, with babel already loaded.
 
-### Warm session
+## Warm session
 
 Outside CI, the first `playwright test` in a project starts a session in the background. The session keeps the next run's runner process and workers started, and it keeps the browsers: a worker that exits hands its browser to the session instead of closing it, with the context reset as between two tests and with the renderer that has already compiled the application. The next run's first test starts as warm as the second test of a run.
 
@@ -51,3 +48,32 @@ Every run still gets new runner and worker processes, so changed tests, configs 
 
 - **When it is on:** by default, except when the `CI` environment variable is set, when a debugger is attached, with `PWDEBUG`, `--ui` or `--debug`, and on Windows. A CI job usually runs its tests once, so a session would only hold memory there. `FLASHWRIGHT_SESSION=0` turns it off and `FLASHWRIGHT_SESSION=1` turns it on in CI.
 - **What it holds:** one session per project directory, until 5 minutes after its last run (`FLASHWRIGHT_SESSION_TIMEOUT=<seconds>` changes that) or until Flashwright is reinstalled. While it waits, it keeps a runner, a worker for each kept browser and the browsers: about 0.4 GB after one-test runs and 1 GB after a 4-worker suite. Headed browsers are closed, not kept.
+
+## Locator diagnostics
+
+When an action or assertion waits for an element that never appears, its call log says which part of the locator stopped matching, whether a hidden element matches, and which similar elements exist:
+
+```text
+- waiting for getByRole('button', { name: 'Logout' })
+  - no element matched
+    - similar buttons: getByRole('button', { name: 'Log out' })
+```
+
+Suggestions cover roles, text, labels, placeholders, test IDs, `nth()` and chained locators. If nothing is close, the log points at iframes. Finding these suggestions takes at most 500 ms after the call has failed.
+
+## Check the project setup
+
+```bash
+npx playwright doctor
+npx playwright doctor --json
+```
+
+Doctor checks what a run needs without changing anything: Node, a single Playwright installation, a config that loads, tests for each project, browser executables and system libraries, and a display for headed projects. It also reports whether agent mode and the warm session are on. It exits with code 1 when a check finds something that would stop a run.
+
+## Adaptive MCP settling
+
+```bash
+playwright mcp --adaptive-settle
+```
+
+Set this flag, or `timeouts.adaptiveSettle: true`, to return once the page settles instead of waiting a fixed 500 ms. In the measured API-save example, a click returns in 234 ms instead of 1014 ms.

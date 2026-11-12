@@ -4,7 +4,7 @@
 
 ## Speed options
 
-Several speed options are on by default. You can change them per project, file or `describe` block, including restoring Playwright's waits and test order:
+The table lists each option's default and tradeoffs. Test-scoped `use` options can be changed per project, file or `describe` block; runner settings such as `testOrder` belong in the config. For the overview and implementation details, see [Performance](performance.md).
 
 ```ts
 // playwright.config.ts: Playwright's behavior, for a suite that relies on it
@@ -38,23 +38,69 @@ test.use({
 
 Playwright's own options combine with these: `javaScriptEnabled: false`, `serviceWorkers: 'block'`, `bypassCSP`.
 
+## Web security
+
+For a test front end whose API sends no CORS headers, `webSecurity: false` launches Chromium without same-origin enforcement and mixed-content blocking. It defaults to `true`.
+
+```ts
+export default defineConfig({
+  use: { webSecurity: false },
+});
+```
+
 ## Additions
 
-These additions cover things Playwright users have asked for. Existing Playwright configs and tests don't need to use them.
+### A web server per project
 
-- **A web server per project**: `projects: [{ name: 'admin', webServer: { command: 'npm run start:admin', url: 'http://localhost:3001' }, use: { baseURL: 'http://localhost:3001' } }]`, with the options of the top-level `webServer`. A project's servers start before the first of its tests runs, only when the run has tests of the project (`--project shop` does not start the admin server), and stop at the end of the run.
-- **Options for one test**: `test('fits a phone', { use: { viewport: { width: 390, height: 844 } } }, async ({ page }) => {})`, next to `tag` and `annotation`, instead of a `describe` group around the test. `test.describe()` takes `use` too. Like `test.use()` in a group, it cannot set the options of worker fixtures, such as `browserName`.
-- **Stale snapshots**: `npx playwright test --prune-snapshots` deletes the snapshot files that no test used, and lists them: renamed or removed screenshots, and the folders of deleted test files. It only prunes after a complete run that passes, with no filter, shard or `.only`, and keeps all the snapshots of a test file with a skipped test. Only files that match a project's snapshot path template with this machine's platform count, so other platforms' screenshots stay.
-- **Accept changed screenshots without a rerun**: when screenshots or snapshots no longer match, the run says so, and `npx playwright accept-snapshots` copies what the run produced over the expected files, instead of running everything again with `--update-snapshots`. It takes each test's last attempt, so a retry that matched leaves nothing to accept, and it works on a `test-results` folder copied from CI.
+Each project can declare its own `webServer`, with the same options as the top-level setting:
+
+```ts
+export default defineConfig({
+  projects: [{
+    name: 'admin',
+    webServer: {
+      command: 'npm run start:admin',
+      url: 'http://localhost:3001',
+    },
+    use: { baseURL: 'http://localhost:3001' },
+  }],
+});
+```
+
+The servers start before the project's first test and stop at the end of the run. They only start when the run includes that project's tests, so selecting another project does not start the admin server.
+
+### Options for one test
+
+Put `use` alongside `tag` and `annotation` in a test's options instead of creating a `describe` group just for that test:
+
+```ts
+test('fits a phone', {
+  use: { viewport: { width: 390, height: 844 } },
+}, async ({ page }) => {
+  await page.goto('/');
+});
+```
+
+`test.describe()` accepts `use` too. Like `test.use()` in a group, these options cannot configure worker fixtures such as `browserName`.
+
+### Prune stale snapshots
+
+```bash
+npx playwright test --prune-snapshots
+```
+
+After a complete passing run, this deletes and lists snapshot files that no test used, including renamed or removed screenshots and snapshot folders for deleted test files.
+
+It does not prune filtered or sharded runs, or runs with `.only`. It keeps all snapshots belonging to a test file with a skipped test. Only files matching a project's snapshot path template for the current platform are eligible, so other platforms' baselines stay.
+
+### Accept snapshots without a rerun
+
+```bash
+npx playwright accept-snapshots
+```
+
+This copies the actual snapshots from the previous run over the expected files, without re-running the tests with `--update-snapshots`. It uses each test's last attempt, so a retry that matched leaves nothing to accept. It also works with a `test-results` folder copied from CI.
 
 ## How the optimizations work
 
-The changes focus on browser reuse, waiting, startup and work repeated on every call. Some change what a test can observe, so read [Differences from Playwright](migration.md#differences-from-playwright) if your suite depends on those details.
-
-- **Warm browsers, fresh contexts.** Compiling the application's JavaScript in a new renderer dominates many suites. Flashwright keeps one browser context per worker and gives each test a brand-new tab in it, then resets everything a test can change: options, permissions, cookies, every visited origin's storage (local, session, IndexedDB, Cache Storage, service workers), caches, routes, init scripts, bindings, downloads and clock, and re-applies `storageState`. The previous test's pages are stopped before anything is cleared, so a late script cannot leak state into the next test. See `tests/page/recycle-isolation.spec.ts`.
-- **Waits that react to the page.** Auto-waiting actions and assertions re-check as soon as the page changes instead of after a 20–500 ms backoff. An assertion that cannot pass any more, because nothing can change the page before its timeout, fails right away.
-- **No frame waits before input.** Clicks, hovers, taps and drags don't wait for animation frames or for moving elements to stop. Playwright's hit-target check still makes sure the element receives the input.
-- **Workers and browsers ready before they're needed.** Worker processes and their browsers start while the CLI is still reading the config (the browser that all of the config's tests launched last time, with its launch options; it is used only if the config leaves the environment unchanged), a spare stands by once tests fail, and an idle spare already holds the context its first test will ask for. A worker whose tests use no browser closes the one it started: with 4 workers of API tests, the run peaks at 330 MB instead of 550. The longest tests start first.
-- **A faster start.** A V8 code cache for Playwright's own bundles, lazy loading of everything a run doesn't use, and less work per call: lazy stack formatting, fewer browser round trips per action, minified page scripts the browser compiles once, and Chromium's DevTools protocol in the browser's own binary encoding (CBOR), so that it no longer converts every message to JSON and back: up to 9% faster on short tests, 4% on the TodoMVC suite with 4 workers (`FLASHWRIGHT_CDP_JSON=1` goes back to JSON).
-- **Locators on large pages.** A named `getByRole()` first rules out, from their content, the elements whose accessible name cannot contain the one asked for, and computes only the others' names; role, label and text locators read each element's styles, role and labels once per query. On the admin app's 8,500 elements: a named `getByRole()` takes 14 ms instead of 41, `getByRole('row')` 2.3 ms instead of 7.8, `getByLabel()` 2.0 ms instead of 3.3.
-- **Faster screenshots.** Speed-optimized PNG encoding for `page.screenshot()` (same pixels), and pixel comparison with fast paths for `toHaveScreenshot()`, whose baselines stay byte-identical to Playwright's. With `screenshot: 'only-on-failure'`, a recycled context's pages stand still when the test's context closes and are captured only if the test then fails, instead of every test taking a screenshot in case it does (TodoMVC: 1484 -> 1055 ms, screenshots off: 1051). A page waits at most 20 ms (the outcome normally comes within a millisecond), so what moves by itself, like a blinking caret or an animated image, moves no further than in the frame a screenshot waits for. A page that could still change otherwise (a call or request in flight, a WebSocket, a worker, a dialog, a loading image or font, playing media, styles for the `scripting` media feature) is captured right away, as before.
+The implementation explanations have moved to [Performance](performance.md#implementation-details). That page also lists which optimisations are enabled by default, apply to local workflows, or need an explicit option.
