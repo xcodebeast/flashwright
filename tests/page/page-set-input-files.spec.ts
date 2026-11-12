@@ -19,12 +19,9 @@ import { test, expect } from './pageTest';
 
 import path from 'path';
 import fs from 'fs';
-import formidable from 'formidable';
+import { parseMultipart } from '../config/multipart';
 
-// formidable gives every field and file as an array of values.
-function firstValues<T>(record: Record<string, T[] | undefined>): Record<string, T> {
-  return Object.fromEntries(Object.entries(record).map(([key, values]) => [key, values?.[0]])) as Record<string, T>;
-}
+import type formidable from 'formidable';
 
 test('should upload the file', async ({ page, server, asset }) => {
   await page.goto(server.PREFIX + '/input/fileupload.html');
@@ -179,12 +176,9 @@ test('should upload large file', async ({ page, server, isAndroid, mode }, testI
   expect(await events.evaluate(e => e)).toEqual(['input', 'change']);
   const serverFilePromise = new Promise<formidable.File>(fulfill => {
     server.setRoute('/upload', async (req, res) => {
-      const form = formidable({ uploadDir: testInfo.outputPath() });
-      form.parse(req, function(err, fields, f) {
-        res.end();
-        const files = firstValues(f);
-        fulfill(files.file1);
-      });
+      const { files } = await parseMultipart(req, { uploadDir: testInfo.outputPath() });
+      res.end();
+      fulfill(files.file1);
     });
   });
   const [file1] = await Promise.all([
@@ -237,12 +231,9 @@ test('should upload large file with relative path', async ({ page, server, isAnd
   expect(await events.evaluate(e => e)).toEqual(['input', 'change']);
   const serverFilePromise = new Promise<formidable.File>(fulfill => {
     server.setRoute('/upload', async (req, res) => {
-      const form = formidable({ uploadDir: testInfo.outputPath() });
-      form.parse(req, function(err, fields, f) {
-        res.end();
-        const files = firstValues(f);
-        fulfill(files.file1);
-      });
+      const { files } = await parseMultipart(req, { uploadDir: testInfo.outputPath() });
+      res.end();
+      fulfill(files.file1);
     });
   });
   const [file1] = await Promise.all([
@@ -299,12 +290,11 @@ test('should work with CSP', async ({ page, server, asset }) => {
 
 test('should detect mime type', async ({ page, server, asset }) => {
 
-  let files: Record<string, formidable.File>;
-  server.setRoute('/upload', async (req, res) => {
-    const form = formidable();
-    form.parse(req, function(err, fields, f) {
-      files = firstValues(f);
+  const uploaded = new Promise<Record<string, formidable.File>>(resolve => {
+    server.setRoute('/upload', async (req, res) => {
+      const { files } = await parseMultipart(req);
       res.end();
+      resolve(files);
     });
   });
   await page.goto(server.EMPTY_PAGE);
@@ -320,7 +310,7 @@ test('should detect mime type', async ({ page, server, asset }) => {
     page.click('input[type=submit]'),
     server.waitForRequest('/upload'),
   ]);
-  const { file1, file2 } = files;
+  const { file1, file2 } = await uploaded;
   expect(file1.originalFilename).toBe('file-to-upload.txt');
   expect(file1.mimetype).toBe('text/plain');
   expect(fs.readFileSync(file1.filepath).toString()).toBe(
@@ -334,12 +324,11 @@ test('should detect mime type', async ({ page, server, asset }) => {
 // @see https://github.com/microsoft/playwright/issues/4704
 test('should not trim big uploaded files', async ({ page, server }) => {
 
-  let files: Record<string, formidable.File>;
-  server.setRoute('/upload', async (req, res) => {
-    const form = formidable();
-    form.parse(req, function(err, fields, f) {
-      files = firstValues(f);
+  const uploaded = new Promise<Record<string, formidable.File>>(resolve => {
+    server.setRoute('/upload', async (req, res) => {
+      const { files } = await parseMultipart(req);
       res.end();
+      resolve(files);
     });
   });
   await page.goto(server.EMPTY_PAGE);
@@ -353,6 +342,7 @@ test('should not trim big uploaded files', async ({ page, server }) => {
     }, DATA_SIZE),
     server.waitForRequest('/upload'),
   ]);
+  const files = await uploaded;
   expect(files.file.size).toBe(DATA_SIZE);
 });
 

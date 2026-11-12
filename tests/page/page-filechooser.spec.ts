@@ -19,12 +19,9 @@ import { test, expect } from './pageTest';
 import { attachFrame } from '../config/utils';
 
 import fs from 'fs';
-import formidable from 'formidable';
+import { parseMultipart } from '../config/multipart';
 
-// formidable gives every field and file as an array of values.
-function firstValues<T>(record: Record<string, T[] | undefined>): Record<string, T> {
-  return Object.fromEntries(Object.entries(record).map(([key, values]) => [key, values?.[0]])) as Record<string, T>;
-}
+import type formidable from 'formidable';
 
 test('should upload multiple large files', async ({ page, server, isAndroid, mode }, testInfo) => {
   test.skip(isAndroid);
@@ -257,12 +254,11 @@ test('should accept single file', async ({ page, asset }) => {
 // @see https://github.com/microsoft/playwright/issues/4704
 test('should not trim big uploaded files', async ({ page, server }) => {
 
-  let files: Record<string, formidable.File>;
-  server.setRoute('/upload', async (req, res) => {
-    const form = formidable();
-    form.parse(req, function(err, fields, f) {
-      files = firstValues(f);
+  const uploaded = new Promise<Record<string, formidable.File>>(resolve => {
+    server.setRoute('/upload', async (req, res) => {
+      const { files } = await parseMultipart(req);
       res.end();
+      resolve(files);
     });
   });
   await page.goto(server.EMPTY_PAGE);
@@ -276,6 +272,7 @@ test('should not trim big uploaded files', async ({ page, server }) => {
     }, DATA_SIZE),
     server.waitForRequest('/upload'),
   ]);
+  const files = await uploaded;
   expect(files.file.size).toBe(DATA_SIZE);
 });
 

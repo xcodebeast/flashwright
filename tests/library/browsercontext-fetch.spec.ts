@@ -15,8 +15,9 @@
  */
 
 import type { LookupAddress } from 'dns';
-import formidable from 'formidable';
-import { Readable } from 'stream';
+import { parseMultipart } from '../config/multipart';
+
+import type formidable from 'formidable';
 import fs from 'fs';
 import http from 'http';
 import type { IncomingMessage } from 'http';
@@ -28,17 +29,6 @@ import { suppressCertificateWarning } from '../config/utils';
 import { kTargetClosedErrorMessage } from '../config/errors';
 import { TestServer } from '../config/testserver';
 
-// The test server reads request bodies as they arrive, before formidable 3 starts listening:
-// give formidable the body the server buffered, with the request's headers.
-function bufferedRequest(request: IncomingMessage & { postBody?: Promise<Buffer> }): IncomingMessage {
-  const stream = Readable.from((async function*() { yield await request.postBody!; })());
-  return Object.assign(stream, { headers: request.headers }) as unknown as IncomingMessage;
-}
-
-// formidable gives every field and file as an array of values.
-function firstValues<T>(record: Record<string, T[] | undefined>): Record<string, T> {
-  return Object.fromEntries(Object.entries(record).map(([key, values]) => [key, values?.[0]])) as Record<string, T>;
-}
 
 it.skip(({ mode }) => mode !== 'default');
 
@@ -1171,11 +1161,9 @@ it('should encode to application/json by default', async function({ context, pag
 it('should support multipart/form-data', async function({ context, server }) {
   const formReceived = new Promise<{error: any, fields: Record<string, string>, files: Record<string, formidable.File>, serverRequest: IncomingMessage}>(resolve => {
     server.setRoute('/empty.html', async (serverRequest, res) => {
-      const form = formidable();
-      form.parse(bufferedRequest(serverRequest), (error, fields, files) => {
-        server.serveFile(serverRequest, res);
-        resolve({ error, fields: firstValues(fields), files: firstValues(files), serverRequest });
-      });
+      const { error, fields, files } = await parseMultipart(serverRequest).then(body => ({ error: undefined, ...body }), error => ({ error, fields: {}, files: {} }));
+      server.serveFile(serverRequest, res);
+      resolve({ error, fields, files, serverRequest });
     });
   });
 
@@ -1210,11 +1198,9 @@ it('should support multipart/form-data', async function({ context, server }) {
 it('should support multipart/form-data with ReadStream values', async function({ context, page, asset, server }) {
   const formReceived = new Promise<{error: any, fields: Record<string, string>, files: Record<string, formidable.File>, serverRequest: IncomingMessage}>(resolve => {
     server.setRoute('/empty.html', async (serverRequest, res) => {
-      const form = formidable();
-      form.parse(bufferedRequest(serverRequest), (error, fields, files) => {
-        server.serveFile(serverRequest, res);
-        resolve({ error, fields: firstValues(fields), files: firstValues(files), serverRequest });
-      });
+      const { error, fields, files } = await parseMultipart(serverRequest).then(body => ({ error: undefined, ...body }), error => ({ error, fields: {}, files: {} }));
+      server.serveFile(serverRequest, res);
+      resolve({ error, fields, files, serverRequest });
     });
   });
   const readStream = fs.createReadStream(asset('simplezip.json'));
@@ -1248,13 +1234,11 @@ it('should support multipart/form-data and keep the order', async function({ con
   };
   given['foo']  = 'bar';
   const givenKeys = Object.keys(given);
-  const formReceived = new Promise<{error: any, fields: formidable.Fields}>(resolve => {
+  const formReceived = new Promise<{error: any, fields: Record<string, string>}>(resolve => {
     server.setRoute('/empty.html', async (serverRequest, res) => {
-      const form = formidable();
-      form.parse(bufferedRequest(serverRequest), (error, fields, files) => {
-        server.serveFile(serverRequest, res);
-        resolve({ error, fields });
-      });
+      const { error, fields } = await parseMultipart(serverRequest).then(body => ({ error: undefined, ...body }), error => ({ error, fields: {} }));
+      server.serveFile(serverRequest, res);
+      resolve({ error, fields });
     });
   });
   const [{ error, fields }, response] = await Promise.all([

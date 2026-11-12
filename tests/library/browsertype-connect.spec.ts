@@ -23,17 +23,15 @@ import { utils, getUserAgent, getPlaywrightVersion } from '../../packages/playwr
 import WebSocket from 'ws';
 import { expect, playwrightTest } from '../config/browserTest';
 import { ensureSomeFrames, parseTraceRaw, suppressCertificateWarning } from '../config/utils';
-import formidable from 'formidable';
+import { parseMultipart } from '../config/multipart';
+
+import type formidable from 'formidable';
 import type { Browser, ConnectOptions } from 'playwright-core';
 
 const { createHttpServer } = utils;
 import { kTargetClosedErrorMessage } from '../config/errors';
 import { RunServer } from '../config/remoteServer';
 
-// formidable gives every field and file as an array of values.
-function firstValues<T>(record: Record<string, T[] | undefined>): Record<string, T> {
-  return Object.fromEntries(Object.entries(record).map(([key, values]) => [key, values?.[0]])) as Record<string, T>;
-}
 
 type ConnectTestOptions = {
   redirectPortForTest?: number;
@@ -798,12 +796,9 @@ for (const kind of ['launchServer', 'run-server'] as const) {
       expect(await events.evaluate(e => e)).toEqual(['input', 'change']);
       const serverFilePromise = new Promise<formidable.File>(fulfill => {
         server.setRoute('/upload', async (req, res) => {
-          const form = formidable({ uploadDir: testInfo.outputPath() });
-          form.parse(req, function(err, fields, f) {
-            res.end();
-            const files = firstValues(f);
-            fulfill(files.file1);
-          });
+          const { files } = await parseMultipart(req, { uploadDir: testInfo.outputPath() });
+          res.end();
+          fulfill(files.file1);
         });
       });
       const [file1] = await Promise.all([

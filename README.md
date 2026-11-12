@@ -27,7 +27,7 @@ npx playwright install chromium
 npx playwright test
 ```
 
-You can also run TypeScript configs and tests on Bun with `bunx --bun playwright test`. Stock Playwright 1.64.1 parses TypeScript as JavaScript there and fails at the first type annotation.
+Flashwright needs Node.js 22.18 or newer. You can also run TypeScript configs and tests on Bun with `bunx --bun playwright test`. Stock Playwright 1.64.1 parses TypeScript as JavaScript there and fails at the first type annotation.
 
 Projects that use the library without the test runner replace `playwright` the same way (`npm i playwright@npm:flashwright`), and `playwright-core` is `flashwright-core`. Browsers, configs, reporters, the trace viewer, codegen and the VS Code extension are Playwright's.
 
