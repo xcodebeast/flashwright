@@ -8,7 +8,7 @@ In the benchmark matrix below, complete test runs take one-quarter to one-half a
 
 [flashwright.dev](https://flashwright.dev)
 
-![Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.65 s, Flashwright 1.05 s](docs/media/race.gif)
+![Playwright and Flashwright running the same 24 tests side by side: Playwright takes 3.61 s, Flashwright 0.97 s](docs/media/race.gif)
 
 <sub>Playwright's own TodoMVC example suite, run by both on the same machine. The recorded output of real runs, played back in real time ([MP4](docs/media/race.mp4)).</sub>
 
@@ -80,7 +80,7 @@ Change the defaults per project, file or `describe` block. Options cover isolati
 
 ## For agents
 
-A warm session can re-run one TodoMVC test in 76 ms instead of 673 ms. Agent mode prints failures and a summary, writes `test-results/summary.json`, and keeps passing-test output out of the way. Failed locators also suggest what the page actually has.
+A warm session can re-run one TodoMVC test in 72 ms instead of 652 ms. Agent mode prints failures and a summary, writes `test-results/summary.json`, and keeps passing-test output out of the way. Failed locators also suggest what the page actually has.
 
 - `npx playwright test --watch` re-runs affected tests when you save a file.
 - `npx playwright doctor` checks whether the project is ready to run; `--json` makes the results available to scripts.

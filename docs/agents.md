@@ -7,7 +7,7 @@ Short test runs matter when an agent checks its work after every edit. Flashwrig
 - [Agent mode](#agent-mode) prints failures and a short summary instead of passing-test noise.
 - [Structured summaries](#structured-test-summary) expose outcomes, errors, attachments and rerun commands as JSON.
 - [Watch mode](#watch-mode) re-runs affected tests on save and prepares the next run in advance.
-- [Warm sessions](#warm-session) keep browsers ready between commands; one measured TodoMVC test re-runs in 76 ms instead of 673 ms.
+- [Warm sessions](#warm-session) keep browsers ready between commands; one measured TodoMVC test re-runs in 72 ms instead of 652 ms.
 - [Locator diagnostics](#locator-diagnostics) suggest what the page actually contains when an element never appears.
 - [Doctor](#check-the-project-setup) checks whether the project is ready to run without changing it.
 - [Adaptive MCP settling](#adaptive-mcp-settling) returns when the page settles instead of after a fixed delay.
@@ -34,13 +34,13 @@ Outside CI, the first `playwright test` in a project starts a session in the bac
 
 | Run, 1.5 s after the previous one | Playwright | Flashwright | Flashwright, warm session |
 | --- | ---: | ---: | ---: |
-| One TodoMVC test | 673 ms | 240 ms | 76 ms (8.9×) |
-| TodoMVC suite, 1 worker | 3648 ms | 1023 ms | 900 ms (4.1×) |
-| TodoMVC suite, 4 workers | 1804 ms | 728 ms | 508 ms (3.6×) |
-| SVGOMG suite, 1 worker | 1725 ms | 510 ms | 377 ms (4.6×) |
-| SVGOMG suite, 4 workers | 1257 ms | 476 ms | 278 ms (4.5×) |
-| Shop app, 1 worker | 6321 ms | 2969 ms | 2839 ms (2.2×) |
-| Shop app, 4 workers | 2593 ms | 1194 ms | 1003 ms (2.6×) |
+| One TodoMVC test | 652 ms | 234 ms | 72 ms (9.1×) |
+| TodoMVC suite, 1 worker | 3583 ms | 978 ms | 835 ms (4.3×) |
+| TodoMVC suite, 4 workers | 1751 ms | 710 ms | 490 ms (3.6×) |
+| SVGOMG suite, 1 worker | 1692 ms | 497 ms | 370 ms (4.6×) |
+| SVGOMG suite, 4 workers | 1221 ms | 454 ms | 265 ms (4.6×) |
+| Shop app, 1 worker | 6527 ms | 2946 ms | 2831 ms (2.3×) |
+| Shop app, 4 workers | 2563 ms | 1182 ms | 988 ms (2.6×) |
 
 <sub>Medians from alternating runs with a 1.5 s pause before each, like an agent that edits between runs; the session prepares the next run during that pause. [Run counts](benchmarks.md#how-many-runs). Reproduce with `BENCH_PAUSE=1500 node bench/run.mjs todomvc 4 9 stock,fork,fork:FLASHWRIGHT_SESSION=1`.</sub>
 
