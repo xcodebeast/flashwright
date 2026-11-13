@@ -15,7 +15,7 @@ Two layouts:
 
 | Tool | Versions | Runner | Waiting | Isolation between tests | Parallel |
 | --- | --- | --- | --- | --- | --- |
-| Flashwright | flashwright-test 1.64.1-flashwright.8 | its own | auto-waiting actions and assertions | new tab in a reset context (its default), warm session off as in CI | `--workers` |
+| Flashwright | flashwright-test 1.64.1-flashwright.11 | its own | auto-waiting actions and assertions | new tab in a reset context (its default), warm session off as in CI | `--workers` |
 | Playwright | @playwright/test 1.64.1 | its own | auto-waiting actions and assertions | new browser context | `--workers` |
 | Cypress | cypress 16.2.1 | its own | retry-ability (`should`) | `testIsolation` (default) | one spec at a time: parallel runs need Cypress Cloud |
 | WebdriverIO | webdriverio, @wdio/cli 10.1.0, Mocha framework | its own | auto-waiting `$()` and expect-webdriverio | one session per spec file (default); tests sharing a file navigate, clear localStorage and reload | `maxInstances` |

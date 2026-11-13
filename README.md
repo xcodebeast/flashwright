@@ -12,8 +12,8 @@ In the benchmark matrix below, complete test runs take one-quarter to one-half a
 
 <sub>Playwright's own TodoMVC example suite, run by both on the same machine. The recorded output of real runs, played back in real time ([MP4](docs/media/race.mp4)).</sub>
 
-- The [framework comparison](#compared-to-other-frameworks) runs the same 24 TodoMVC tests in nine tools. Flashwright is 1.8× faster than the runner-up, 1.9–2× faster than Playwright, and 3–11× faster than WebdriverIO, TestCafe and Cypress in the grouped runs.
-- The [Playwright benchmark matrix](#benchmarks) covers example suites, a sign-in app with a setup project, an admin page with 8,500 elements, failures, screenshots and visual comparisons. Flashwright is at least 2× faster in every measured scenario, with a reported average of 2.86×.
+- The [framework comparison](#compared-to-other-frameworks) runs the same 24 TodoMVC tests in nine tools. Flashwright is 1.8× faster than the runner-up, 1.9–2× faster than Playwright, and 3–12× faster than WebdriverIO, TestCafe and Cypress in the grouped runs.
+- The [Playwright benchmark matrix](#benchmarks) covers example suites, a sign-in app with a setup project, an admin page with 8,500 elements, failures, screenshots and visual comparisons. Flashwright is at least 2× faster in every measured scenario, with a reported average of 2.83×.
 - Compatibility is checked against Playwright's own test suites. The [results and remaining differences](#compatibility) are below.
 - For agents re-running a test after an edit, a [warm session](#warm-session) keeps the browser around. A single test can re-run in under 0.1 s instead of 0.6–0.7 s. Screenshots take about half the time, and the MCP server can return when the page settles.
 
@@ -45,16 +45,16 @@ Projects that use the library without the test runner replace `playwright` the s
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/media/competitors-dark.svg">
-  <img alt="The same 24 TodoMVC tests in 9 frameworks. With 1 worker: Flashwright 2.41 s, Bun test with Bun.WebView 4.39 s, Playwright 4.63 s, Selenium 5.48 s, Puppeteer 6.29 s, Nightwatch 6.45 s, WebdriverIO 10.57 s, Cypress 17.29 s, TestCafe 22.55 s. With 4 workers: Flashwright 1.54 s, Selenium 2.77 s, Bun 2.80 s, Puppeteer 2.98 s, Playwright 3.12 s, Nightwatch 3.38 s, WebdriverIO 4.91 s, TestCafe 9.28 s, Cypress 17.37 s." src="docs/media/competitors.svg">
+  <img alt="The same 24 TodoMVC tests in 9 frameworks. With 1 worker: Flashwright 2.36 s, Bun test with Bun.WebView 4.30 s, Playwright 4.48 s, Selenium 5.40 s, Puppeteer 6.17 s, Nightwatch 6.29 s, WebdriverIO 10.32 s, Cypress 16.97 s, TestCafe 22.46 s. With 4 workers: Flashwright 1.47 s, Bun 2.67 s, Selenium 2.70 s, Puppeteer 2.88 s, Playwright 3.02 s, Nightwatch 3.25 s, WebdriverIO 4.74 s, TestCafe 9.16 s, Cypress 16.99 s." src="docs/media/competitors.svg">
 </picture>
 
 The same 24 TodoMVC tests, ported to nine tools with the same actions, assertions and CSS selectors. Each tool drives Chromium 156 on the same machine, using its recommended waits and default test isolation. Numbers are median times for the complete test command.
 
-Cypress runs one spec at a time without Cypress Cloud. Bun's experimental `Bun.WebView` needs a helper for waits and failed one of its 60 runs, which was excluded. [Full results, versions and reproduction steps](docs/benchmarks.md#compared-to-other-frameworks).
+Cypress runs one spec at a time without Cypress Cloud. Bun's experimental `Bun.WebView` needs a helper for waits. [Full results, versions and reproduction steps](docs/benchmarks.md#compared-to-other-frameworks).
 
 ## Benchmarks
 
-![Bar chart: wall-clock time of 18 scenarios, Playwright vs Flashwright; Flashwright is 2.04× to 4.01× faster in each](docs/media/benchmarks.svg)
+![Bar chart: wall-clock time of 18 scenarios, Playwright vs Flashwright; Flashwright is 2.04× to 4.10× faster in each](docs/media/benchmarks.svg)
 
 Median times for complete test commands, from launch to exit, on the same 6-CPU Linux machine with Chromium's headless shell. The tests are unchanged, and the warm session is off, as in CI. The matrix covers Playwright's TodoMVC and SVGOMG examples, shop and admin apps, failures, screenshots and visual comparisons.
 
