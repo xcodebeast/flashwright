@@ -5,6 +5,7 @@
 // fork:USE_instantAnimations=true or fork:CONFIG_testOrder="file" (values cannot contain commas).
 // EXTRA_ARGS=<arg arg> adds browser launch arguments, for example fork:EXTRA_ARGS=--single-process.
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { mkdir, rm, writeFile, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { applicationCorpusDirectory, loadApplicationCorpus, materializeApplicationTests, startApplicationServer } from './application-corpus.mjs';
@@ -16,7 +17,9 @@ import { cp } from 'node:fs/promises';
 const [app = 'todomvc', workersArg = '1', iterationsArg = '3', enginesArg = 'stock,fork'] = process.argv.slice(2);
 const workers = Number(workersArg), iterations = Number(iterationsArg), engines = enginesArg.split(',');
 const root = resolve('.');
-const node = process.env.NODE_BIN ?? join(root, '.tools/node-v26.13.0-linux-x64/bin/node');
+// NODE_BIN, else a Node pinned under .tools/ (not in the repository), else the Node running this script.
+const pinnedNode = join(root, '.tools/node-v26.13.0-linux-x64/bin/node');
+const node = process.env.NODE_BIN ?? (existsSync(pinnedNode) ? pinnedNode : process.execPath);
 const stockTest = resolve('workbench/pw-stock/node_modules/@playwright/test');
 const forkTest = resolve(process.env.FORK_DIR ?? '.', 'packages/playwright-test');
 // BASE_DIR=<checkout> adds the engine `base`: the fork as built in another checkout, for A/B runs.
