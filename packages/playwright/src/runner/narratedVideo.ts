@@ -29,6 +29,7 @@ import type { FullConfigInternal } from '../common/config';
 import type { Recording, RecordedBox, RecordedPoint } from '../narratedVideoRecorder';
 import type { Ffmpeg } from './narratedVoice';
 import type { NarratedVideoOptions } from '../../types/test';
+import type { TestError } from '../../types/testReporter';
 import type { TestRun } from './tasks';
 
 // Flashwright: `playwright test --video` and `--demo`. Tests record what they do at their own speed
@@ -428,7 +429,17 @@ function planClip(dir: string, recording: Recording, options: NarratedVideoOptio
   };
 }
 
-// ---- ffmpeg expressions. Flat sums: ffmpeg limits how deeply an expression can nest.
+// ---- ffmpeg expressions
+
+// ffmpeg rejects expressions nested more than 100 levels deep, and in a+b+c+... each term nests one
+// level deeper, so terms are summed in a balanced tree. At most one term of a sum is not zero at any
+// time, so the order of the additions does not change the result.
+function sum(terms: string[]): string {
+  if (terms.length === 1)
+    return terms[0];
+  const half = terms.length >> 1;
+  return `(${sum(terms.slice(0, half))})+(${sum(terms.slice(half))})`;
+}
 
 function window(variable: string, from: number, to: number, value: string) {
   return `(gte(${variable},${from.toFixed(3)})*lt(${variable},${to.toFixed(3)}))*(${value})`;
@@ -447,7 +458,7 @@ function movesExpression(variable: string, start: number, moves: Move[], digits:
     current = move.to;
   }
   terms.push(`gte(${variable},${at.toFixed(3)})*(${current.toFixed(digits)})`);
-  return terms.join('+');
+  return sum(terms);
 }
 
 function cameraExpression(camera: Plan['camera'], pick: (entry: Plan['camera'][0]) => number): string {
@@ -465,7 +476,7 @@ function rippleExpression(ripples: Plan['ripples'], axis: 'x' | 'y', index: numb
     const t0 = ripple.t + index * 0.05;
     return window('t', t0, t0 + 0.05, (ripple[axis] * scale - size / 2 + 2000).toFixed(1));
   });
-  return ['-2000', ...terms].join('+');
+  return sum(['-2000', ...terms]);
 }
 
 // ---- Stills, drawn by a browser for the fonts and the wrapping
@@ -703,7 +714,10 @@ async function renderClip(plan: Plan, options: NarratedVideoOptions, ffmpeg: Ffm
   }
   args.push('-t', plan.total.toFixed(3), ...kEncoding, output);
   fs.mkdirSync(path.dirname(output), { recursive: true });
-  return () => runFfmpeg(ffmpeg, args);
+  return () => runFfmpeg(ffmpeg, args).catch(error => {
+    fs.rmSync(output, { force: true });
+    throw error;
+  });
 }
 
 async function joinClips(ffmpeg: Ffmpeg, work: string, clips: { file: string, duration: number }[], cues: Cue[], chapters: Chapter[], total: number, output: string) {
@@ -746,13 +760,22 @@ async function inParallel(tasks: (() => Promise<void>)[]) {
   const limit = Math.max(1, Math.floor(os.cpus().length / 3));
   const results: Promise<void>[] = [];
   let next = 0;
+  let failure: { error: unknown } | undefined;
+  // After a failure no task starts, and the ones running finish before it is thrown.
   const worker = async () => {
-    while (next < tasks.length)
-      await tasks[next++]();
+    while (next < tasks.length && !failure) {
+      try {
+        await tasks[next++]();
+      } catch (error) {
+        failure ??= { error };
+      }
+    }
   };
   for (let i = 0; i < limit; i++)
     results.push(worker());
   await Promise.all(results);
+  if (failure)
+    throw failure.error;
 }
 
 function formatDuration(seconds: number) {
@@ -771,7 +794,8 @@ export function checkNarratedVideoCanBeMade(config: FullConfigInternal) {
     throw new Error(`The Kokoro voice is not installed: run "${installVoiceHint()}", or use another voice.`);
 }
 
-export async function renderNarratedVideo(testRun: TestRun) {
+// A video that could not be made fails the run, and the tests keep their results.
+export async function renderNarratedVideo(testRun: TestRun, errors: TestError[]) {
   const options = testRun.config.config.narratedVideo;
   if (options.mode === 'off' || !testRun.rootSuite)
     return;
@@ -782,7 +806,7 @@ export async function renderNarratedVideo(testRun: TestRun) {
   try {
     await renderRun(testRun, options, path.join(project.project.outputDir, 'video.mp4'), work, write);
   } catch (error) {
-    write(`\n  Could not make the video: ${error?.message ?? error}`);
+    errors.push({ message: `Could not make the video: ${error?.message ?? error}` });
   } finally {
     for (const dir of process.env.FLASHWRIGHT_KEEP_VIDEO_WORK ? [] : [...new Set([...testRun.filteredProjects.map(p => path.join(p.project.outputDir, '.video-recordings')), recordingsRoot, work])])
       fs.rmSync(dir, { recursive: true, force: true });

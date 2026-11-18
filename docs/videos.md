@@ -10,7 +10,7 @@ The same test, recorded twice. `--video` includes the test title, action caption
 
 `npx playwright test --video` makes a video of the run with narration, captions, a moving cursor and a camera that follows the action.
 
-It needs `ffmpeg`. The output is one video in `test-results/video.mp4`, with tests in their written order and a chapter for each. Each test also gets a clip in its own output folder.
+It needs `ffmpeg`. The output is one video in `test-results/video.mp4`, with tests in their written order and a chapter for each. Each test also gets a clip in its own output folder. If the video can't be made, the run fails with the reason, and the tests keep their results.
 
 ## Write narration
 

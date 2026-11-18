@@ -225,11 +225,11 @@ export function createNarratedVideoCheckTask(): Task<TestRun> {
 export function createPruneSnapshotsTask(): Task<TestRun> {
   return {
     title: 'snapshot files',
-    setup: async testRun => {
+    setup: async (testRun, errors) => {
       if (testRun.options.pruneSnapshots)
         pruneSnapshots(testRun);
       await recordSnapshotsToAccept(testRun);
-      await renderNarratedVideo(testRun);
+      await renderNarratedVideo(testRun, errors);
     },
   };
 }

@@ -253,6 +253,57 @@ test('--demo has no test names or results, and leaves out tests that failed', as
   expect(allFail.output).toContain('No video: every test failed.');
 });
 
+test('a test with many actions makes its video', async ({ runInlineTest }) => {
+  // Each click adds terms to the cursor's position, and ffmpeg limits how deeply an expression nests.
+  const result = await runInlineTest({
+    'playwright.config.js': voiceConfig(),
+    'a.spec.ts': `
+      import { test, expect } from '@playwright/test';
+      test('many clicks', async ({ page, narrate }) => {
+        await page.setContent(\`
+          <button style="margin-right: 400px">Left</button>
+          <button>Right</button>
+          <output id="count">0</output>
+          <script>
+            let clicks = 0;
+            for (const button of document.querySelectorAll('button'))
+              button.addEventListener('click', () => document.querySelector('#count').textContent = ++clicks);
+          </script>
+        \`);
+        await narrate('We alternate between the two buttons.');
+        for (let i = 0; i < 50; i++)
+          await page.getByRole('button', { name: i % 2 === 0 ? 'Left' : 'Right' }).click();
+        await expect(page.locator('#count')).toHaveText('50');
+        await narrate('The counter shows all the clicks.');
+      });
+    `,
+  }, { 'demo': true, 'no-video-zoom': true });
+  expect(result.output).not.toContain('Could not make the video');
+  expect(result.exitCode).toBe(0);
+  expect(probe(test.info().outputPath('test-results', 'video.mp4')).duration).toBeGreaterThan(30);
+});
+
+test('a video that cannot be made fails the run, and the test keeps its result', async ({ runInlineTest }) => {
+  test.skip(process.platform === 'win32', 'the broken ffmpeg is a shell script');
+  // An ffmpeg that fails to encode.
+  const bin = test.info().outputPath('bin');
+  fs.mkdirSync(bin);
+  const ffmpeg = execFileSync('sh', ['-c', 'command -v ffmpeg'], { encoding: 'utf8' }).trim();
+  fs.writeFileSync(path.join(bin, 'ffmpeg'), `#!/bin/sh\ncase " $* " in *filter_complex*) echo "the encoder broke" >&2; exit 1;; esac\nexec "${ffmpeg}" "$@"\n`, { mode: 0o755 });
+  const result = await runInlineTest({
+    'playwright.config.js': voiceConfig(),
+    'a.spec.ts': `
+      import { test, expect } from '@playwright/test';
+      ${passing('only')}
+    `,
+  }, { video: true }, { PATH: bin + path.delimiter + process.env.PATH });
+  expect(result.passed).toBe(1);
+  expect(result.exitCode).toBe(1);
+  expect(result.output).toContain('Could not make the video: ffmpeg failed: the encoder broke');
+  const leftOver = fs.readdirSync(test.info().outputPath('test-results'), { recursive: true }).map(String);
+  expect(leftOver.filter(file => file.endsWith('.mp4'))).toEqual([]);
+});
+
 test('the voice, captions and camera can be turned off', async ({ runInlineTest }) => {
   const files = {
     'playwright.config.js': voiceConfig(),
