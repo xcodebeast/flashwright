@@ -30,7 +30,7 @@ npm run flint                # lint, types and docs, before you commit
 
 ## Releasing
 
-Maintainers publish the next version from a clean, pushed `main`, logged in to npm:
+Maintainers publish the next version from a clean, pushed `main`, logged in to npm (with `npm login`, or an `NPM_TOKEN` in the environment or in `.env`):
 
 ```bash
 npm run release -- --dry-run   # everything except the publish

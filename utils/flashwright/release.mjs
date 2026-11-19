@@ -14,9 +14,11 @@
 // --dry-run does everything up to the publish, which it runs with `npm publish --dry-run`.
 // Re-running after a failed publish continues: packages already on npm at that version are skipped,
 // and packages already staged at that version are approved without staging them again.
+// npm logs in with NPM_TOKEN, from the environment or from .env at the repository root, when it is set.
 
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import readline from 'node:readline/promises';
 
@@ -63,12 +65,28 @@ const watchBuilds = () => {
 };
 if (!flag('--skip-build') && watchBuilds().length)
   fail(`A watch build is running in this checkout and would mix its outputs into the packages. Stop it first: kill ${watchBuilds().join(' ')}`);
+// npm reads the token from the environment: the config file only names the variable, so the token is
+// not written anywhere. The rest of the user's npm config stays.
+const envFile = path.join(root, '.env');
+if (!process.env.NPM_TOKEN && fs.existsSync(envFile)) {
+  const token = /^\s*NPM_TOKEN\s*=\s*['"]?([^'"\s]+)/m.exec(fs.readFileSync(envFile, 'utf8'))?.[1];
+  if (token)
+    process.env.NPM_TOKEN = token;
+}
+if (process.env.NPM_TOKEN) {
+  const userConfig = process.env.NPM_CONFIG_USERCONFIG ?? path.join(os.homedir(), '.npmrc');
+  const kept = fs.existsSync(userConfig) ? fs.readFileSync(userConfig, 'utf8').split('\n').filter(line => line.trim() && !line.startsWith('//registry.npmjs.org/:_authToken')) : [];
+  const configDir = fs.mkdtempSync(path.join(os.tmpdir(), 'flashwright-release-'));
+  fs.writeFileSync(path.join(configDir, 'npmrc'), [...kept, '//registry.npmjs.org/:_authToken=${NPM_TOKEN}'].join('\n') + '\n');
+  process.env.NPM_CONFIG_USERCONFIG = path.join(configDir, 'npmrc');
+  process.on('exit', () => fs.rmSync(configDir, { recursive: true, force: true }));
+}
 let user;
 try {
   user = read('npm', ['whoami']);
 } catch {
   if (!dryRun)
-    fail('Not logged in to npm: run `npm login` first.');
+    fail('Not logged in to npm: put NPM_TOKEN in .env, or run `npm login`.');
 }
 if (!dryRun) {
   try {
