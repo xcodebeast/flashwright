@@ -4,12 +4,16 @@
 //   1. checks that main is clean and pushed, and that npm is logged in,
 //   2. picks the next version: <upstream version>-flashwright.<n + 1>, from what npm already has,
 //   3. builds from scratch, packs (pack.mjs) and runs bench/consumer-test.mjs on the tarballs,
-//   4. asks for confirmation, publishes flashwright-core, flashwright and flashwright-test in that
-//      order as `latest`, tags the commit v<version>, pushes the tag and creates its GitHub Release.
+//   4. asks for confirmation, then publishes flashwright-core, flashwright and flashwright-test in that
+//      order as `latest`: it stages each one on npm (`npm stage publish`, which npm requires of tokens
+//      that skip two-factor authentication) and approves it (`npm stage approve`), which prints a
+//      link to approve it in the browser,
+//   5. tags the commit v<version>, pushes the tag and creates its GitHub Release.
 //
 // Usage: npm run release -- [--dry-run] [--version <version>] [--skip-build] [--skip-check] [--yes] [--otp <code>]
 // --dry-run does everything up to the publish, which it runs with `npm publish --dry-run`.
-// Re-running after a failed publish continues: packages already on npm at that version are skipped.
+// Re-running after a failed publish continues: packages already on npm at that version are skipped,
+// and packages already staged at that version are approved without staging them again.
 
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -66,6 +70,16 @@ try {
   if (!dryRun)
     fail('Not logged in to npm: run `npm login` first.');
 }
+if (!dryRun) {
+  try {
+    read('npm', ['stage', '--help']);
+  } catch {
+    fail(`npm ${read('npm', ['--version'])} cannot stage packages: use the npm of the Node in .tools/, or update npm.`);
+  }
+  // npm prints the approval link, and waits for it, only in a terminal.
+  if (!process.stdin.isTTY || !process.stdout.isTTY)
+    fail('Run the release in a terminal: npm approves each package with a link it only shows there.');
+}
 
 const upstreamVersion = JSON.parse(fs.readFileSync(path.join(root, 'packages/playwright-core/package.json'), 'utf8')).version;
 const published = name => {
@@ -114,13 +128,45 @@ if (!dryRun && !flag('--yes')) {
     fail('Nothing was published.');
 }
 
-step(dryRun ? 'Publishing (dry run)' : 'Publishing');
-// Each package depends on the one before it at this exact version.
-for (const name of toPublish)
-  run('npm', ['publish', tarballs[name], '--tag', 'latest', '--access', 'public', ...(otp ? ['--otp', otp] : []), ...(dryRun ? ['--dry-run'] : [])]);
 if (dryRun) {
+  step('Publishing (dry run)');
+  for (const name of toPublish)
+    run('npm', ['publish', tarballs[name], '--tag', 'latest', '--access', 'public', '--dry-run']);
   console.log(`\nDry run done: ${version} would be published. Run without --dry-run to publish.`);
   process.exit(0);
+}
+
+const staged = name => JSON.parse(read('npm', ['stage', 'list', name, '--json'])).find(item => item.version === version);
+const ask = async question => {
+  const prompt = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await prompt.question(question);
+  prompt.close();
+  return answer;
+};
+// Each package depends on the one before it at this exact version, so each is published before the next is staged.
+for (const name of toPublish) {
+  step(`Publishing ${name}@${version}`);
+  if (!staged(name))
+    run('npm', ['stage', 'publish', tarballs[name], '--tag', 'latest', '--access', 'public']);
+  let item = staged(name);
+  if (!item)
+    fail(`${name}@${version} was staged, but npm does not list it.`);
+  while (item.status === 'validating') {
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    item = staged(name);
+  }
+  if (item.status !== 'staged')
+    fail(`npm did not accept ${name}@${version}: its staged version is ${item.status}. See npm stage view ${item.id}`);
+  // The link lasts a few minutes: when it expires, approving starts again with a new one.
+  for (let attempt = 1; ; attempt++) {
+    try {
+      run('npm', ['stage', 'approve', item.id, ...(otp ? ['--otp', otp] : [])]);
+      break;
+    } catch {
+      if (flag('--yes') ? attempt >= 5 : !/^(y(es)?)?$/i.test((await ask(`\n${name} was not approved. Try again with a new link? [Y/n] `)).trim()))
+        fail(`${name}@${version} is still staged: run the release again to approve it, or reject it with npm stage reject ${item.id}`);
+    }
+  }
 }
 
 step(`Tagging ${tag}`);
