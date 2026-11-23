@@ -41,6 +41,7 @@ import { startAutomaticVideoRecording } from '../videoRecorder';
 import { nullProgress } from '../progress';
 
 import type { Protocol } from './protocol';
+import type { HttpCredentials } from '@protocol/structs';
 import type { WKBrowserContext } from './wkBrowser';
 import type { RegisteredListener } from '@utils/eventsHelper';
 import type * as frames from '../frames';
@@ -759,8 +760,11 @@ export class WKPage implements PageDelegate {
   }
 
   async updateHttpCredentials() {
-    const credentials = (this._browserContext._options.httpCredentials || []).map(c => ({ username: c.username, password: c.password, origin: c.origin }));
-    await this._pageProxySession.send('Emulation.setAuthCredentials', { credentials, proxyCredentials: this._browserContext.proxyCredentials() });
+    // Flashwright: the WebKit of Playwright 1.64 has no `proxyCredentials`, so it still answers websites with them.
+    const proxyCredentials = this._browserContext.proxyCredentials();
+    const httpCredentials: HttpCredentials[] = proxyCredentials ? [proxyCredentials] : this._browserContext._options.httpCredentials || [];
+    const credentials = httpCredentials.map(c => ({ username: c.username, password: c.password, origin: c.origin }));
+    await this._pageProxySession.send('Emulation.setAuthCredentials', { credentials });
   }
 
   async updateFileChooserInterception() {
