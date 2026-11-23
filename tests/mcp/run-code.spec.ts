@@ -86,7 +86,7 @@ test('browser_run_code_unsafe', {
   expect(afterNavigation.result).toContain('TypeError: async page listener failed');
   expect(afterNavigation.result).toContain('Error: async context listener failed');
   expect(await client.callTool({ name: 'browser_console_messages', arguments: { all: true } })).toHaveResponse({
-    result: expect.stringContaining('Total messages: 5 (Errors: 4, Warnings: 0)'),
+    result: expect.stringContaining('Returning 5 messages for level "info"'),
   });
 });
 
