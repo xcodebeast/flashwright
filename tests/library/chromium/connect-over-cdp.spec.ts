@@ -832,7 +832,9 @@ test('should get title and URL of existing page', async ({ browserType, mode, se
   }
 });
 
-test('should skip default overrides with noDefaults', async ({ browserType, mode, server }, testInfo) => {
+test('should skip default overrides with noDefaults', {
+  annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/43715' },
+}, async ({ browserType, mode, server }, testInfo) => {
   test.info().annotations.push({ type: 'issue', description: 'https://github.com/microsoft/playwright/issues/40158' });
   const port = 9339 + testInfo.workerIndex;
   const browserServer = await browserType.launch({
