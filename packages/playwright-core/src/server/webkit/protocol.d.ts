@@ -407,7 +407,7 @@ export namespace Protocol {
     /**
      * Pseudo-style identifier (see <code>enum PseudoId</code> in <code>RenderStyleConstants.h</code>).
      */
-    export type PseudoId = "first-line"|"first-letter"|"grammar-error"|"highlight"|"marker"|"before"|"after"|"selection"|"backdrop"|"spelling-error"|"target-text"|"checkmark"|"picker-icon"|"slider-fill"|"slider-thumb"|"slider-track"|"view-transition"|"view-transition-group"|"view-transition-image-pair"|"view-transition-old"|"view-transition-new"|"-webkit-scrollbar"|"-webkit-resizer"|"-webkit-scrollbar-thumb"|"-webkit-scrollbar-button"|"-webkit-scrollbar-track"|"-webkit-scrollbar-track-piece"|"-webkit-scrollbar-corner";
+    export type PseudoId = "first-line"|"first-letter"|"grammar-error"|"highlight"|"marker"|"before"|"after"|"selection"|"backdrop"|"spelling-error"|"target-text"|"checkmark"|"picker-icon"|"slider-fill"|"slider-thumb"|"slider-track"|"placeholder"|"file-selector-button"|"view-transition"|"view-transition-group"|"view-transition-image-pair"|"view-transition-old"|"view-transition-new"|"-webkit-scrollbar"|"-webkit-resizer"|"-webkit-scrollbar-thumb"|"-webkit-scrollbar-button"|"-webkit-scrollbar-track"|"-webkit-scrollbar-track-piece"|"-webkit-scrollbar-corner";
     /**
      * Pseudo-style identifier (see <code>enum PseudoId</code> in <code>RenderStyleConstants.h</code>).
      */
@@ -421,6 +421,10 @@ export namespace Protocol {
        * Matches of CSS rules applicable to the pseudo style.
        */
       matches: RuleMatch[];
+      /**
+       * The rules of all <code>@keyframes</code> referenced by the computed <code>animation-name</code> list.
+       */
+      keyframes?: CSSRule[];
     }
     /**
      * CSS rule collection for a single pseudo style.
@@ -732,9 +736,9 @@ export namespace Protocol {
      */
     export interface Grouping {
       /**
-       * Source of the media query: "media-rule" if specified by a @media rule, "media-import-rule" if specified by an @import rule, "media-link-node" if specified by a "media" attribute in a linked style sheet's LINK tag, "media-style-node" if specified by a "media" attribute in an inline style sheet's STYLE tag, "supports-rule" if specified by an @supports rule, "layer-rule" if specified by an @layer rule, "container-rule" if specified by an @container rule, "scope-rule" if specified by a @scope rule, "starting-style-rule" if specified by a @starting-style rule, "style-rule" if specified by a CSSStyleRule containing the rule inside this grouping.
+       * Source of the media query: "media-rule" if specified by a @media rule, "media-import-rule" if specified by an @import rule, "media-link-node" if specified by a "media" attribute in a linked style sheet's LINK tag, "media-style-node" if specified by a "media" attribute in an inline style sheet's STYLE tag, "supports-rule" if specified by an @supports rule, "layer-rule" if specified by an @layer rule, "container-rule" if specified by an @container rule, "scope-rule" if specified by a @scope rule, "starting-style-rule" if specified by a @starting-style rule, "style-rule" if specified by a CSSStyleRule containing the rule inside this grouping, "keyframes-rule" if specified by a CSSKeyframesRule containing the rules inside this grouping.
        */
-      type: "media-rule"|"media-import-rule"|"media-link-node"|"media-style-node"|"supports-rule"|"layer-rule"|"layer-import-rule"|"container-rule"|"scope-rule"|"starting-style-rule"|"style-rule";
+      type: "media-rule"|"media-import-rule"|"media-link-node"|"media-style-node"|"supports-rule"|"layer-rule"|"layer-import-rule"|"container-rule"|"scope-rule"|"starting-style-rule"|"style-rule"|"keyframes-rule";
       /**
        * The CSS rule identifier for the `@rule` (absent for non-editable grouping rules) or the nesting parent style rule's selector. In CSSOM terms, this is the parent rule of either the previous Grouping for a CSSRule, or of a CSSRule itself.
        */
@@ -753,6 +757,19 @@ export namespace Protocol {
       range?: SourceRange;
     }
     /**
+     * An inclusive range of Unicode scalar values.
+     */
+    export interface CharacterRange {
+      /**
+       * The first Unicode scalar value in the range.
+       */
+      start: number;
+      /**
+       * The last Unicode scalar value in the range.
+       */
+      end: number;
+    }
+    /**
      * A representation of WebCore::Font. Conceptually this is backed by either a font file on disk or from the network.
      */
     export interface Font {
@@ -761,17 +778,25 @@ export namespace Protocol {
        */
       displayName: string;
       /**
+       * The absolute final URL of the resource backing the font.
+       */
+      url?: string;
+      /**
        * The variation axes defined by the font.
        */
-      variationAxes: FontVariationAxis[];
+      variationAxes?: FontVariationAxis[];
       /**
        * Whether the font has synthesized its boldness or not.
        */
       synthesizedBold?: boolean;
       /**
-       * Whether the font has synthesized its obliqueness or not
+       * Whether the font has synthesized its obliqueness or not.
        */
       synthesizedOblique?: boolean;
+      /**
+       * The nonempty ranges of Unicode scalar values rendered with this font.
+       */
+      characterRanges?: CharacterRange[];
     }
     /**
      * A single variation axis associated with a Font.
@@ -807,6 +832,10 @@ export namespace Protocol {
      */
     export type LayoutContextTypeChangedMode = "observed"|"all";
     
+    /**
+     * Fired when font data previously returned by this target may have changed.
+     */
+    export type fontDataChangedPayload = void;
     /**
      * Fires whenever a MediaQuery result changes (for example, after a browser window has been resized.) The current implementation considers only viewport-dependent media features.
      */
@@ -876,6 +905,10 @@ export namespace Protocol {
        * Whether to include inherited styles (default: true).
        */
       includeInherited?: boolean;
+      /**
+       * Whether to include <code>@keyframes</code> rules (default: true).
+       */
+      includeKeyframes?: boolean;
     }
     export type getMatchedStylesForNodeReturnValue = {
       /**
@@ -890,6 +923,10 @@ export namespace Protocol {
        * A chain of inherited styles (from the immediate node parent up to the DOM tree root).
        */
       inherited?: InheritedStyleEntry[];
+      /**
+       * The rules of all <code>@keyframes</code> referenced by the computed <code>animation-name</code> list.
+       */
+      keyframes?: CSSRule[];
     }
     /**
      * Returns the styles defined inline (explicitly in the "style" attribute and implicitly, using DOM attributes) for a DOM node identified by <code>nodeId</code>.
@@ -920,7 +957,7 @@ export namespace Protocol {
       computedStyle: CSSComputedStyleProperty[];
     }
     /**
-     * Returns the primary font of the computed font cascade for a DOM node identified by <code>nodeId</code>.
+     * Returns the primary font of the computed font cascade for a DOM node identified by <code>nodeId</code> and the fonts used to render text in its subtree.
      */
     export type getFontDataForNodeParameters = {
       nodeId: DOM.NodeId;
@@ -930,6 +967,14 @@ export namespace Protocol {
        * Computed primary font for the specified DOM node.
        */
       primaryFont: Font;
+      /**
+       * Fonts that rendered at least one character in the specified DOM node's subtree.
+       */
+      renderedFonts?: Font[];
+      /**
+       * Ranges of Unicode scalar values for which no font supplied a glyph.
+       */
+      missingCharacterRanges?: CharacterRange[];
     }
     /**
      * Returns metainfo entries for all known stylesheets.
@@ -1221,6 +1266,10 @@ export namespace Protocol {
        */
       canvasId: CanvasId;
     }
+    export type canvasNameChangedPayload = {
+      canvasId: CanvasId;
+      name: string;
+    }
     export type canvasSizeChangedPayload = {
       /**
        * Identifier of canvas that changed.
@@ -1288,6 +1337,10 @@ export namespace Protocol {
     }
     export type programDeletedPayload = {
       programId: ProgramId;
+    }
+    export type programNameChangedPayload = {
+      programId: ProgramId;
+      name: string;
     }
     
     /**
@@ -1713,6 +1766,10 @@ export namespace Protocol {
        * Identifier of the containing frame.
        */
       frameId?: Network.FrameId;
+      /**
+       * Identifier of the frame hosted by a frame owner element, even when that frame is in another process.
+       */
+      contentFrameId?: Network.FrameId;
       /**
        * Child count for <code>Container</code> nodes.
        */
@@ -2892,6 +2949,21 @@ export namespace Protocol {
       nodeId: NodeId;
     }
     /**
+     * Requests that the frame owner element (such as <code>iframe</code>) of a child frame is sent to the caller. The child frame may be hosted by another process. All nodes that form the path from the owner element to the root are also sent to the client as a series of <code>setChildNodes</code> notifications.
+     */
+    export type requestFrameOwnerParameters = {
+      /**
+       * Identifier of a frame whose owner element is in the document tree of this target.
+       */
+      frameId: Network.FrameId;
+    }
+    export type requestFrameOwnerReturnValue = {
+      /**
+       * Node id for the frame owner element.
+       */
+      nodeId: NodeId;
+    }
+    /**
      * Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspect' command upon element selection.
      */
     export type setInspectModeEnabledParameters = {
@@ -2919,7 +2991,7 @@ export namespace Protocol {
     export type setInspectModeEnabledReturnValue = {
     }
     /**
-     * Highlights given rectangle. Coordinates are absolute with respect to the main frame viewport.
+     * Highlights given rectangle. Coordinates are absolute with respect to the target's viewport: the main frame viewport for a page target, or the frame's own viewport for a frame target.
      */
     export type highlightRectParameters = {
       /**
@@ -2954,7 +3026,7 @@ export namespace Protocol {
     export type highlightRectReturnValue = {
     }
     /**
-     * Highlights given quad. Coordinates are absolute with respect to the main frame viewport.
+     * Highlights given quad. Coordinates are absolute with respect to the target's viewport: the main frame viewport for a page target, or the frame's own viewport for a frame target.
      */
     export type highlightQuadParameters = {
       /**
@@ -4409,6 +4481,13 @@ might return multiple quads for inline nodes.
        */
       origin?: string;
     }
+    /**
+     * Credentials for proxy authentication.
+     */
+    export interface ProxyCredentials {
+      username: string;
+      password: string;
+    }
     
     
     /**
@@ -4431,10 +4510,14 @@ might return multiple quads for inline nodes.
     export type setJavaScriptEnabledReturnValue = {
     }
     /**
-     * Credentials to use during HTTP authentication. The first credentials with matching origin are used. When missing, automation handling of authentication challenges is disabled.
+     * Credentials to use during HTTP authentication. The first credentials with matching origin are used.
      */
     export type setAuthCredentialsParameters = {
-      credentials?: AuthCredentials[];
+      credentials: AuthCredentials[];
+      /**
+       * Proxy challenges are answered only with these credentials.
+       */
+      proxyCredentials?: ProxyCredentials;
     }
     export type setAuthCredentialsReturnValue = {
     }
@@ -5006,14 +5089,6 @@ Left=1, Right=2, Middle=4, Back=8, Forward=16, None=0.
        * Number of times the mouse button was clicked (default: 0).
        */
       clickCount?: number;
-      /**
-       * X delta in CSS pixels for mouse wheel event (default: 0).
-       */
-      deltaX?: number;
-      /**
-       * Y delta in CSS pixels for mouse wheel event (default: 0).
-       */
-      deltaY?: number;
     }
     export type dispatchMouseEventReturnValue = {
     }
@@ -9201,6 +9276,7 @@ the top of the viewport and Y increases as it proceeds towards the bottom of the
     "CPUProfiler.trackingStart": CPUProfiler.trackingStartPayload;
     "CPUProfiler.trackingUpdate": CPUProfiler.trackingUpdatePayload;
     "CPUProfiler.trackingComplete": CPUProfiler.trackingCompletePayload;
+    "CSS.fontDataChanged": CSS.fontDataChangedPayload;
     "CSS.mediaQueryResultChanged": CSS.mediaQueryResultChangedPayload;
     "CSS.styleSheetChanged": CSS.styleSheetChangedPayload;
     "CSS.styleSheetAdded": CSS.styleSheetAddedPayload;
@@ -9208,6 +9284,7 @@ the top of the viewport and Y increases as it proceeds towards the bottom of the
     "CSS.nodeLayoutFlagsChanged": CSS.nodeLayoutFlagsChangedPayload;
     "Canvas.canvasAdded": Canvas.canvasAddedPayload;
     "Canvas.canvasRemoved": Canvas.canvasRemovedPayload;
+    "Canvas.canvasNameChanged": Canvas.canvasNameChangedPayload;
     "Canvas.canvasSizeChanged": Canvas.canvasSizeChangedPayload;
     "Canvas.canvasMemoryChanged": Canvas.canvasMemoryChangedPayload;
     "Canvas.extensionEnabled": Canvas.extensionEnabledPayload;
@@ -9219,6 +9296,7 @@ the top of the viewport and Y increases as it proceeds towards the bottom of the
     "Canvas.recordingFinished": Canvas.recordingFinishedPayload;
     "Canvas.programCreated": Canvas.programCreatedPayload;
     "Canvas.programDeleted": Canvas.programDeletedPayload;
+    "Canvas.programNameChanged": Canvas.programNameChangedPayload;
     "Console.messageAdded": Console.messageAddedPayload;
     "Console.messageRepeatCountUpdated": Console.messageRepeatCountUpdatedPayload;
     "Console.messagesCleared": Console.messagesClearedPayload;
@@ -9331,6 +9409,7 @@ the top of the viewport and Y increases as it proceeds towards the bottom of the
     ["CPUProfiler.trackingStart"]: [CPUProfiler.trackingStartPayload];
     ["CPUProfiler.trackingUpdate"]: [CPUProfiler.trackingUpdatePayload];
     ["CPUProfiler.trackingComplete"]: [CPUProfiler.trackingCompletePayload];
+    ["CSS.fontDataChanged"]: [CSS.fontDataChangedPayload];
     ["CSS.mediaQueryResultChanged"]: [CSS.mediaQueryResultChangedPayload];
     ["CSS.styleSheetChanged"]: [CSS.styleSheetChangedPayload];
     ["CSS.styleSheetAdded"]: [CSS.styleSheetAddedPayload];
@@ -9338,6 +9417,7 @@ the top of the viewport and Y increases as it proceeds towards the bottom of the
     ["CSS.nodeLayoutFlagsChanged"]: [CSS.nodeLayoutFlagsChangedPayload];
     ["Canvas.canvasAdded"]: [Canvas.canvasAddedPayload];
     ["Canvas.canvasRemoved"]: [Canvas.canvasRemovedPayload];
+    ["Canvas.canvasNameChanged"]: [Canvas.canvasNameChangedPayload];
     ["Canvas.canvasSizeChanged"]: [Canvas.canvasSizeChangedPayload];
     ["Canvas.canvasMemoryChanged"]: [Canvas.canvasMemoryChangedPayload];
     ["Canvas.extensionEnabled"]: [Canvas.extensionEnabledPayload];
@@ -9349,6 +9429,7 @@ the top of the viewport and Y increases as it proceeds towards the bottom of the
     ["Canvas.recordingFinished"]: [Canvas.recordingFinishedPayload];
     ["Canvas.programCreated"]: [Canvas.programCreatedPayload];
     ["Canvas.programDeleted"]: [Canvas.programDeletedPayload];
+    ["Canvas.programNameChanged"]: [Canvas.programNameChangedPayload];
     ["Console.messageAdded"]: [Console.messageAddedPayload];
     ["Console.messageRepeatCountUpdated"]: [Console.messageRepeatCountUpdatedPayload];
     ["Console.messagesCleared"]: [Console.messagesClearedPayload];
@@ -9527,6 +9608,7 @@ the top of the viewport and Y increases as it proceeds towards the bottom of the
     "DOM.getSearchResults": DOM.getSearchResultsParameters;
     "DOM.discardSearchResults": DOM.discardSearchResultsParameters;
     "DOM.requestNode": DOM.requestNodeParameters;
+    "DOM.requestFrameOwner": DOM.requestFrameOwnerParameters;
     "DOM.setInspectModeEnabled": DOM.setInspectModeEnabledParameters;
     "DOM.highlightRect": DOM.highlightRectParameters;
     "DOM.highlightQuad": DOM.highlightQuadParameters;
@@ -9837,6 +9919,7 @@ the top of the viewport and Y increases as it proceeds towards the bottom of the
     "DOM.getSearchResults": DOM.getSearchResultsReturnValue;
     "DOM.discardSearchResults": DOM.discardSearchResultsReturnValue;
     "DOM.requestNode": DOM.requestNodeReturnValue;
+    "DOM.requestFrameOwner": DOM.requestFrameOwnerReturnValue;
     "DOM.setInspectModeEnabled": DOM.setInspectModeEnabledReturnValue;
     "DOM.highlightRect": DOM.highlightRectReturnValue;
     "DOM.highlightQuad": DOM.highlightQuadReturnValue;

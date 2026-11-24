@@ -1011,7 +1011,7 @@ instead of "limited-quirks".
       error: ConnectionAllowlistError;
       request: AffectedRequest;
     }
-    export type GenericIssueErrorType = "FormLabelForNameError"|"FormDuplicateIdForInputError"|"FormInputWithNoLabelError"|"FormAutocompleteAttributeEmptyError"|"FormEmptyIdAndNameAttributesForInputError"|"FormAriaLabelledByToNonExistingIdError"|"FormInputAssignedAutocompleteValueToIdOrNameAttributeError"|"FormLabelHasNeitherForNorNestedInputError"|"FormLabelForMatchesNonExistingIdError"|"FormInputHasWrongButWellIntendedAutocompleteValueError"|"ResponseWasBlockedByORB"|"NavigationEntryMarkedSkippable"|"BackUINavigationWouldSkipAd"|"AutofillAndManualTextPolicyControlledFeaturesInfo"|"AutofillPolicyControlledFeatureInfo"|"ManualTextPolicyControlledFeatureInfo"|"FormModelContextParameterMissingTitleAndDescription"|"FormModelContextMissingToolName"|"FormModelContextMissingToolDescription"|"FormModelContextRequiredParameterMissingName"|"FormModelContextParameterMissingName";
+    export type GenericIssueErrorType = "FormLabelForNameError"|"FormDuplicateIdForInputError"|"FormInputWithNoLabelError"|"FormAutocompleteAttributeEmptyError"|"FormEmptyIdAndNameAttributesForInputError"|"FormAriaLabelledByToNonExistingIdError"|"FormInputAssignedAutocompleteValueToIdOrNameAttributeError"|"FormLabelHasNeitherForNorNestedInputError"|"FormLabelForMatchesNonExistingIdError"|"FormInputHasWrongButWellIntendedAutocompleteValueError"|"ResponseWasBlockedByORB"|"NavigationEntryMarkedSkippable"|"BackUINavigationWouldSkipAd"|"AutofillAndManualTextPolicyControlledFeaturesInfo"|"AutofillPolicyControlledFeatureInfo"|"ManualTextPolicyControlledFeatureInfo"|"FormModelContextParameterMissingTitleAndDescription"|"FormModelContextMissingToolName"|"FormModelContextMissingToolDescription"|"FormModelContextRequiredParameterMissingName"|"FormModelContextParameterMissingName"|"GeolocationPromptWithoutUserGesture";
     /**
      * Depending on the concrete errorType, different properties are set.
      */
@@ -1511,6 +1511,7 @@ Consists of a 2D array where each child represents an address/profile line.
     /**
      * Trigger autofill on a form identified by the fieldId.
 If the field and related form cannot be autofilled, returns an error.
+Returns once the values have been applied to the form fields.
      */
     export type triggerParameters = {
       /**
@@ -1979,7 +1980,7 @@ by |characteristicId|.
        */
       windowState?: WindowState;
     }
-    export type PermissionType = "ar"|"audioCapture"|"automaticFullscreen"|"backgroundFetch"|"backgroundSync"|"cameraPanTiltZoom"|"capturedSurfaceControl"|"clipboardReadWrite"|"clipboardSanitizedWrite"|"displayCapture"|"durableStorage"|"geolocation"|"handTracking"|"idleDetection"|"keyboardLock"|"localFonts"|"localNetwork"|"localNetworkAccess"|"loopbackNetwork"|"midi"|"midiSysex"|"nfc"|"notifications"|"paymentHandler"|"periodicBackgroundSync"|"pointerLock"|"protectedMediaIdentifier"|"sensors"|"smartCard"|"speakerSelection"|"storageAccess"|"topLevelStorageAccess"|"videoCapture"|"vr"|"wakeLockScreen"|"wakeLockSystem"|"webAppInstallation"|"webPrinting"|"windowManagement";
+    export type PermissionType = "ar"|"audioCapture"|"automaticFullscreen"|"backgroundFetch"|"backgroundSync"|"cameraPanTiltZoom"|"capturedSurfaceControl"|"clipboardReadWrite"|"clipboardSanitizedWrite"|"displayCapture"|"durableStorage"|"geolocation"|"handTracking"|"idleDetection"|"keyboardLock"|"localFonts"|"localNetwork"|"localNetworkAccess"|"loopbackNetwork"|"midi"|"midiSysex"|"nfc"|"notifications"|"paymentHandler"|"periodicBackgroundSync"|"pointerLock"|"protectedMediaIdentifier"|"sensors"|"smartCard"|"speakerSelection"|"storageAccess"|"videoCapture"|"vr"|"wakeLockScreen"|"wakeLockSystem"|"webAppInstallation"|"webPrinting"|"windowManagement";
     export type PermissionSetting = "granted"|"denied"|"prompt";
     /**
      * Definition of PermissionDescriptor defined in the Permissions API:
@@ -2270,9 +2271,10 @@ frame and is removed when the DevTools session that created it disconnects.
      */
     export type addMockCameraParameters = {
       /**
-       * Required non-empty identifier for the mock camera. This is mapped to an
-internal virtual-device identifier and is not the MediaDeviceInfo.deviceId
-exposed to the page.
+       * Required non-empty identifier for the mock camera within the current
+DevTools session. Different sessions can use the same identifier
+without replacing each other's cameras. This is not the
+MediaDeviceInfo.deviceId exposed to the page.
        */
       deviceId: string;
     }
@@ -3625,6 +3627,22 @@ the browser.
       forced: boolean;
     }
     export type forceStartingStyleReturnValue = {
+    }
+    /**
+     * Forces a position-try option for the given node.
+     */
+    export type forcePositionTryOptionParameters = {
+      /**
+       * The element id for which to force the position-try option.
+       */
+      nodeId: DOM.NodeId;
+      /**
+       * The 1-based index of the position-try fallback option, 0 for base position (no fallback),
+or omitted to clear the forced state.
+       */
+      index?: number;
+    }
+    export type forcePositionTryOptionReturnValue = {
     }
     export type getBackgroundColorsParameters = {
       /**
@@ -11931,7 +11949,7 @@ details; this boolean is true if that value is populated.
      * A fetch result for a device bound session creation or refresh.
 LINT.IfChange(DeviceBoundSessionFetchResult)
      */
-    export type DeviceBoundSessionFetchResult = "Success"|"SigningKeyGenerationError"|"AttestationKeyGenerationError"|"SigningError"|"TransientSigningError"|"ServerRequestedTermination"|"InvalidSessionId"|"InvalidChallenge"|"TooManyChallenges"|"InvalidFetcherUrl"|"InvalidRefreshUrl"|"TransientHttpError"|"ScopeOriginSameSiteMismatch"|"RefreshUrlSameSiteMismatch"|"MismatchedSessionId"|"MissingScope"|"NoCredentials"|"SubdomainRegistrationWellKnownUnavailable"|"SubdomainRegistrationUnauthorized"|"SubdomainRegistrationWellKnownMalformed"|"SessionProviderWellKnownUnavailable"|"RelyingPartyWellKnownUnavailable"|"FederatedKeyThumbprintMismatch"|"InvalidFederatedSessionUrl"|"InvalidFederatedKey"|"TooManyRelyingOriginLabels"|"BoundCookieSetForbidden"|"NetError"|"ProxyError"|"EmptySessionConfig"|"InvalidCredentialsConfig"|"InvalidCredentialsType"|"InvalidCredentialsEmptyName"|"InvalidCredentialsCookie"|"PersistentHttpError"|"RegistrationAttemptedChallenge"|"InvalidScopeOrigin"|"ScopeOriginContainsPath"|"RefreshInitiatorNotString"|"RefreshInitiatorInvalidHostPattern"|"InvalidScopeSpecification"|"MissingScopeSpecificationType"|"EmptyScopeSpecificationDomain"|"EmptyScopeSpecificationPath"|"InvalidScopeSpecificationType"|"InvalidScopeIncludeSite"|"MissingScopeIncludeSite"|"FederatedNotAuthorizedByProvider"|"FederatedNotAuthorizedByRelyingParty"|"SessionProviderWellKnownMalformed"|"SessionProviderWellKnownHasProviderOrigin"|"RelyingPartyWellKnownMalformed"|"RelyingPartyWellKnownHasRelyingOrigins"|"InvalidFederatedSessionProviderSessionMissing"|"InvalidFederatedSessionWrongProviderOrigin"|"InvalidCredentialsCookieCreationTime"|"InvalidCredentialsCookieName"|"InvalidCredentialsCookieParsing"|"InvalidCredentialsCookieUnpermittedAttribute"|"InvalidCredentialsCookieInvalidDomain"|"InvalidCredentialsCookiePrefix"|"InvalidScopeRulePath"|"InvalidScopeRuleHostPattern"|"ScopeRuleOriginScopedHostPatternMismatch"|"ScopeRuleSiteScopedHostPatternMismatch"|"SigningQuotaExceeded"|"InvalidConfigJson"|"InvalidFederatedSessionProviderFailedToRestoreKey"|"FailedToUnwrapKey"|"SessionDeletedDuringRefresh"|"CrossOriginRegistrationSiteNotIncluded"|"InvalidPreProvisionedKeyInitiatorMissing"|"PreProvisionedKeyAccessNotGranted"|"PreProvisionedKeyNotFound"|"AttestationCertificationError"|"AttestationSigningError";
+    export type DeviceBoundSessionFetchResult = "Success"|"SigningKeyGenerationError"|"AttestationKeyGenerationError"|"SigningError"|"TransientSigningError"|"ServerRequestedTermination"|"InvalidSessionId"|"InvalidChallenge"|"TooManyChallenges"|"InvalidFetcherUrl"|"InvalidRefreshUrl"|"TransientHttpError"|"ScopeOriginSameSiteMismatch"|"RefreshUrlSameSiteMismatch"|"MismatchedSessionId"|"MissingScope"|"NoCredentials"|"SubdomainRegistrationWellKnownUnavailable"|"SubdomainRegistrationUnauthorized"|"SubdomainRegistrationWellKnownMalformed"|"SessionProviderWellKnownUnavailable"|"RelyingPartyWellKnownUnavailable"|"FederatedKeyThumbprintMismatch"|"InvalidFederatedSessionUrl"|"InvalidFederatedKey"|"TooManyRelyingOriginLabels"|"BoundCookieSetForbidden"|"NetError"|"ProxyError"|"EmptySessionConfig"|"InvalidCredentialsConfig"|"InvalidCredentialsType"|"InvalidCredentialsEmptyName"|"InvalidCredentialsCookie"|"PersistentHttpError"|"RegistrationAttemptedChallenge"|"InvalidScopeOrigin"|"ScopeOriginContainsPath"|"RefreshInitiatorNotString"|"RefreshInitiatorInvalidHostPattern"|"InvalidScopeSpecification"|"MissingScopeSpecificationType"|"EmptyScopeSpecificationDomain"|"EmptyScopeSpecificationPath"|"InvalidScopeSpecificationType"|"InvalidScopeIncludeSite"|"MissingScopeIncludeSite"|"FederatedNotAuthorizedByProvider"|"FederatedNotAuthorizedByRelyingParty"|"SessionProviderWellKnownMalformed"|"SessionProviderWellKnownHasProviderOrigin"|"RelyingPartyWellKnownMalformed"|"RelyingPartyWellKnownHasRelyingOrigins"|"InvalidFederatedSessionProviderSessionMissing"|"InvalidFederatedSessionWrongProviderOrigin"|"InvalidCredentialsCookieCreationTime"|"InvalidCredentialsCookieName"|"InvalidCredentialsCookieParsing"|"InvalidCredentialsCookieUnpermittedAttribute"|"InvalidCredentialsCookieInvalidDomain"|"InvalidCredentialsCookiePrefix"|"InvalidScopeRulePath"|"InvalidScopeRuleHostPattern"|"ScopeRuleOriginScopedHostPatternMismatch"|"ScopeRuleSiteScopedHostPatternMismatch"|"SigningQuotaExceeded"|"InvalidConfigJson"|"InvalidFederatedSessionProviderFailedToRestoreKey"|"FailedToUnwrapKey"|"SessionDeletedDuringRefresh"|"CrossOriginRegistrationSiteNotIncluded"|"InvalidPreProvisionedKeyInitiatorMissing"|"PreProvisionedKeyAccessNotGranted"|"PreProvisionedKeyNotFound"|"AttestationCertificationError"|"AttestationSigningError"|"FederatedRegistrationRedirected";
     /**
      * Details about a failed device bound session network request.
      */
@@ -11982,7 +12000,7 @@ one.
        * The result of a refresh.
 LINT.IfChange(DeviceBoundSessionRefreshResult)
        */
-      refreshResult: "Refreshed"|"InitializedService"|"Unreachable"|"ServerError"|"FatalError"|"SigningQuotaExceeded"|"RefreshedAsWaiter"|"TransientSigningError"|"InScopeRefreshNotYetNeeded";
+      refreshResult: "Refreshed"|"InitializedService"|"Unreachable"|"ServerError"|"FatalError"|"SigningQuotaExceeded"|"RefreshedAsWaiter"|"TransientSigningError"|"InScopeRefreshNotYetNeeded"|"Canceled";
       /**
        * LINT.ThenChange(//net/device_bound_sessions/refresh_result.h:DeviceBoundSessionRefreshResult,//content/browser/devtools/protocol/network_handler.cc:DeviceBoundSessionRefreshResult)
 If there was a fetch attempt, the result of that.
@@ -12153,6 +12171,11 @@ CORB and streaming.
        * Total number of bytes received for this request.
        */
       encodedDataLength: number;
+      /**
+       * Size of the response body before removing content encodings.
+Includes cached bodies, but excludes headers and transfer framing.
+       */
+      encodedBodyLength?: number;
     }
     /**
      * Fired if request ended up loading from cache.
@@ -12516,11 +12539,27 @@ or were emitted for this request.
     }
     export type directUDPSocketJoinedMulticastGroupPayload = {
       identifier: RequestId;
+      /**
+       * Multicast group address.
+       */
       IPAddress: string;
+      /**
+       * Source address of a source-specific multicast (SSM) membership. Absent
+for any-source multicast (ASM) memberships.
+       */
+      sourceAddress?: string;
     }
     export type directUDPSocketLeftMulticastGroupPayload = {
       identifier: RequestId;
+      /**
+       * Multicast group address.
+       */
       IPAddress: string;
+      /**
+       * Source address of a source-specific multicast (SSM) membership. Absent
+for any-source multicast (ASM) memberships.
+       */
+      sourceAddress?: string;
     }
     /**
      * Fired upon direct_socket.UDPSocket creation.
@@ -14569,7 +14608,7 @@ supported yet.
 in services/network/public/cpp/permissions_policy/permissions_policy_features.json5.
 LINT.IfChange(PermissionsPolicyFeature)
      */
-    export type PermissionsPolicyFeature = "accelerometer"|"all-screens-capture"|"ambient-light-sensor"|"aria-notify"|"autofill"|"autoplay"|"bluetooth"|"browsing-topics"|"camera"|"captured-surface-control"|"ch-dpr"|"ch-device-memory"|"ch-downlink"|"ch-ect"|"ch-prefers-color-scheme"|"ch-prefers-reduced-motion"|"ch-prefers-reduced-transparency"|"ch-rtt"|"ch-save-data"|"ch-ua"|"ch-ua-arch"|"ch-ua-bitness"|"ch-ua-high-entropy-values"|"ch-ua-platform"|"ch-ua-model"|"ch-ua-mobile"|"ch-ua-form-factors"|"ch-ua-full-version"|"ch-ua-full-version-list"|"ch-ua-platform-version"|"ch-ua-wow64"|"ch-viewport-height"|"ch-viewport-width"|"ch-width"|"clipboard-read"|"clipboard-write"|"compute-pressure"|"controlled-frame"|"cross-origin-isolated"|"deferred-fetch"|"deferred-fetch-minimal"|"device-attributes"|"digital-credentials-create"|"digital-credentials-get"|"direct-sockets"|"direct-sockets-multicast"|"display-capture"|"document-domain"|"encrypted-media"|"execution-while-out-of-viewport"|"execution-while-not-rendered"|"focus-without-user-activation"|"fullscreen"|"frobulate"|"gamepad"|"geolocation"|"gyroscope"|"haptics"|"hid"|"identity-credentials-get"|"idle-detection"|"interest-cohort"|"keyboard-map"|"language-detector"|"language-model"|"local-fonts"|"local-network"|"local-network-access"|"loopback-network"|"magnetometer"|"manual-text"|"media-playback-while-not-visible"|"microphone"|"midi"|"on-device-speech-recognition"|"otp-credentials"|"payment"|"picture-in-picture"|"private-state-token-issuance"|"private-state-token-redemption"|"publickey-credentials-create"|"publickey-credentials-get"|"publickey-credentials-remote-client-data-json"|"rewriter"|"screen-wake-lock"|"serial"|"shared-storage"|"shared-storage-select-url"|"smart-card"|"speaker-selection"|"storage-access"|"sub-apps"|"summarizer"|"sync-xhr"|"tools"|"translator"|"unload"|"usb"|"usb-unrestricted"|"vertical-scroll"|"web-app-installation"|"webnn"|"web-printing"|"web-share"|"window-management"|"writer"|"xr-spatial-tracking";
+    export type PermissionsPolicyFeature = "accelerometer"|"all-screens-capture"|"ambient-light-sensor"|"aria-notify"|"autofill"|"autoplay"|"bluetooth"|"camera"|"captured-surface-control"|"ch-dpr"|"ch-device-memory"|"ch-downlink"|"ch-ect"|"ch-prefers-color-scheme"|"ch-prefers-reduced-motion"|"ch-prefers-reduced-transparency"|"ch-rtt"|"ch-save-data"|"ch-ua"|"ch-ua-arch"|"ch-ua-bitness"|"ch-ua-high-entropy-values"|"ch-ua-platform"|"ch-ua-model"|"ch-ua-mobile"|"ch-ua-form-factors"|"ch-ua-full-version"|"ch-ua-full-version-list"|"ch-ua-platform-version"|"ch-ua-wow64"|"ch-viewport-height"|"ch-viewport-width"|"ch-width"|"clipboard-read"|"clipboard-write"|"compute-pressure"|"controlled-frame"|"cross-origin-isolated"|"deferred-fetch"|"deferred-fetch-minimal"|"device-attributes"|"digital-credentials-create"|"digital-credentials-get"|"direct-sockets"|"direct-sockets-multicast"|"display-capture"|"document-domain"|"encrypted-media"|"execution-while-out-of-viewport"|"execution-while-not-rendered"|"focus-without-user-activation"|"fullscreen"|"frobulate"|"gamepad"|"geolocation"|"gyroscope"|"haptics"|"hid"|"identity-credentials-get"|"idle-detection"|"keyboard-map"|"language-detector"|"language-model"|"local-fonts"|"local-network"|"local-network-access"|"loopback-network"|"magnetometer"|"manual-text"|"media-playback-while-not-visible"|"microphone"|"midi"|"on-device-speech-recognition"|"otp-credentials"|"payment"|"picture-in-picture"|"private-state-token-issuance"|"private-state-token-redemption"|"publickey-credentials-create"|"publickey-credentials-get"|"publickey-credentials-remote-client-data-json"|"rewriter"|"screen-wake-lock"|"semantic-embedder"|"serial"|"smart-card"|"speaker-selection"|"storage-access"|"sub-apps"|"summarizer"|"sync-xhr"|"tools"|"translator"|"unbounded-element"|"unload"|"usb"|"usb-unrestricted"|"vertical-scroll"|"web-app-installation"|"webnn"|"web-printing"|"web-share"|"window-management"|"writer"|"xr-spatial-tracking";
     /**
      * Reason for a permissions policy feature to be disabled.
      */
@@ -15919,6 +15958,18 @@ script). Only sent if frame is labelled as an ad and ids are available.
       adScriptAncestry?: Network.AdAncestry;
     }
     /**
+     * Returns the words that the frame's document added to its spell check custom
+dictionary with `document.spellCheckCustomDictionary.addWords()`, sorted.
+Page script cannot read the dictionary back; this lets developers inspect
+it.
+     */
+    export type getSpellCheckCustomDictionaryParameters = {
+      frameId: FrameId;
+    }
+    export type getSpellCheckCustomDictionaryReturnValue = {
+      words: string[];
+    }
+    /**
      * Returns present frame tree structure.
      */
     export type getFrameTreeParameters = {
@@ -16542,6 +16593,10 @@ traded for a better latency.
        * Maximum frame rate in frames per second.
        */
       frameRate?: number;
+      /**
+       * The area to record. Defaults to `target`.
+       */
+      captureArea?: "target"|"browserWindow";
     }
     export type startScreenRecordingReturnValue = {
       /**
@@ -16721,6 +16776,17 @@ The format is defined by the `AnnotatedPageContent` message in
 components/optimization_guide/proto/features/common_quality_data.proto
        */
       content: binary;
+    }
+    /**
+     * Configures input visualization on the page.
+     */
+    export type setInputVisualizationParameters = {
+      /**
+       * Whether to enable click visualization.
+       */
+      clicks?: boolean;
+    }
+    export type setInputVisualizationReturnValue = {
     }
   }
   
@@ -16996,7 +17062,7 @@ CDP events for them are emitted separately but they share
     /**
      * List of FinalStatus reasons for Prerender2.
      */
-    export type PrerenderFinalStatus = "Activated"|"Destroyed"|"LowEndDevice"|"InvalidSchemeRedirect"|"InvalidSchemeNavigation"|"NavigationRequestBlockedByCsp"|"MojoBinderPolicy"|"RendererProcessCrashed"|"RendererProcessKilled"|"Download"|"TriggerDestroyed"|"NavigationNotCommitted"|"NavigationBadHttpStatus"|"ClientCertRequested"|"NavigationRequestNetworkError"|"CancelAllHostsForTesting"|"DidFailLoad"|"Stop"|"SslCertificateError"|"LoginAuthRequested"|"UaChangeRequiresReload"|"BlockedByClient"|"AudioOutputDeviceRequested"|"MixedContent"|"TriggerBackgrounded"|"MemoryLimitExceeded"|"DataSaverEnabled"|"TriggerUrlHasEffectiveUrl"|"ActivatedBeforeStarted"|"InactivePageRestriction"|"StartFailed"|"TimeoutBackgrounded"|"CrossSiteRedirectInInitialNavigation"|"CrossSiteNavigationInInitialNavigation"|"SameSiteCrossOriginRedirectNotOptInInInitialNavigation"|"SameSiteCrossOriginNavigationNotOptInInInitialNavigation"|"ActivationNavigationParameterMismatch"|"ActivatedInBackground"|"EmbedderHostDisallowed"|"ActivationNavigationDestroyedBeforeSuccess"|"TabClosedByUserGesture"|"TabClosedWithoutUserGesture"|"PrimaryMainFrameRendererProcessCrashed"|"PrimaryMainFrameRendererProcessKilled"|"ActivationFramePolicyNotCompatible"|"PreloadingDisabled"|"BatterySaverEnabled"|"ActivatedDuringMainFrameNavigation"|"PreloadingUnsupportedByWebContents"|"CrossSiteRedirectInMainFrameNavigation"|"CrossSiteNavigationInMainFrameNavigation"|"SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation"|"SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation"|"MemoryPressureOnTrigger"|"MemoryPressureAfterTriggered"|"PrerenderingDisabledByDevTools"|"SpeculationRuleRemoved"|"ActivatedWithAuxiliaryBrowsingContexts"|"MaxNumOfRunningEagerPrerendersExceeded"|"MaxNumOfRunningNonEagerPrerendersExceeded"|"MaxNumOfRunningEmbedderPrerendersExceeded"|"PrerenderingUrlHasEffectiveUrl"|"RedirectedPrerenderingUrlHasEffectiveUrl"|"ActivationUrlHasEffectiveUrl"|"JavaScriptInterfaceAdded"|"JavaScriptInterfaceRemoved"|"AllPrerenderingCanceled"|"WindowClosed"|"SlowNetwork"|"OtherPrerenderedPageActivated"|"V8OptimizerDisabled"|"PrerenderFailedDuringPrefetch"|"BrowsingDataRemoved"|"PrerenderHostReused"|"FormSubmitWhenPrerendering"|"CrossDocumentRestart";
+    export type PrerenderFinalStatus = "Activated"|"Destroyed"|"LowEndDevice"|"InvalidSchemeRedirect"|"InvalidSchemeNavigation"|"NavigationRequestBlockedByCsp"|"MojoBinderPolicy"|"RendererProcessCrashed"|"RendererProcessKilled"|"Download"|"TriggerDestroyed"|"NavigationNotCommitted"|"NavigationBadHttpStatus"|"ClientCertRequested"|"NavigationRequestNetworkError"|"CancelAllHostsForTesting"|"DidFailLoad"|"Stop"|"SslCertificateError"|"LoginAuthRequested"|"UaChangeRequiresReload"|"BlockedByClient"|"AudioOutputDeviceRequested"|"MixedContent"|"TriggerBackgrounded"|"MemoryLimitExceeded"|"DataSaverEnabled"|"TriggerUrlHasEffectiveUrl"|"ActivatedBeforeStarted"|"InactivePageRestriction"|"StartFailed"|"TimeoutBackgrounded"|"CrossSiteRedirectInInitialNavigation"|"CrossSiteNavigationInInitialNavigation"|"SameSiteCrossOriginRedirectNotOptInInInitialNavigation"|"SameSiteCrossOriginNavigationNotOptInInInitialNavigation"|"ActivationNavigationParameterMismatch"|"ActivatedInBackground"|"EmbedderHostDisallowed"|"ActivationNavigationDestroyedBeforeSuccess"|"TabClosedByUserGesture"|"TabClosedWithoutUserGesture"|"PrimaryMainFrameRendererProcessCrashed"|"PrimaryMainFrameRendererProcessKilled"|"ActivationFramePolicyNotCompatible"|"PreloadingDisabled"|"BatterySaverEnabled"|"ActivatedDuringMainFrameNavigation"|"PreloadingUnsupportedByWebContents"|"CrossSiteRedirectInMainFrameNavigation"|"CrossSiteNavigationInMainFrameNavigation"|"SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation"|"SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation"|"MemoryPressureOnTrigger"|"MemoryPressureAfterTriggered"|"PrerenderingDisabledByDevTools"|"SpeculationRuleRemoved"|"ActivatedWithAuxiliaryBrowsingContexts"|"MaxNumOfRunningEagerPrerendersExceeded"|"MaxNumOfRunningNonEagerPrerendersExceeded"|"MaxNumOfRunningEmbedderPrerendersExceeded"|"PrerenderingUrlHasEffectiveUrl"|"RedirectedPrerenderingUrlHasEffectiveUrl"|"ActivationUrlHasEffectiveUrl"|"JavaScriptInterfaceAdded"|"JavaScriptInterfaceRemoved"|"AllPrerenderingCanceled"|"WindowClosed"|"SlowNetwork"|"OtherPrerenderedPageActivated"|"V8OptimizerDisabled"|"PrerenderFailedDuringPrefetch"|"BrowsingDataRemoved"|"PrerenderHostReused"|"FormSubmitWhenPrerendering"|"CrossDocumentRestart"|"PrefetchFailedCrossOriginSubframe";
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This
 status is shared by prefetchStatusUpdated and prerenderStatusUpdated.
@@ -20098,9 +20164,19 @@ See https://w3c.github.io/webauthn/#signature-counter
      */
     export type InvocationStatus = "Completed"|"Canceled"|"Error";
     /**
+     * Unique identifier of a registered tool. A new identifier is created every time a tool is registered, so a tool that
+is unregistered and then registered again under the same name gets a different identifier. Clients should treat it
+as an opaque string.
+     */
+    export type ToolId = string;
+    /**
      * Definition of a tool that can be invoked.
      */
     export interface Tool {
+      /**
+       * Tool identifier.
+       */
+      toolId: ToolId;
       /**
        * Tool name.
        */
@@ -20113,6 +20189,10 @@ See https://w3c.github.io/webauthn/#signature-counter
        * Schema for the tool's input parameters.
        */
       inputSchema?: { [key: string]: string };
+      /**
+       * Schema for the tool's output structure.
+       */
+      outputSchema?: { [key: string]: string };
       /**
        * Optional annotations for the tool.
        */
@@ -20134,6 +20214,10 @@ See https://w3c.github.io/webauthn/#signature-counter
      * Definition of a tool that was removed.
      */
     export interface RemovedTool {
+      /**
+       * Identifier of the removed tool.
+       */
+      toolId: ToolId;
       /**
        * Tool name.
        */
@@ -20167,10 +20251,6 @@ See https://w3c.github.io/webauthn/#signature-counter
      */
     export type toolInvokedPayload = {
       /**
-       * Name of the tool to invoke.
-       */
-      toolName: string;
-      /**
        * Frame id
        */
       frameId: Page.FrameId;
@@ -20182,6 +20262,16 @@ See https://w3c.github.io/webauthn/#signature-counter
        * The input parameters used for the invocation.
        */
       input: string;
+      /**
+       * Name of the tool to invoke. Missing if the tool was invoked by its identifier, but could not be found (e.g.,
+it was already unregistered), so its name could not be recovered.
+       */
+      toolName?: string;
+      /**
+       * Identifier of the tool to invoke. Missing if the tool was invoked by name, but could not be found, so its
+identifier could not be recovered.
+       */
+      toolId?: ToolId;
     }
     /**
      * Event fired when a tool invocation completes or fails.
@@ -20226,7 +20316,8 @@ all currently registered tools.
     export type disableReturnValue = {
     }
     /**
-     * Invokes a registered tool.
+     * Invokes a registered tool. Exactly one of `toolId` and `toolName` must be specified; the command fails if both or
+neither are.
      */
     export type invokeToolParameters = {
       /**
@@ -20234,9 +20325,16 @@ all currently registered tools.
        */
       frameId: Page.FrameId;
       /**
-       * Name of the tool to invoke.
+       * Identifier of the tool to invoke, as reported in `Tool.toolId`. Invokes exactly that tool, and fails if it is no
+longer registered, even if a different tool has since been registered under the same name.
        */
-      toolName: string;
+      toolId?: ToolId;
+      /**
+       * Name of the tool to invoke. Deprecated: invokes whichever tool is registered under this name when the command
+is handled, which may not be the tool the client observed if the page has since replaced it. Use `toolId`
+instead.
+       */
+      toolName?: string;
       /**
        * Input parameters for the tool, matching the tool's inputSchema.
        */
@@ -20444,13 +20542,13 @@ variables as its properties.
        */
       endLocation?: Location;
       /**
-       * True if the scope does not declare any variables.
-Only present if true.
+       * Present if the scope has no variable values to show. Absent means that
+the scope declares at least one variable with an available value.
 Empty scopes are retained in the scope chain because
 they can be targeted via `evaluateOnCallFrame` (using `scopeNumber`) or
 matched against scopes in source maps.
        */
-      empty?: boolean;
+      emptyReason?: "no-variables"|"all-unavailable";
     }
     /**
      * Search match for resource.
@@ -21361,6 +21459,12 @@ before next pause.
        * The skipList specifies location ranges that should be skipped on step over.
        */
       skipList?: LocationRange[];
+      /**
+       * Functions whose source range lies within one of the enterRanges are
+entered as if by stepInto, even when they are called (directly or
+indirectly) from a call that is stepped over.
+       */
+      enterRanges?: LocationRange[];
     }
     export type stepOverReturnValue = {
     }
@@ -23498,6 +23602,7 @@ Error was thrown.
     "CSS.enable": CSS.enableParameters;
     "CSS.forcePseudoState": CSS.forcePseudoStateParameters;
     "CSS.forceStartingStyle": CSS.forceStartingStyleParameters;
+    "CSS.forcePositionTryOption": CSS.forcePositionTryOptionParameters;
     "CSS.getBackgroundColors": CSS.getBackgroundColorsParameters;
     "CSS.getComputedStyleForNode": CSS.getComputedStyleForNodeParameters;
     "CSS.resolveValues": CSS.resolveValuesParameters;
@@ -23856,6 +23961,7 @@ Error was thrown.
     "Page.getSubApps": Page.getSubAppsParameters;
     "Page.getSiblingSubApps": Page.getSiblingSubAppsParameters;
     "Page.getAdScriptAncestry": Page.getAdScriptAncestryParameters;
+    "Page.getSpellCheckCustomDictionary": Page.getSpellCheckCustomDictionaryParameters;
     "Page.getFrameTree": Page.getFrameTreeParameters;
     "Page.getLayoutMetrics": Page.getLayoutMetricsParameters;
     "Page.getNavigationHistory": Page.getNavigationHistoryParameters;
@@ -23902,6 +24008,7 @@ Error was thrown.
     "Page.setInterceptFileChooserDialog": Page.setInterceptFileChooserDialogParameters;
     "Page.setPrerenderingAllowed": Page.setPrerenderingAllowedParameters;
     "Page.getAnnotatedPageContent": Page.getAnnotatedPageContentParameters;
+    "Page.setInputVisualization": Page.setInputVisualizationParameters;
     "Performance.disable": Performance.disableParameters;
     "Performance.enable": Performance.enableParameters;
     "Performance.setTimeDomain": Performance.setTimeDomainParameters;
@@ -24174,6 +24281,7 @@ Error was thrown.
     "CSS.enable": CSS.enableReturnValue;
     "CSS.forcePseudoState": CSS.forcePseudoStateReturnValue;
     "CSS.forceStartingStyle": CSS.forceStartingStyleReturnValue;
+    "CSS.forcePositionTryOption": CSS.forcePositionTryOptionReturnValue;
     "CSS.getBackgroundColors": CSS.getBackgroundColorsReturnValue;
     "CSS.getComputedStyleForNode": CSS.getComputedStyleForNodeReturnValue;
     "CSS.resolveValues": CSS.resolveValuesReturnValue;
@@ -24532,6 +24640,7 @@ Error was thrown.
     "Page.getSubApps": Page.getSubAppsReturnValue;
     "Page.getSiblingSubApps": Page.getSiblingSubAppsReturnValue;
     "Page.getAdScriptAncestry": Page.getAdScriptAncestryReturnValue;
+    "Page.getSpellCheckCustomDictionary": Page.getSpellCheckCustomDictionaryReturnValue;
     "Page.getFrameTree": Page.getFrameTreeReturnValue;
     "Page.getLayoutMetrics": Page.getLayoutMetricsReturnValue;
     "Page.getNavigationHistory": Page.getNavigationHistoryReturnValue;
@@ -24578,6 +24687,7 @@ Error was thrown.
     "Page.setInterceptFileChooserDialog": Page.setInterceptFileChooserDialogReturnValue;
     "Page.setPrerenderingAllowed": Page.setPrerenderingAllowedReturnValue;
     "Page.getAnnotatedPageContent": Page.getAnnotatedPageContentReturnValue;
+    "Page.setInputVisualization": Page.setInputVisualizationReturnValue;
     "Performance.disable": Performance.disableReturnValue;
     "Performance.enable": Performance.enableReturnValue;
     "Performance.setTimeDomain": Performance.setTimeDomainReturnValue;
