@@ -935,6 +935,7 @@ export type NarratedVideoOptions = {
   captions?: boolean;
   voice?: 'auto' | 'system' | 'kokoro' | false | ((text: string) => Promise<Buffer>);
   voiceName?: string;
+  showPasswords?: boolean;
 };
 
 /**
@@ -1147,8 +1148,8 @@ interface TestConfig<TestArgs = {}, WorkerArgs = {}> {
    *
    * Recording replaces [testOptions.video](https://playwright.dev/docs/api/class-testoptions#test-options-video), turns
    * off the screenshots of [testOptions.trace](https://playwright.dev/docs/api/class-testoptions#test-options-trace),
-   * and gives each test a new context. Captions show the text that tests type, including passwords, so use test data
-   * you are happy to share.
+   * and gives each test a new context. Captions show the text that tests type, except into password fields, so use test
+   * data you are happy to share.
    *
    * **Usage**
    *

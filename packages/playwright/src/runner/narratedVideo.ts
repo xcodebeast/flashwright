@@ -67,6 +67,8 @@ const kInputMethods = new Set(['click', 'dblclick', 'tap', 'fill', 'press', 'typ
 const kPointerMethods = new Set(['click', 'dblclick', 'tap', 'fill', 'check', 'uncheck', 'setChecked', 'selectOption', 'mouseClick']);
 
 const quote = (text: string) => `\u201c${text}\u201d`;
+// The same length for every password, so the video does not tell how long it is.
+const kMaskedText = '\u2022'.repeat(8);
 
 function describeTarget(selector = ''): { text: string, name?: string } {
   const parts = selector.split(' >> ');
@@ -79,8 +81,9 @@ function describeTarget(selector = ''): { text: string, name?: string } {
   return { text: (name ? quote(name) : 'the element') + (context ? ` for ${quote(context)}` : ''), name };
 }
 
-export function describeAction(step: Recording['steps'][0]): string {
+export function describeAction(step: Recording['steps'][0], secret = false): string {
   const params = step.params ?? {};
+  const typed = (text: string) => quote(secret ? kMaskedText : text.slice(0, 80));
   const target = describeTarget(params.selector);
   switch (step.method) {
     case 'goto': {
@@ -93,11 +96,11 @@ export function describeAction(step: Recording['steps'][0]): string {
     }
     case 'fill':
     case 'type':
-      return params.value ? `Type ${quote(params.value.slice(0, 80))} into ${target.text}` : `Clear ${target.text}`;
+      return params.value ? `Type ${typed(params.value)} into ${target.text}` : `Clear ${target.text}`;
     case 'press': return `Press ${params.key} in ${target.text}`;
     case 'keyboardPress': return `Press ${params.key}`;
     case 'keyboardType':
-    case 'keyboardInsertText': return `Type ${quote((params.text ?? '').slice(0, 80))}`;
+    case 'keyboardInsertText': return `Type ${typed(params.text ?? '')}`;
     case 'check': return `Check ${target.text}`;
     case 'uncheck': return `Uncheck ${target.text}`;
     case 'selectOption': return `Choose an option in ${target.text}`;
@@ -210,7 +213,8 @@ function planClip(dir: string, recording: Recording, options: NarratedVideoOptio
 
   const inputFor = (start: number, end: number | undefined) => {
     const inputs = recording.inputs.filter(input => input.time >= start - 2 && input.time <= (end ?? Infinity) + 2);
-    return inputs.find(input => input.point) ?? inputs.find(input => input.box) ?? inputs[0];
+    const input = inputs.find(input => input.point) ?? inputs.find(input => input.box) ?? inputs[0];
+    return { ...input, secret: inputs.some(input => input.secret) && !options.showPasswords };
   };
 
   type Event = { order: number, kind: 'action' | 'assertion' | 'speech', time: number, end: number, text: string, file?: string, failed?: boolean, method?: string, point?: RecordedPoint, box?: RecordedBox, page?: number };
@@ -223,7 +227,7 @@ function planClip(dir: string, recording: Recording, options: NarratedVideoOptio
         continue;
       seenAction = true;
       const input = inputFor(step.start, step.end);
-      events.push({ order: step.order, kind: 'action', time: step.start, end: step.end ?? step.start, text: describeAction(step), method: step.method, point: input?.point, box: input?.box, page: input?.page });
+      events.push({ order: step.order, kind: 'action', time: step.start, end: step.end ?? step.start, text: describeAction(step, input.secret), method: step.method, point: input.point, box: input.box, page: input.page });
     } else if (step.category === 'expect' && !demo) {
       events.push({ order: step.order, kind: 'assertion', time: step.start, end: step.end ?? step.start, text: describeAssertion(step), failed: step.failed });
     }

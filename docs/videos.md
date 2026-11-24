@@ -52,13 +52,14 @@ export default defineConfig({
     captions: true,    // --no-video-captions; the subtitle track stays, off unless a player asks for it
     voice: 'auto',     // 'auto', 'system', 'kokoro', false (--no-video-voice), or a function that returns the audio, for a paid voice
     voiceName: 'Samantha',
+    showPasswords: false, // true captions what is typed into password fields instead of dots
   },
 });
 ```
 
 ## Recording limitations
 
-Captions show the text that tests type, including passwords, and the page shows what your app shows, so use test data you are happy to share. Recording replaces the `video` option, turns off the screenshots of `trace` and gives each test a new context, and a test cannot use `page.screencast` itself in that run. `summary.json` in [agent mode](agents.md#agent-mode) has the video's path.
+Captions show the text that tests type, except into password fields (`type="password"`, or `autocomplete="current-password"` or `"new-password"`), which they show as eight dots; `showPasswords: true` shows it. Other fields and the page show what your app shows, so use test data you are happy to share. Recording replaces the `video` option, turns off the screenshots of `trace` and gives each test a new context, and a test cannot use `page.screencast` itself in that run. `summary.json` in [agent mode](agents.md#agent-mode) has the video's path.
 
 ## Reproduce the README example
 

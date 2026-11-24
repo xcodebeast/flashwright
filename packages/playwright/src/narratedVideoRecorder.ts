@@ -52,7 +52,8 @@ export type Recording = {
   duration: number;
   outputDir: string;
   frames: { file: string, time: number, page: number, width: number, height: number }[];
-  inputs: { time: number, page: number, point?: RecordedPoint, box?: RecordedBox }[];
+  // `secret` when the action typed into a password field.
+  inputs: { time: number, page: number, point?: RecordedPoint, box?: RecordedBox, secret?: boolean }[];
   // `file` is the picture of the page that the voice speaks over.
   narrations: { order: number, text: string, time: number, page?: number, file?: string }[];
   steps: RecordedStep[];
@@ -219,8 +220,8 @@ export class NarratedVideoRecorder {
         this._addFrame(data, index, viewportWidth, viewportHeight);
         this._lastPaintedPage = page;
       },
-      _onInputAction: (action: { timestamp: number, point?: RecordedPoint, box?: RecordedBox }) => {
-        this._inputs.push({ time: action.timestamp, page: index, point: action.point, box: action.box });
+      _onInputAction: (action: { timestamp: number, point?: RecordedPoint, box?: RecordedBox, secret?: boolean }) => {
+        this._inputs.push({ time: action.timestamp, page: index, point: action.point, box: action.box, secret: action.secret });
       },
     } as any), { internal: true }).catch(() => {});
     this._started.push(start);

@@ -427,12 +427,13 @@ export default defineConfig({
   - `captions` ?<[boolean]> Whether captions are drawn under the page. Defaults to `true`.
   - `voice` ?<[string]|[boolean]|[function]> Which voice reads the narration: `'auto'`, `'system'`, `'kokoro'`, `false` for none, or a function that takes the text and returns the audio. Defaults to `'auto'`, which is Kokoro once `npx playwright install-voice` has set it up and the system's voice before that.
   - `voiceName` ?<[string]> A voice of the engine, such as `'Samantha'` for macOS or `'af_heart'` for Kokoro.
+  - `showPasswords` ?<[boolean]> Whether captions show the text typed into password fields: inputs of type `password`, or with `autocomplete="current-password"` or `"new-password"`. Defaults to `false`, which captions it as eight dots.
 
 Turns the run into one finished video with a voice, captions, a moving cursor and a camera, in `video.mp4` in the output directory, next to a clip of each test in the test's output directory. See [`property: Fixtures.narrate`]. The video is put together after the tests, which run about as fast as without it, so its timing is not the test's. It needs `ffmpeg`.
 
 In `'on'` mode the video also shows each test's title and result, and what it clicks, types and asserts. In `'demo'` mode it shows only the page and what [`property: Fixtures.narrate`] said, and it leaves out tests that failed.
 
-Recording replaces [`property: TestOptions.video`], turns off the screenshots of [`property: TestOptions.trace`], and gives each test a new context. Captions show the text that tests type, including passwords, so use test data you are happy to share.
+Recording replaces [`property: TestOptions.video`], turns off the screenshots of [`property: TestOptions.trace`], and gives each test a new context. Captions show the text that tests type, except into password fields, so use test data you are happy to share.
 
 **Usage**
 

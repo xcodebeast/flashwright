@@ -4358,6 +4358,7 @@ export type PageScreencastInputActionEvent = {
   timestamp: number,
   point?: Point,
   box?: Rect,
+  secret?: boolean,
 };
 export type PageWebSocketRouteEvent = {
   webSocketRoute: WebSocketRouteChannel,
