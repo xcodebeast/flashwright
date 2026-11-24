@@ -23,6 +23,7 @@ const { ManualPromise } = iso;
 
 test('should not throw with ignoreErrors', async () => {
   const ee = new EventEmitter();
+  ee.on('error', () => { throw new Error('Should ignore listener errors'); });
   const releaseHandler = new ManualPromise();
   ee.on('console', async () => {
     await releaseHandler;
@@ -70,6 +71,7 @@ test('should wait all', async () => {
 
 test('wait should throw', async () => {
   const ee = new EventEmitter();
+  ee.on('error', () => { throw new Error('Should return listener errors to the caller'); });
   const releaseHandler = new ManualPromise();
   ee.on('console', async () => {
     await releaseHandler;
