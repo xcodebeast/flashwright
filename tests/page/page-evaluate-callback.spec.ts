@@ -96,6 +96,7 @@ it('should propagate callback errors to the page', async ({ page }) => {
 });
 
 it('should work with a fire-and-forget setTimeout callback', async ({ page }) => {
+  it.skip(process.env.PW_CLOCK === 'frozen');
   const value = await new Promise<number>(resolve => {
     page.evaluate(({ cb }) => { setTimeout(() => cb(5), 0); }, {
       cb: (n: number) => resolve(n),

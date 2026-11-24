@@ -223,6 +223,7 @@ it('should work with redirect inside sync XHR', async ({ page, server, browserNa
 });
 
 it('should pause intercepted XHR until continue', async ({ page, server, browserName }) => {
+  it.skip(process.env.PW_CLOCK === 'frozen');
   it.fixme(browserName === 'webkit', 'Redirected request is not paused in WebKit');
 
   await page.goto(server.EMPTY_PAGE);
