@@ -734,7 +734,8 @@ export class WVPage implements PageDelegate {
        * We polyfill the subset that's used for feature detection, so that login flows that'd work in Safari don't crash with "PublicKeyCredential is not defined" in CI.
        * https://developer.mozilla.org/en-US/docs/Web/API/PublicKeyCredential
        */
-      window.PublicKeyCredential ??= class PublicKeyCredential {
+      // Flashwright: a class declaration, because esbuild drops the names of class expressions.
+      class PublicKeyCredential {
         constructor() {
           throw new TypeError('Illegal constructor');
         }
@@ -747,7 +748,8 @@ export class WVPage implements PageDelegate {
         static async isUserVerifyingPlatformAuthenticatorAvailable() {
           return false;
         }
-      } as any;
+      }
+      window.PublicKeyCredential ??= PublicKeyCredential as any;
     }
     return `(${polyfill.toString()})();`;
   }
