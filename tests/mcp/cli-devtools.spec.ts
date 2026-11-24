@@ -354,7 +354,7 @@ test('highlight --hide all', async ({ boundBrowser, cli }) => {
   await expect(page.locator('x-pw-highlight')).toHaveCount(0);
 });
 
-test('highlight --style', async ({ boundBrowser, cli, mcpBrowser }) => {
+test('highlight --style', async ({ boundBrowser, cli }) => {
   const page = await boundBrowser.newPage();
   await page.setContent(`<button>Submit</button>`);
 
@@ -366,13 +366,15 @@ test('highlight --style', async ({ boundBrowser, cli, mcpBrowser }) => {
   const highlight = page.locator('x-pw-highlight');
   await expect(highlight).toBeVisible();
   expect(await highlight.evaluate((el: HTMLElement) => ({
-    outline: el.style.outline,
+    // Browsers serialize the 'outline' shorthand in different orders, check the longhands.
+    outlineWidth: el.style.outlineWidth,
+    outlineStyle: el.style.outlineStyle,
+    outlineColor: el.style.outlineColor,
     backgroundColor: el.style.backgroundColor,
-  }))).toEqual(mcpBrowser === 'webkit' ? {
-    outline: '3px solid rgb(255, 0, 0)',
-    backgroundColor: 'rgba(0, 255, 0, 0.25)',
-  } : {
-    outline: 'rgb(255, 0, 0) solid 3px',
+  }))).toEqual({
+    outlineWidth: '3px',
+    outlineStyle: 'solid',
+    outlineColor: 'rgb(255, 0, 0)',
     backgroundColor: 'rgba(0, 255, 0, 0.25)',
   });
 });
