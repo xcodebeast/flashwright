@@ -32,7 +32,7 @@ import { lock } from '@utils/third_party/lockfile';
 import { fetchData } from '../utils';
 import { getEmbedderName } from '../userAgent';
 import { installDependenciesLinux, installDependenciesWindows, validateDependenciesLinux, validateDependenciesWindows } from './dependencies';
-import { dockerVersion, readDockerVersionSync, transformCommandsForRoot } from './dependencies';
+import { readDockerVersionSync, requiredDockerImage, transformCommandsForRoot } from './dependencies';
 import { downloadBrowserWithProgressBar, logPolitely } from './browserFetcher';
 import { packageRoot, binPath } from '../../package';
 
@@ -519,16 +519,20 @@ export class Registry {
       const installCommand = buildPlaywrightCLICommand(sdkLanguage, `install${installByDefault ? '' : ' ' + name}`);
       if (!canAccessFile(e)) {
         const currentDockerVersion = readDockerVersionSync();
-        const preferredDockerVersion = currentDockerVersion ? dockerVersion(currentDockerVersion.dockerImageNameTemplate) : null;
-        const isOutdatedDockerImage = currentDockerVersion && preferredDockerVersion && currentDockerVersion.dockerImageName !== preferredDockerVersion.dockerImageName;
+        const requiredImage = currentDockerVersion ? requiredDockerImage(currentDockerVersion) : null;
+        const isOutdatedDockerImage = currentDockerVersion && requiredImage && currentDockerVersion.dockerImageName !== requiredImage.dockerImageName;
         const isFfmpeg = name === 'ffmpeg';
         let prettyMessage;
         if (isOutdatedDockerImage) {
           prettyMessage = [
-            `Looks like Playwright was just updated to ${preferredDockerVersion.driverVersion}.`,
+            `This version uses the browsers of Docker image ${requiredImage.version}.`,
             `Please update docker image as well.`,
             `-  current: ${currentDockerVersion.dockerImageName}`,
-            `- required: ${preferredDockerVersion.dockerImageName}`,
+            `- required: ${requiredImage.dockerImageName}`,
+            ``,
+            `Or download the browsers inside this one:`,
+            ``,
+            `    ${installCommand}`,
             ``,
             `<3 Playwright Team`,
           ].join('\n');

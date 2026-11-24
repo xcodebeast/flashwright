@@ -45,6 +45,17 @@ export function dockerVersion(dockerImageNameTemplate: string): { driverVersion:
   };
 }
 
+// The Playwright release that browsers.json comes from: Playwright's Docker images of that version have
+// these browsers.
+const browsersPlaywrightVersion = '1.65.1';
+
+// The image that has this version's browsers: Playwright's own images follow Playwright's versions, and
+// the ones marked with `mark-docker-image` this package's.
+export function requiredDockerImage(dockerInfo: { dockerImageName: string, driverVersion: string }): { version: string, dockerImageName: string } {
+  const version = dockerInfo.dockerImageName.startsWith('mcr.microsoft.com/playwright') ? browsersPlaywrightVersion : languageBindingVersion;
+  return { version, dockerImageName: dockerInfo.dockerImageName.replace(dockerInfo.driverVersion, version) };
+}
+
 export function readDockerVersionSync(): null | { driverVersion: string, dockerImageName: string, dockerImageNameTemplate: string } {
   try {
     const data = JSON.parse(fs.readFileSync(dockerVersionFilePath, 'utf8'));
@@ -249,18 +260,17 @@ export async function validateDependenciesLinux(sdkLanguage: string, linuxLddDir
   ];
   // Ignore patch versions when comparing docker container version and Playwright version:
   // we **NEVER** roll browsers in patch releases, so native dependencies do not change.
-  if (dockerInfo && !dockerInfo.driverVersion.startsWith(getPlaywrightVersion(true /* majorMinorOnly */) + '.')) {
+  const requiredImage = dockerInfo ? requiredDockerImage(dockerInfo) : undefined;
+  if (dockerInfo && requiredImage && !dockerInfo.driverVersion.startsWith(requiredImage.version.split('.').slice(0, 2).join('.') + '.')) {
     // We are running in a docker container with unmatching version.
     // In this case, we know how to install dependencies in it.
-    const pwVersion = getPlaywrightVersion();
-    const requiredDockerImage = dockerInfo.dockerImageName.replace(dockerInfo.driverVersion, pwVersion);
     errorLines.push(...[
-      `This is most likely due to Docker image version not matching Playwright version:`,
-      `- Playwright  : ${pwVersion}`,
+      `This is most likely due to Docker image version not matching the browsers' version:`,
+      `- Browsers    : ${requiredImage.version}`,
       `- Docker image: ${dockerInfo.driverVersion}`,
       ``,
       `Either:`,
-      `- (recommended) use Docker image "${requiredDockerImage}"`,
+      `- (recommended) use Docker image "${requiredImage.dockerImageName}"`,
       `- (alternative 1) run the following command inside Docker to install missing dependencies:`,
       ``,
       `    ${maybeSudo}${buildPlaywrightCLICommand(sdkLanguage, 'install-deps')}`,

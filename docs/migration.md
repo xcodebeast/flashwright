@@ -19,6 +19,10 @@
 - **Temporary files**: worker counts, per-test durations, the context options and the headless browser launch options each config used last (never storage state, credentials, headers, a proxy, certificates, environment variables, browser preferences or arguments with values other than a few harmless ones; readable only by you) and a V8 code cache live in the system temp directory. `PW_DISABLE_WORKER_STANDBY=1` and `FLASHWRIGHT_DISABLE_CODE_CACHE=1` turn off the first and the last.
 - **Firefox and WebKit** keep Playwright's behavior, apart from reusing one tab per worker (see recycled contexts above) and the options above that apply to them, and **Electron** windows keep Playwright's waits for animations and assertion timeouts.
 
+## Browsers
+
+Since 1.64.1-flashwright.13, Flashwright runs the browsers of Playwright 1.65.1 (Chromium 159, Firefox 159, WebKit 27.2) instead of those of 1.64.1. Run `npx playwright install` after updating, and in Docker use Playwright's `v1.65.1` images: the `v1.64.1` ones don't have these browsers. A new browser can render pages slightly differently, so check `toHaveScreenshot()` baselines when coming from Playwright 1.64.1 or an earlier Flashwright. For older Chromium versions, stay on 1.64.1-flashwright.12.
+
 Flashwright runs Playwright's own browser builds. Playwright already launches them without what tests never see (sandbox, Safe Browsing, background networking, updates, extensions, sync, crash reporting); further switches such as `--disable-gpu` measured no faster, so there is no custom browser to install or trust.
 
 ## Deprecated APIs
