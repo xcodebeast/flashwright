@@ -125,7 +125,7 @@ test('should throw when the tool throws', async ({ page, server, browserName }) 
 
   const error = await page.webmcp.callTool('throwing').catch(e => e);
   // Chromium does not report the error that the tool threw.
-  expect(error.message).toContain(browserName === 'chromium' ? 'the invocation failed' : 'boom');
+  expect(error.message).toMatch(browserName === 'chromium' ? /the invocation failed|Tool execution failed/ : /boom/);
 });
 
 test('should throw for an unknown tool', async ({ page, server }) => {
