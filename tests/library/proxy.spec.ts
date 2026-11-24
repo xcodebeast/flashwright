@@ -143,7 +143,7 @@ for (const host of ['localhost', '127.0.0.1']) {
 
 it('should authenticate', {
   annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/43326' },
-}, async ({ browserType, server, browserName }) => {
+}, async ({ browserType, server }) => {
   server.setRoute('/target.html', async (req, res) => {
     const auth = req.headers['proxy-authorization'];
     if (!auth) {
@@ -170,11 +170,6 @@ it('should authenticate', {
   const page = await browser.newPage();
   await page.goto('http://non-existent.com/target.html');
   expect(await page.title()).toBe('Basic ' + Buffer.from('user:secret').toString('base64'));
-  // Flashwright: the WebKit of Playwright 1.64 answers websites with them too, see WKPage.updateHttpCredentials.
-  if (browserName === 'webkit') {
-    await browser.close();
-    return;
-  }
   // Proxy credentials must not be sent to the website's own auth challenge.
   const response = await page.goto('http://non-existent.com/protected.html');
   expect(response.status()).toBe(401);
