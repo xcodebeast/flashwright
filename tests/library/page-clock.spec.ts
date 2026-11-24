@@ -158,12 +158,18 @@ it.describe('runFor', () => {
     expect(performance.now() - start).toBeLessThan(2000);
   });
 
-  it('throws for invalid format', async ({ page, calls }) => {
+  it('throws for invalid format', {
+    annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/43783' },
+  }, async ({ page, calls, server }) => {
     await page.evaluate(async () => {
       setInterval(window.stub, 10000);
     });
     await expect(page.clock.runFor('12:02:34:10')).rejects.toThrow();
+    await expect(page.clock.runFor(NaN)).rejects.toThrow('clock.runFor: Invalid ticks: NaN');
+    await expect(page.clock.fastForward(Infinity)).rejects.toThrow('clock.fastForward: Invalid ticks: Infinity');
     expect(calls).toEqual([]);
+    await page.goto(server.EMPTY_PAGE);
+    expect(await page.evaluate(() => Date.now())).toBe(1000);
   });
 
   it('returns the current now value', async ({ page }) => {
@@ -190,15 +196,22 @@ it.describe('fastForward', () => {
     expect(calls).toEqual([]);
   });
 
-  it('pushes back execution time for skipped timers', async ({ page, calls }) => {
+  it('pushes back execution time for skipped timers', {
+    annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/43783' },
+  }, async ({ page, calls, server }) => {
+    await page.goto(server.EMPTY_PAGE);
     await page.evaluate(async () => {
       setTimeout(() => {
         window.stub(Date.now());
       }, 1000);
     });
 
-    await page.clock.fastForward(2000);
-    expect(calls).toEqual([{ params: [1000 + 2000] }]);
+    const fiftyDays = 50 * 24 * 60 * 60 * 1000;
+    await page.clock.fastForward(fiftyDays);
+    expect(calls).toEqual([{ params: [1000 + fiftyDays] }]);
+    expect(await page.evaluate(() => Date.now())).toBe(1000 + fiftyDays);
+    await page.reload();
+    expect(await page.evaluate(() => Date.now())).toBe(1000 + fiftyDays);
   });
 
   it('supports string time arguments', async ({ page, calls }) => {
