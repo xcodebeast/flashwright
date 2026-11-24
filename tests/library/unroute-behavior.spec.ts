@@ -304,30 +304,38 @@ it('route.fulfill should not throw if page has been closed', async ({ page, serv
   await route.fulfill();
 });
 
-it('should not continue requests in flight (page)', async ({ page, server }) => {
+it('should not continue requests in flight (page)', { annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/43878' } }, async ({ page, server }) => {
   const routePromise = new ManualPromise();
+  let started = 0;
   await page.goto(server.EMPTY_PAGE);
   await page.route('**/*', async route => {
-    routePromise.resolve();
-    await new Promise(f => setTimeout(f, 3000));
+    if (++started === 2)
+      routePromise.resolve();
+    await routePromise;
+    await new Promise(f => setTimeout(f, route.request().url().endsWith('/a') ? 100 : 1000));
     const response = await route.fetch();
-    await route.fulfill({ response });
+    await route.fulfill({ response, body: 'mocked' });
   });
-  void page.evaluate(() => fetch('/')).catch(() => {});
+  const fetchPromise = page.evaluate(() => Promise.all(['/a', '/b'].map(async path => (await fetch(path)).text())));
   await routePromise;
-  await page.unrouteAll({ behavior: 'wait' });
+  const [, bodies] = await Promise.all([page.unrouteAll({ behavior: 'wait' }), fetchPromise]);
+  expect(bodies).toEqual(['mocked', 'mocked']);
 });
 
-it('should not continue requests in flight (context)', async ({ page, context, server }) => {
+it('should not continue requests in flight (context)', { annotation: { type: 'issue', description: 'https://github.com/microsoft/playwright/issues/43878' } }, async ({ page, context, server }) => {
   const routePromise = new ManualPromise();
+  let started = 0;
   await page.goto(server.EMPTY_PAGE);
   await context.route('**/*', async route => {
-    routePromise.resolve();
-    await new Promise(f => setTimeout(f, 3000));
+    if (++started === 2)
+      routePromise.resolve();
+    await routePromise;
+    await new Promise(f => setTimeout(f, route.request().url().endsWith('/a') ? 100 : 1000));
     const response = await route.fetch();
-    await route.fulfill({ response });
+    await route.fulfill({ response, body: 'mocked' });
   });
-  void page.evaluate(() => fetch('/')).catch(() => {});
+  const fetchPromise = page.evaluate(() => Promise.all(['/a', '/b'].map(async path => (await fetch(path)).text())));
   await routePromise;
-  await context.unrouteAll({ behavior: 'wait' });
+  const [, bodies] = await Promise.all([context.unrouteAll({ behavior: 'wait' }), fetchPromise]);
+  expect(bodies).toEqual(['mocked', 'mocked']);
 });
