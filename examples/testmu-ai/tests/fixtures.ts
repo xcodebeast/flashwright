@@ -17,7 +17,9 @@ export const test = base.extend<{ reportToTestMu: void }>({
       },
     };
     // The grid reads this message from the connection; the page does not run it.
-    await page.evaluate(() => {}, `lambdatest_action: ${JSON.stringify(action)}`).catch(() => {});
+    await page.evaluate(() => {}, `lambdatest_action: ${JSON.stringify(action)}`).catch(() => {
+      console.warn(`Could not update the TestMu AI session status after "${testInfo.title}".`);
+    });
   }, { auto: true }],
 });
 

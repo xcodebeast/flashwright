@@ -15,9 +15,13 @@ npm test
 Set your TestMu AI username and access key, from the account's profile page:
 
 ```bash
-export LT_USERNAME=<username>
-export LT_ACCESS_KEY=<access key>
-npm run test:testmu
+{
+  read -r -p 'TestMu AI username: ' LT_USERNAME &&
+    read -r -s -p 'TestMu AI access key: ' LT_ACCESS_KEY &&
+    printf '\n' &&
+    export LT_USERNAME LT_ACCESS_KEY &&
+    npm run test:testmu
+}
 ```
 
 The run shows up as a build named `Flashwright example` in the automation dashboard, with video, network and console logs. Set `LT_BUILD_NAME` to rename it.
@@ -25,8 +29,8 @@ The run shows up as a build named `Flashwright example` in the automation dashbo
 ## How it works
 
 - `playwright.config.ts` has two projects. `chromium` launches a local browser. `testmu-chrome` builds a capabilities object (browser, version, platform, credentials) and passes it to the grid in the `wsEndpoint` of `connectOptions`.
-- Each worker connects once and runs its tests in that grid session. Use `--workers` to set how many sessions run in parallel.
-- `tests/fixtures.ts` tells the grid whether the session passed. A worker's tests share a session, so one failed test marks it failed.
+- Each worker connects once and runs its tests in that grid session. The three tests are in one file and run in one worker by default. To run them in parallel, use `npm run test:testmu -- --fully-parallel --workers=3` if your TestMu AI plan allows three concurrent sessions. `--workers` caps concurrency, and `--fully-parallel` lets tests in the same file run in separate workers.
+- `tests/fixtures.ts` tells the grid whether the session passed. A worker's tests share a session, so one failed test marks it failed. If the status update fails, the fixture prints a warning and preserves the Playwright test result.
 
 ## What changes on a grid
 

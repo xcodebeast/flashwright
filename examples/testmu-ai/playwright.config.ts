@@ -36,9 +36,8 @@ export default defineConfig({
     },
 
     {
-      /* One grid session per worker: Flashwright connects each worker to the grid once
-         and runs that worker's tests in the session, so set `workers` to the number of
-         parallel sessions your plan allows. */
+      /* Each worker uses one grid session. Keep the worker limit within your plan's
+         concurrent session limit when running tests in parallel. */
       name: 'testmu-chrome',
       use: {
         connectOptions: {
