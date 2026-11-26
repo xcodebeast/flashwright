@@ -15,13 +15,9 @@ npm test
 Set your TestMu AI username and access key, from the account's profile page:
 
 ```bash
-{
-  read -r -p 'TestMu AI username: ' LT_USERNAME &&
-    read -r -s -p 'TestMu AI access key: ' LT_ACCESS_KEY &&
-    printf '\n' &&
-    export LT_USERNAME LT_ACCESS_KEY &&
-    npm run test:testmu
-}
+export LT_USERNAME=<username>
+export LT_ACCESS_KEY=<access key>
+npm run test:testmu
 ```
 
 The run shows up as a build named `Flashwright example` in the automation dashboard, with video, network and console logs. Set `LT_BUILD_NAME` to rename it.
