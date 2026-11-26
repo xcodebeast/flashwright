@@ -36,6 +36,7 @@ Projects that use the library without the test runner replace `playwright` the s
 - [Performance](docs/performance.md): optimisations, defaults, opt-in settings and implementation details.
 - [Quality-of-life features](docs/features.md): videos, diagnostics, snapshots, project servers and migration tools.
 - [Configuration](docs/configuration.md): options, examples and limitations.
+- [Integrations](docs/integrations.md): examples for running Flashwright with third-party tools.
 - [Agent workflows](docs/agents.md): reporters, JSON summaries, watch mode, warm sessions and MCP.
 - [Videos and demos](docs/videos.md): recording, narration and voices.
 - [Migration](docs/migration.md): behaviour differences, deprecated APIs, codemod and Bun.
