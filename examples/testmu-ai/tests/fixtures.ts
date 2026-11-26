@@ -1,5 +1,3 @@
-/* eslint-disable notice/notice */
-
 import { test as base, expect } from '@playwright/test';
 
 // A worker's tests share one grid session, so the session is marked failed once any of them fails.

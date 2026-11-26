@@ -1,5 +1,3 @@
-/* eslint-disable notice/notice */
-
 import { defineConfig, devices } from '@playwright/test';
 import { version } from '@playwright/test/package.json';
 
