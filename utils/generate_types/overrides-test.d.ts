@@ -76,6 +76,7 @@ export type NarratedVideoOptions = {
   captions?: boolean;
   voice?: 'auto' | 'system' | 'kokoro' | false | ((text: string) => Promise<Buffer>);
   voiceName?: string;
+  showPasswords?: boolean;
 };
 
 interface TestConfig<TestArgs = {}, WorkerArgs = {}> {

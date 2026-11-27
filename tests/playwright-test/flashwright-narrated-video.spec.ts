@@ -515,6 +515,47 @@ test('captions say what is typed', async () => {
   expect(describe('fill', { selector: 'internal:label="Password"i', value: 'hunter2' })).toBe('Type \u201chunter2\u201d into \u201cPassword\u201d');
   expect(describe('fill', { selector: 'internal:label="Email"i', value: '' })).toBe('Clear \u201cEmail\u201d');
   expect(describe('keyboardType', { text: 'hello' })).toBe('Type \u201chello\u201d');
+  const describeSecret = (method: string, params: any) => narratedVideo.describeAction({ order: 0, title: '', category: 'pw:api', start: 0, method, params }, true);
+  expect(describeSecret('fill', { selector: 'internal:label="Password"i', value: 'hunter2' })).toBe('Type \u201c\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u201d into \u201cPassword\u201d');
+  expect(describeSecret('fill', { selector: 'internal:label="Password"i', value: 'a much longer passphrase' })).toBe('Type \u201c\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u201d into \u201cPassword\u201d');
+  expect(describeSecret('fill', { selector: 'internal:label="Password"i', value: '' })).toBe('Clear \u201cPassword\u201d');
+  expect(describeSecret('keyboardType', { text: 'hunter2' })).toBe('Type \u201c\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u201d');
+});
+
+test('typing into a password field is recorded as secret', async ({ runInlineTest }) => {
+  const result = await runInlineTest({
+    'playwright.config.js': voiceConfig(),
+    'a.spec.ts': `
+      import { test } from '@playwright/test';
+      test('sign in', async ({ page }) => {
+        await page.setContent(\`
+          <label>Email <input name=email></label>
+          <label>Password <input type=password name=password></label>
+          <label>New password <input autocomplete="new-password" name=next></label>
+        \`);
+        await page.getByLabel('Email').fill('ann@example.com');
+        await page.getByText('Password', { exact: true }).fill('hunter2');
+        await page.getByLabel('New password').pressSequentially('hunter3');
+        await page.getByLabel('Email').focus();
+        await page.keyboard.type('x');
+        await page.locator('[name=password]').focus();
+        await page.keyboard.insertText('hunter4');
+      });
+    `,
+  }, { video: true }, { FLASHWRIGHT_KEEP_VIDEO_WORK: '1' });
+  expect(result.exitCode).toBe(0);
+  const root = test.info().outputPath('test-results', '.video-recordings');
+  const recording = JSON.parse(fs.readFileSync(path.join(root, fs.readdirSync(root)[0], 'recording.json'), 'utf8'));
+  const secretAt = (method: string) => {
+    const step = recording.steps.find((step: any) => step.method === method && step.category === 'pw:api');
+    return recording.inputs.some((input: any) => input.secret && input.time >= step.start - 2 && input.time <= step.end + 2);
+  };
+  const fills = recording.steps.filter((step: any) => step.method === 'fill');
+  const secretIn = (step: any) => recording.inputs.some((input: any) => input.secret && input.time >= step.start - 2 && input.time <= step.end + 2);
+  expect(fills.map(secretIn)).toEqual([false, true]);
+  expect(secretAt('type')).toBe(true);
+  expect(secretAt('keyboardType')).toBe(false);
+  expect(secretAt('keyboardInsertText')).toBe(true);
 });
 
 test('types', async ({ runTSC }) => {
@@ -522,7 +563,7 @@ test('types', async ({ runTSC }) => {
     'playwright.config.ts': `
       import { defineConfig } from '@playwright/test';
       export default defineConfig({
-        narratedVideo: { mode: 'demo', zoom: false, captions: true, voice: async text => Buffer.from(text), voiceName: 'Samantha' },
+        narratedVideo: { mode: 'demo', zoom: false, captions: true, voice: async text => Buffer.from(text), voiceName: 'Samantha', showPasswords: true },
       });
       // @ts-expect-error
       defineConfig({ narratedVideo: { mode: 'sometimes' } });

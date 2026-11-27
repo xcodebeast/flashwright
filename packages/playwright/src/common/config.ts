@@ -106,6 +106,7 @@ export class FullConfigInternal {
         captions: takeFirst(configCLIOverrides.narratedVideo?.captions, userConfig.narratedVideo?.captions, true),
         voice: takeFirst(configCLIOverrides.narratedVideo?.voice, userConfig.narratedVideo?.voice, 'auto'),
         voiceName: userConfig.narratedVideo?.voiceName,
+        showPasswords: takeFirst(userConfig.narratedVideo?.showPasswords, false),
       },
       preserveOutput: takeFirst(userConfig.preserveOutput, 'always'),
       projects: [],

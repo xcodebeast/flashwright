@@ -2482,6 +2482,7 @@ scheme.PageScreencastInputActionEvent = tObject({
   timestamp: tFloat,
   point: tOptional(tType('Point')),
   box: tOptional(tType('Rect')),
+  secret: tOptional(tBoolean),
 });
 scheme.PageWebSocketRouteEvent = tObject({
   webSocketRoute: tChannel(['WebSocketRoute']),

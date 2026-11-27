@@ -105,7 +105,7 @@ The same test, recorded twice. `--video` includes the test title, action caption
 
 `npx playwright test --video` makes a narrated video of your tests with captions, a moving cursor and a camera that follows the action. Use `--demo` for a version without test names and results. Add `narrate()` calls to explain what's happening, or let Flashwright generate captions from the actions and assertions.
 
-It needs `ffmpeg`. Recording adds waits for the page to paint, and captions include typed text, including passwords, so use test data you're happy to share. [Examples, voice setup and recording options](docs/videos.md).
+It needs `ffmpeg`. Recording adds waits for the page to paint, and captions include typed text (password fields show as dots), so use test data you're happy to share. [Examples, voice setup and recording options](docs/videos.md).
 
 ## Quality-of-life features
 

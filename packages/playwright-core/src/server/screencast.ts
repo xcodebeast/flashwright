@@ -20,6 +20,7 @@ import { debugLogger } from '@utils/debugLogger';
 import { Page } from './page';
 import { nullProgress } from './progress';
 import { ElementHandle } from './dom';
+import { isSecretInput } from './secretInput';
 
 import type { InstrumentationListener, SdkObject } from './instrumentation';
 import type * as types from './types';
@@ -31,7 +32,7 @@ export type ScreencastClient = {
   // Flashwright: rejects with the error that closing would report when the client could not start.
   launched?: () => Promise<void>;
   // Flashwright: told about every input action, and makes actions wait for the frame that shows them.
-  onInputAction?: (action: { timestamp: number, point?: types.Point, box?: types.Rect }) => void;
+  onInputAction?: (action: { timestamp: number, point?: types.Point, box?: types.Rect, secret?: boolean }) => void;
   dispose: () => void;
   size?: types.Size;
   quality?: number;
@@ -227,8 +228,12 @@ export class Screencast implements InstrumentationListener {
 
   async onBeforeInputAction(progress: Progress, sdkObject: SdkObject, point?: types.Point, box?: types.Rect): Promise<void> {
     if (sdkObject.attribution.page === this.page) {
-      for (const client of this._clients.keys())
-        client.onInputAction?.({ timestamp: Date.now(), point, box });
+      const clients = [...this._clients.keys()].filter(client => client.onInputAction);
+      const timestamp = Date.now();
+      // Flashwright: a video's captions leave out what is typed into a password field.
+      const secret = clients.length ? await isSecretInput(progress, sdkObject) || undefined : undefined;
+      for (const client of clients)
+        client.onInputAction!({ timestamp, point, box, secret });
     }
     if (!this._actions)
       return;
